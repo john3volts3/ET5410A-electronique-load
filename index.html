@@ -278,7 +278,6 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
   <button data-tab="tab-ctrl">Controle</button>
   <button data-tab="tab-meas">Mesures</button>
   <button data-tab="tab-tran">Dynamique</button>
-  <button data-tab="tab-batt">Batterie</button>
   <button data-tab="tab-scan">Scan</button>
   <button data-tab="tab-list">List</button>
   <button data-tab="tab-qual">Qualification</button>
@@ -343,28 +342,7 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <button class="btn" onclick="ctrlReadMode()">Lire</button>
     </div>
   </div>
-  <div class="card">
-    <h3>Ranges</h3>
-    <div class="row">
-      <label>Tension</label>
-      <select id="ctrl-vrange">
-        <option value="HIGH">HIGH (0.1 - 150V)</option>
-        <option value="LOW">LOW (0.1 - 20V)</option>
-      </select>
-      <button class="btn" onclick="ctrlSetVRange()">Appliquer</button>
-      <button class="btn" onclick="ctrlReadVRange()">Lire</button>
-    </div>
-    <div class="row">
-      <label>Courant</label>
-      <select id="ctrl-crange">
-        <option value="HIGH">HIGH (0 - 40A)</option>
-        <option value="LOW">LOW (0 - 3A)</option>
-      </select>
-      <button class="btn" onclick="ctrlSetCRange()">Appliquer</button>
-      <button class="btn" onclick="ctrlReadCRange()">Lire</button>
-    </div>
-  </div>
-  <div class="card">
+  <div class="card" id="ctrl-value-card">
     <h3>Valeur de charge</h3>
     <div id="ctrl-value-section">
       <div class="row" id="ctrl-cc-row">
@@ -417,6 +395,127 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <label>Coeff</label>
         <input type="number" id="ctrl-led-c" step="0.001" min="0.001" max="1" value="1">
         <button class="btn" onclick="ctrlSet('LED:COEFf',this)">Appliquer</button>
+      </div>
+    </div>
+  </div>
+  <!-- Battery sub-section (visible only when mode=BATT) -->
+  <div id="ctrl-batt-section" class="hidden">
+    <div class="card">
+      <h3>Mode de decharge</h3>
+      <div class="radio-grid">
+        <label class="radio-label"><input type="radio" name="batt-dmode" value="CC" checked> CC (Courant constant)</label>
+        <label class="radio-label"><input type="radio" name="batt-dmode" value="CR"> CR (Resistance constante)</label>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <button class="btn" onclick="scpiSet('BATT:MODE',getBattDMode())">Appliquer</button>
+        <button class="btn" onclick="battReadDMode()">Lire</button>
+      </div>
+    </div>
+    <div class="card" id="ctrl-batt-cc-card">
+      <h3>Parametres CC - Courants et tensions de coupure</h3>
+      <div class="grid2">
+        <div>
+          <div class="row">
+            <label>Courant 1 (A)</label>
+            <input type="number" id="batt-bcc1-i" step="0.001" value="1">
+            <button class="btn" onclick="scpiSetNum('CURR:BCC1','batt-bcc1-i')">Set</button>
+            <button class="btn" onclick="scpiReadNum('CURR:BCC1?','batt-bcc1-i')">Lire</button>
+          </div>
+          <div class="row">
+            <label>Courant 2 (A)</label>
+            <input type="number" id="batt-bcc2-i" step="0.001" value="0.5">
+            <button class="btn" onclick="scpiSetNum('CURR:BCC2','batt-bcc2-i')">Set</button>
+            <button class="btn" onclick="scpiReadNum('CURR:BCC2?','batt-bcc2-i')">Lire</button>
+          </div>
+          <div class="row">
+            <label>Courant 3 (A)</label>
+            <input type="number" id="batt-bcc3-i" step="0.001" value="0.2">
+            <button class="btn" onclick="scpiSetNum('CURR:BCC3','batt-bcc3-i')">Set</button>
+            <button class="btn" onclick="scpiReadNum('CURR:BCC3?','batt-bcc3-i')">Lire</button>
+          </div>
+        </div>
+        <div>
+          <div class="row">
+            <label>Tension coupure 1 (V)</label>
+            <input type="number" id="batt-bcc1-v" step="0.001" value="3">
+            <button class="btn" onclick="scpiSetNum('VOLT:BCC1','batt-bcc1-v')">Set</button>
+            <button class="btn" onclick="scpiReadNum('VOLT:BCC1?','batt-bcc1-v')">Lire</button>
+          </div>
+          <div class="row">
+            <label>Tension coupure 2 (V)</label>
+            <input type="number" id="batt-bcc2-v" step="0.001" value="3">
+            <button class="btn" onclick="scpiSetNum('VOLT:BCC2','batt-bcc2-v')">Set</button>
+            <button class="btn" onclick="scpiReadNum('VOLT:BCC2?','batt-bcc2-v')">Lire</button>
+          </div>
+          <div class="row">
+            <label>Tension coupure 3 (V)</label>
+            <input type="number" id="batt-bcc3-v" step="0.001" value="2.8">
+            <button class="btn" onclick="scpiSetNum('VOLT:BCC3','batt-bcc3-v')">Set</button>
+            <button class="btn" onclick="scpiReadNum('VOLT:BCC3?','batt-bcc3-v')">Lire</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card hidden" id="ctrl-batt-cr-card">
+      <h3>Parametres CR - Resistance et tension de coupure</h3>
+      <div class="row">
+        <label>Resistance (Ohm)</label>
+        <input type="number" id="batt-bcr-r" step="0.01" value="10">
+        <button class="btn" onclick="scpiSetNum('RESI:BCR','batt-bcr-r')">Set</button>
+        <button class="btn" onclick="scpiReadNum('RESI:BCR?','batt-bcr-r')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Tension coupure CR (V)</label>
+        <input type="number" id="batt-bcr-v" step="0.001" value="3">
+        <button class="btn" onclick="scpiSetNum('VOLT:BCR','batt-bcr-v')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:BCR?','batt-bcr-v')">Lire</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Conditions de coupure (Cutoff)</h3>
+      <small style="color:var(--text2);display:block;margin-bottom:8px;">Le mode de coupure actif se selectionne depuis le panneau avant de l'appareil.</small>
+      <div class="radio-grid">
+        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="volt" checked> Voltage</label>
+        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="capa"> Capacite</label>
+        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="ener"> Energie</label>
+        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="time"> Temps</label>
+      </div>
+      <div id="batt-cut-volt" class="row" style="margin-top:8px;">
+        <label>Tension coupure (V)</label>
+        <span class="info-box" style="font-size:0.85em;color:var(--text2);">Voir parametres CC/CR ci-dessus</span>
+      </div>
+      <div id="batt-cut-capa" class="row hidden" style="margin-top:8px;">
+        <label>Cutoff Capacite (Ah)</label>
+        <input type="number" id="batt-btc" step="0.01" min="0" value="0">
+        <button class="btn" onclick="scpiSetNum('BATT:BTC','batt-btc')">Set</button>
+        <button class="btn" onclick="scpiReadNum('BATT:BTC?','batt-btc')">Lire</button>
+      </div>
+      <div id="batt-cut-ener" class="row hidden" style="margin-top:8px;">
+        <label>Cutoff Energie (Wh)</label>
+        <input type="number" id="batt-bte" step="0.01" min="0" value="0">
+        <button class="btn" onclick="scpiSetNum('BATT:BTE','batt-bte')">Set</button>
+        <button class="btn" onclick="scpiReadNum('BATT:BTE?','batt-bte')">Lire</button>
+      </div>
+      <div id="batt-cut-time" class="row hidden" style="margin-top:8px;">
+        <label>Cutoff Temps (s)</label>
+        <input type="number" id="batt-btt" step="1" min="0" value="0">
+        <button class="btn" onclick="scpiSetNum('TIME:BTT','batt-btt')">Set</button>
+        <button class="btn" onclick="scpiReadNum('TIME:BTT?','batt-btt')">Lire</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Test Batterie</h3>
+      <div class="row">
+        <button class="btn-green" id="batt-start" onclick="battStart()">Start</button>
+        <button class="btn-red" id="batt-stop" onclick="battStop()" disabled>Stop</button>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <label>Capacite dechargee</label>
+        <span id="batt-capa" class="info-box" style="min-width:150px;">--</span>
+      </div>
+      <div class="row">
+        <label>Energie dechargee</label>
+        <span id="batt-ener" class="info-box" style="min-width:150px;">--</span>
       </div>
     </div>
   </div>
@@ -560,113 +659,6 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <input type="number" id="tran-wb" step="1" min="0" max="60" value="1">
       <button class="btn" onclick="scpiSetNum('TIME:WB','tran-wb')">Set</button>
       <button class="btn" onclick="scpiReadNum('TIME:WB?','tran-wb')">Lire</button>
-    </div>
-  </div>
-</div>
-
-<!-- ========== BATTERIE (BATT) ========== -->
-<div id="tab-batt" class="tab">
-  <div class="card">
-    <h3>Test Batterie (BATT)</h3>
-    <div class="row">
-      <label>Mode decharge</label>
-      <select id="batt-mode">
-        <option value="CC">CC (Courant constant)</option>
-        <option value="CR">CR (Resistance constante)</option>
-      </select>
-      <button class="btn" onclick="scpiSet('BATT:MODE',g('batt-mode'))">Appliquer</button>
-      <button class="btn" onclick="scpiRead('BATT:MODE?','batt-mode')">Lire</button>
-    </div>
-    <div class="row">
-      <label>Capacite dechargee</label>
-      <span id="batt-capa" class="info-box" style="min-width:150px;">--</span>
-      <button class="btn" onclick="battReadCapa()">Lire</button>
-    </div>
-    <div class="row">
-      <label>Energie dechargee</label>
-      <span id="batt-ener" class="info-box" style="min-width:150px;">--</span>
-      <button class="btn" onclick="battReadEner()">Lire</button>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Mode CC - Courants et tensions de coupure</h3>
-    <div class="grid2">
-      <div>
-        <div class="row">
-          <label>Courant 1 (A)</label>
-          <input type="number" id="batt-bcc1-i" step="0.001" value="1">
-          <button class="btn" onclick="scpiSetNum('CURR:BCC1','batt-bcc1-i')">Set</button>
-          <button class="btn" onclick="scpiReadNum('CURR:BCC1?','batt-bcc1-i')">Lire</button>
-        </div>
-        <div class="row">
-          <label>Courant 2 (A)</label>
-          <input type="number" id="batt-bcc2-i" step="0.001" value="0.5">
-          <button class="btn" onclick="scpiSetNum('CURR:BCC2','batt-bcc2-i')">Set</button>
-          <button class="btn" onclick="scpiReadNum('CURR:BCC2?','batt-bcc2-i')">Lire</button>
-        </div>
-        <div class="row">
-          <label>Courant 3 (A)</label>
-          <input type="number" id="batt-bcc3-i" step="0.001" value="0.2">
-          <button class="btn" onclick="scpiSetNum('CURR:BCC3','batt-bcc3-i')">Set</button>
-          <button class="btn" onclick="scpiReadNum('CURR:BCC3?','batt-bcc3-i')">Lire</button>
-        </div>
-      </div>
-      <div>
-        <div class="row">
-          <label>Tension coupure 1 (V)</label>
-          <input type="number" id="batt-bcc1-v" step="0.001" value="3">
-          <button class="btn" onclick="scpiSetNum('VOLT:BCC1','batt-bcc1-v')">Set</button>
-          <button class="btn" onclick="scpiReadNum('VOLT:BCC1?','batt-bcc1-v')">Lire</button>
-        </div>
-        <div class="row">
-          <label>Tension coupure 2 (V)</label>
-          <input type="number" id="batt-bcc2-v" step="0.001" value="3">
-          <button class="btn" onclick="scpiSetNum('VOLT:BCC2','batt-bcc2-v')">Set</button>
-          <button class="btn" onclick="scpiReadNum('VOLT:BCC2?','batt-bcc2-v')">Lire</button>
-        </div>
-        <div class="row">
-          <label>Tension coupure 3 (V)</label>
-          <input type="number" id="batt-bcc3-v" step="0.001" value="2.8">
-          <button class="btn" onclick="scpiSetNum('VOLT:BCC3','batt-bcc3-v')">Set</button>
-          <button class="btn" onclick="scpiReadNum('VOLT:BCC3?','batt-bcc3-v')">Lire</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Mode CR - Resistance et tension de coupure</h3>
-    <div class="row">
-      <label>Resistance (Ohm)</label>
-      <input type="number" id="batt-bcr-r" step="0.01" value="10">
-      <button class="btn" onclick="scpiSetNum('RESI:BCR','batt-bcr-r')">Set</button>
-      <button class="btn" onclick="scpiReadNum('RESI:BCR?','batt-bcr-r')">Lire</button>
-    </div>
-    <div class="row">
-      <label>Tension coupure CR (V)</label>
-      <input type="number" id="batt-bcr-v" step="0.001" value="3">
-      <button class="btn" onclick="scpiSetNum('VOLT:BCR','batt-bcr-v')">Set</button>
-      <button class="btn" onclick="scpiReadNum('VOLT:BCR?','batt-bcr-v')">Lire</button>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Conditions de coupure (Cutoff)</h3>
-    <div class="row">
-      <label>Cutoff Capacite (Ah)</label>
-      <input type="number" id="batt-btc" step="0.01" min="0" value="0">
-      <button class="btn" onclick="scpiSetNum('BATT:BTC','batt-btc')">Set</button>
-      <button class="btn" onclick="scpiReadNum('BATT:BTC?','batt-btc')">Lire</button>
-    </div>
-    <div class="row">
-      <label>Cutoff Energie (Wh)</label>
-      <input type="number" id="batt-bte" step="0.01" min="0" value="0">
-      <button class="btn" onclick="scpiSetNum('BATT:BTE','batt-bte')">Set</button>
-      <button class="btn" onclick="scpiReadNum('BATT:BTE?','batt-bte')">Lire</button>
-    </div>
-    <div class="row">
-      <label>Cutoff Temps (s)</label>
-      <input type="number" id="batt-btt" step="1" min="0" value="0">
-      <button class="btn" onclick="scpiSetNum('TIME:BTT','batt-btt')">Set</button>
-      <button class="btn" onclick="scpiReadNum('TIME:BTT?','batt-btt')">Lire</button>
     </div>
   </div>
 </div>
@@ -900,6 +892,27 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <label>Resultat</label>
       <span id="qual-result" class="info-box" style="min-width:100px;">--</span>
       <button class="btn" onclick="qualReadResult()">Lire</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Ranges</h3>
+    <div class="row">
+      <label>Tension</label>
+      <select id="ctrl-vrange">
+        <option value="HIGH">HIGH (0.1 - 150V)</option>
+        <option value="LOW">LOW (0.1 - 20V)</option>
+      </select>
+      <button class="btn" onclick="ctrlSetVRange()">Appliquer</button>
+      <button class="btn" onclick="ctrlReadVRange()">Lire</button>
+    </div>
+    <div class="row">
+      <label>Courant</label>
+      <select id="ctrl-crange">
+        <option value="HIGH">HIGH (0 - 40A)</option>
+        <option value="LOW">LOW (0 - 3A)</option>
+      </select>
+      <button class="btn" onclick="ctrlSetCRange()">Appliquer</button>
+      <button class="btn" onclick="ctrlReadCRange()">Lire</button>
     </div>
   </div>
   <div class="grid3">
@@ -1206,6 +1219,7 @@ class ET5410 {
 // ============================================================
 const dev = new ET5410();
 let measTimer = null;
+let battTimer = null;
 const measHistory = [[], [], [], []]; // V, I, P, R
 
 // ============================================================
@@ -1264,6 +1278,7 @@ async function doConnect() {
 }
 
 async function doDisconnect() {
+  battStop(false);
   measStop();
   if (dev.connected) await dev.send('SYST:LOCA');
   await dev.disconnect();
@@ -1297,18 +1312,18 @@ document.querySelectorAll('#tabs-nav button').forEach(btn => {
 // Controle
 // ============================================================
 const modeRows = {
-  CC: ['ctrl-cc-row'],
-  CV: ['ctrl-cv-row'],
-  CP: ['ctrl-cp-row'],
-  CR: ['ctrl-cr-row'],
-  CCCV: ['ctrl-cccv-row'],
-  CRCV: ['ctrl-crcv-row'],
+  CC: ['ctrl-value-card', 'ctrl-cc-row'],
+  CV: ['ctrl-value-card', 'ctrl-cv-row'],
+  CP: ['ctrl-value-card', 'ctrl-cp-row'],
+  CR: ['ctrl-value-card', 'ctrl-cr-row'],
+  CCCV: ['ctrl-value-card', 'ctrl-cccv-row'],
+  CRCV: ['ctrl-value-card', 'ctrl-crcv-row'],
   TRAN: [],
   LIST: [],
   SCAN: [],
   SHOR: [],
-  BATT: [],
-  LED: ['ctrl-led-row']
+  BATT: ['ctrl-batt-section'],
+  LED: ['ctrl-value-card', 'ctrl-led-row']
 };
 
 function getCtrlMode() {
@@ -1505,6 +1520,42 @@ async function scpiReadNum(cmd, inputId) {
 // ============================================================
 // Batterie
 // ============================================================
+function getBattDMode() {
+  const r = document.querySelector('input[name="batt-dmode"]:checked');
+  return r ? r.value : 'CC';
+}
+
+function updateBattDModeRows() {
+  const mode = getBattDMode();
+  $('ctrl-batt-cc-card').classList.toggle('hidden', mode !== 'CC');
+  $('ctrl-batt-cr-card').classList.toggle('hidden', mode !== 'CR');
+}
+
+document.querySelectorAll('input[name="batt-dmode"]').forEach(r => {
+  r.addEventListener('change', updateBattDModeRows);
+});
+
+function updateBattCutoffRows() {
+  const mode = document.querySelector('input[name="batt-cutoff-mode"]:checked');
+  const val = mode ? mode.value : 'volt';
+  ['volt', 'capa', 'ener', 'time'].forEach(k => {
+    $('batt-cut-' + k).classList.toggle('hidden', k !== val);
+  });
+}
+
+document.querySelectorAll('input[name="batt-cutoff-mode"]').forEach(r => {
+  r.addEventListener('change', updateBattCutoffRows);
+});
+
+async function battReadDMode() {
+  const r = await dev.query('BATT:MODE?');
+  if (r) {
+    const mode = stripPrefix(r).toUpperCase();
+    const radio = document.querySelector('input[name="batt-dmode"][value="' + mode + '"]');
+    if (radio) { radio.checked = true; updateBattDModeRows(); }
+  }
+}
+
 async function battReadCapa() {
   const r = await dev.query('BATT:CAPA?');
   if (r) $('batt-capa').textContent = stripPrefix(r) + ' Ah';
@@ -1513,6 +1564,26 @@ async function battReadCapa() {
 async function battReadEner() {
   const r = await dev.query('BATT:ENER?');
   if (r) $('batt-ener').textContent = stripPrefix(r) + ' Wh';
+}
+
+function battStart() {
+  $('batt-start').disabled = true;
+  $('batt-stop').disabled = false;
+  ctrlSW('ON');
+  battTimer = setInterval(battPoll, 1000);
+  battPoll();
+}
+
+function battStop(sendOff) {
+  if (battTimer) { clearInterval(battTimer); battTimer = null; }
+  if ($('batt-start')) $('batt-start').disabled = false;
+  if ($('batt-stop')) $('batt-stop').disabled = true;
+  if (sendOff !== false && dev.connected) ctrlSW('OFF');
+}
+
+async function battPoll() {
+  await battReadCapa();
+  await battReadEner();
 }
 
 // ============================================================
@@ -1663,7 +1734,11 @@ function termClear() { $('terminal-log').innerHTML = ''; }
   }
 
   // Init mode rows display
-  $('ctrl-mode').dispatchEvent(new Event('change'));
+  updateCtrlModeRows();
+
+  // Init battery sub-sections
+  updateBattDModeRows();
+  updateBattCutoffRows();
 
   // Generate initial list table
   listGenTable();
