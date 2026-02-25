@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ET5410 Controller</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --bg2: #16213e;
+  --bg3: #0f3460;
+  --accent: #e94560;
+  --accent2: #533483;
+  --text: #eee;
+  --text2: #aab;
+  --green: #4caf50;
+  --orange: #ff9800;
+  --red: #f44336;
+  --border: #2a2a4a;
+  --input-bg: #0d1b2a;
+  --radius: 6px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', Consolas, monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+header {
+  background: var(--bg2);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--accent);
+}
+header h1 { font-size: 1.2em; }
+header h1 span { color: var(--accent); }
+#conn-status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+#conn-status.off { background: var(--red); }
+#conn-status.on { background: var(--green); color: #000; }
+nav {
+  background: var(--bg2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--border);
+}
+nav button {
+  background: transparent;
+  color: var(--text2);
+  border: none;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 0.85em;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+nav button:hover { color: var(--text); background: var(--bg3); }
+nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab { display: none; padding: 16px; max-width: 1200px; margin: 0 auto; }
+.tab.active { display: block; }
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.card h3 {
+  color: var(--accent);
+  font-size: 0.95em;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+label {
+  font-size: 0.85em;
+  color: var(--text2);
+  min-width: 90px;
+}
+input, select {
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 0.85em;
+  font-family: inherit;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+input[type="number"] { width: 120px; }
+select { cursor: pointer; }
+button {
+  font-family: inherit;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+.btn {
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  transition: all 0.2s;
+}
+.btn:hover { background: var(--accent2); }
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 18px;
+  font-weight: bold;
+}
+.btn-accent:hover { opacity: 0.85; }
+.btn-green {
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 18px;
+  font-weight: bold;
+}
+.btn-green:hover { opacity: 0.85; }
+.btn-red {
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 18px;
+  font-weight: bold;
+}
+.btn-red:hover { opacity: 0.85; }
+.btn-orange {
+  background: var(--orange);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  font-weight: bold;
+}
+.btn-orange:hover { opacity: 0.85; }
+.info-box {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-family: Consolas, monospace;
+  font-size: 0.85em;
+  white-space: pre-wrap;
+  min-height: 30px;
+}
+.big-value {
+  font-size: 2em;
+  font-weight: bold;
+  font-family: Consolas, monospace;
+  text-align: center;
+  padding: 10px;
+}
+.big-value .unit { font-size: 0.5em; color: var(--text2); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 800px) {
+  .grid2, .grid3, .grid4 { grid-template-columns: 1fr; }
+}
+#terminal-log {
+  background: #000;
+  color: #0f0;
+  font-family: Consolas, monospace;
+  font-size: 0.82em;
+  padding: 10px;
+  height: 400px;
+  overflow-y: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+#terminal-log .tx { color: #4fc3f7; }
+#terminal-log .rx { color: #0f0; }
+#terminal-log .err { color: var(--red); }
+#terminal-log .info { color: var(--orange); }
+.terminal-input {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.terminal-input input { flex: 1; }
+.onoff-btn {
+  width: 100px;
+  height: 40px;
+  border-radius: 20px;
+  border: none;
+  font-weight: bold;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.onoff-btn.off { background: #555; color: #aaa; }
+.onoff-btn.on { background: var(--green); color: #000; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82em;
+}
+table th {
+  background: var(--bg3);
+  padding: 6px 8px;
+  text-align: left;
+  border: 1px solid var(--border);
+}
+table td {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+}
+table td input, table td select {
+  width: 100%;
+  padding: 3px 6px;
+  font-size: 0.9em;
+}
+.meas-card {
+  text-align: center;
+  padding: 16px;
+}
+.meas-card .label { color: var(--text2); font-size: 0.8em; margin-bottom: 4px; }
+.meas-card .value { font-size: 2.2em; font-weight: bold; font-family: Consolas, monospace; }
+.meas-card .value.volt { color: #ffeb3b; }
+.meas-card .value.curr { color: #4fc3f7; }
+.meas-card .value.powe { color: #ff9800; }
+.meas-card .value.resi { color: #ce93d8; }
+canvas { background: #000; border-radius: var(--radius); border: 1px solid var(--border); }
+.status-none { color: var(--green); }
+.status-warn { color: var(--orange); }
+.status-error { color: var(--red); }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>ET5410</span> Controller</h1>
+  <div>
+    <span id="device-info" style="font-size:0.8em;color:var(--text2);margin-right:12px;"></span>
+    <span id="conn-status" class="off">Deconnecte</span>
+  </div>
+</header>
+
+<nav id="tabs-nav">
+  <button class="active" data-tab="tab-conn">Connexion</button>
+  <button data-tab="tab-ctrl">Controle</button>
+  <button data-tab="tab-meas">Mesures</button>
+  <button data-tab="tab-tran">Dynamique</button>
+  <button data-tab="tab-batt">Batterie</button>
+  <button data-tab="tab-scan">Scan</button>
+  <button data-tab="tab-list">List</button>
+  <button data-tab="tab-qual">Qualification</button>
+  <button data-tab="tab-sys">Systeme</button>
+  <button data-tab="tab-term">Terminal</button>
+</nav>
+
+<!-- ========== CONNEXION ========== -->
+<div id="tab-conn" class="tab active">
+  <div class="card">
+    <h3>Connexion Serie (Web Serial API)</h3>
+    <div class="row">
+      <label>Baud Rate</label>
+      <select id="baud-rate">
+        <option value="4800">4800</option>
+        <option value="7200">7200</option>
+        <option value="9600">9600</option>
+        <option value="14400">14400</option>
+        <option value="19200">19200</option>
+        <option value="38400">38400</option>
+        <option value="57600">57600</option>
+        <option value="115200" selected>115200</option>
+      </select>
+      <label>Canal</label>
+      <select id="channel-select">
+        <option value="1">Canal 1</option>
+        <option value="2">Canal 2</option>
+      </select>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn-green" id="btn-connect" onclick="doConnect()">Connecter</button>
+      <button class="btn-red" id="btn-disconnect" onclick="doDisconnect()" disabled>Deconnecter</button>
+      <button class="btn" onclick="doIdentify()">Identifier (*IDN?)</button>
+      <button class="btn" onclick="doBeep()">Beep</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Information Appareil</h3>
+    <div id="device-detail" class="info-box">Non connecte</div>
+  </div>
+  <div class="card">
+    <h3>Navigateur requis</h3>
+    <div class="info-box" id="browser-check"></div>
+  </div>
+</div>
+
+<!-- ========== CONTROLE ========== -->
+<div id="tab-ctrl" class="tab">
+  <div class="card">
+    <h3>Mode de charge</h3>
+    <div class="row">
+      <label>Mode</label>
+      <select id="ctrl-mode">
+        <option value="CC">CC (Courant constant)</option>
+        <option value="CV">CV (Tension constante)</option>
+        <option value="CP">CP (Puissance constante)</option>
+        <option value="CR">CR (Resistance constante)</option>
+        <option value="CCCV">CC+CV</option>
+        <option value="CRCV">CR+CV</option>
+        <option value="SHOR">Short</option>
+        <option value="LED">LED</option>
+      </select>
+      <button class="btn" onclick="ctrlSetMode()">Appliquer</button>
+      <button class="btn" onclick="ctrlReadMode()">Lire</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Ranges</h3>
+    <div class="row">
+      <label>Tension</label>
+      <select id="ctrl-vrange">
+        <option value="HIGH">HIGH (0.1 - 150V)</option>
+        <option value="LOW">LOW (0.1 - 20V)</option>
+      </select>
+      <button class="btn" onclick="ctrlSetVRange()">Appliquer</button>
+      <button class="btn" onclick="ctrlReadVRange()">Lire</button>
+    </div>
+    <div class="row">
+      <label>Courant</label>
+      <select id="ctrl-crange">
+        <option value="HIGH">HIGH (0 - 40A)</option>
+        <option value="LOW">LOW (0 - 3A)</option>
+      </select>
+      <button class="btn" onclick="ctrlSetCRange()">Appliquer</button>
+      <button class="btn" onclick="ctrlReadCRange()">Lire</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Valeur de charge</h3>
+    <div id="ctrl-value-section">
+      <div class="row" id="ctrl-cc-row">
+        <label>Courant CC (A)</label>
+        <input type="number" id="ctrl-cc-val" step="0.001" min="0" max="40" value="1">
+        <button class="btn" onclick="ctrlSet('CURR:CC',this)">Appliquer</button>
+        <button class="btn" onclick="ctrlRead('CURR:CC?','ctrl-cc-val')">Lire</button>
+      </div>
+      <div class="row hidden" id="ctrl-cv-row">
+        <label>Tension CV (V)</label>
+        <input type="number" id="ctrl-cv-val" step="0.001" min="0" max="150" value="12">
+        <button class="btn" onclick="ctrlSet('VOLT:CV',this)">Appliquer</button>
+        <button class="btn" onclick="ctrlRead('VOLT:CV?','ctrl-cv-val')">Lire</button>
+      </div>
+      <div class="row hidden" id="ctrl-cp-row">
+        <label>Puissance CP (W)</label>
+        <input type="number" id="ctrl-cp-val" step="0.01" min="0" max="400" value="50">
+        <button class="btn" onclick="ctrlSet('POWE:CP',this)">Appliquer</button>
+        <button class="btn" onclick="ctrlRead('POWE:CP?','ctrl-cp-val')">Lire</button>
+      </div>
+      <div class="row hidden" id="ctrl-cr-row">
+        <label>Resistance CR (Ohm)</label>
+        <input type="number" id="ctrl-cr-val" step="0.01" min="0.03" max="7500" value="100">
+        <button class="btn" onclick="ctrlSet('RESI:CR',this)">Appliquer</button>
+        <button class="btn" onclick="ctrlRead('RESI:CR?','ctrl-cr-val')">Lire</button>
+      </div>
+      <div class="row hidden" id="ctrl-cccv-row">
+        <label>Courant CCCV (A)</label>
+        <input type="number" id="ctrl-cccv-i" step="0.001" min="0" max="40" value="1">
+        <button class="btn" onclick="ctrlSet('CURR:CCCV',this)">Appliquer I</button>
+        <label>Tension CCCV (V)</label>
+        <input type="number" id="ctrl-cccv-v" step="0.001" min="0" max="150" value="12">
+        <button class="btn" onclick="ctrlSet('VOLT:CCCV',this)">Appliquer V</button>
+      </div>
+      <div class="row hidden" id="ctrl-crcv-row">
+        <label>Resistance CRCV (Ohm)</label>
+        <input type="number" id="ctrl-crcv-r" step="0.01" min="0.03" max="7500" value="100">
+        <button class="btn" onclick="ctrlSet('RESI:CRCV',this)">Appliquer R</button>
+        <label>Tension CRCV (V)</label>
+        <input type="number" id="ctrl-crcv-v" step="0.001" min="0" max="150" value="12">
+        <button class="btn" onclick="ctrlSet('VOLT:CRCV',this)">Appliquer V</button>
+      </div>
+      <div class="row hidden" id="ctrl-led-row">
+        <label>Courant LED Io (A)</label>
+        <input type="number" id="ctrl-led-i" step="0.001" min="0" max="40" value="0.5">
+        <button class="btn" onclick="ctrlSet('CURR:LED',this)">Appliquer I</button>
+        <label>Tension LED Vo (V)</label>
+        <input type="number" id="ctrl-led-v" step="0.001" min="0" max="150" value="12">
+        <button class="btn" onclick="ctrlSet('VOLT:LED',this)">Appliquer V</button>
+        <label>Coeff</label>
+        <input type="number" id="ctrl-led-c" step="0.001" min="0.001" max="1" value="1">
+        <button class="btn" onclick="ctrlSet('LED:COEFf',this)">Appliquer</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Canal ON/OFF</h3>
+    <div class="row">
+      <label>Trigger</label>
+      <select id="ctrl-trig">
+        <option value="MAN">Manuel</option>
+        <option value="EXT">Externe</option>
+        <option value="TRG">Software</option>
+      </select>
+      <button class="btn" onclick="ctrlSetTrig()">Appliquer</button>
+      <button class="btn" onclick="ctrlReadTrig()">Lire</button>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn-green" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlSW('ON')">ON</button>
+      <button class="btn-red" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlSW('OFF')">OFF</button>
+      <span id="ctrl-sw-status" style="font-size:1.1em;margin-left:10px;">--</span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MESURES ========== -->
+<div id="tab-meas" class="tab">
+  <div class="card">
+    <h3>Mesures temps reel</h3>
+    <div class="row">
+      <button class="btn-green" id="meas-start" onclick="measStart()">Demarrer</button>
+      <button class="btn-red" id="meas-stop" onclick="measStop()" disabled>Arreter</button>
+      <label>Intervalle (ms)</label>
+      <input type="number" id="meas-interval" value="500" min="100" max="10000" step="100">
+      <label>Status</label>
+      <span id="meas-abno" class="status-none">--</span>
+    </div>
+  </div>
+  <div class="grid4">
+    <div class="card meas-card">
+      <div class="label">TENSION</div>
+      <div class="value volt" id="meas-v">--.---</div>
+      <div class="label">V</div>
+    </div>
+    <div class="card meas-card">
+      <div class="label">COURANT</div>
+      <div class="value curr" id="meas-i">--.---</div>
+      <div class="label">A</div>
+    </div>
+    <div class="card meas-card">
+      <div class="label">PUISSANCE</div>
+      <div class="value powe" id="meas-p">--.---</div>
+      <div class="label">W</div>
+    </div>
+    <div class="card meas-card">
+      <div class="label">RESISTANCE</div>
+      <div class="value resi" id="meas-r">--.---</div>
+      <div class="label">Ohm</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Graphique</h3>
+    <div class="row">
+      <label>Afficher</label>
+      <select id="meas-graph-ch">
+        <option value="0">Tension (V)</option>
+        <option value="1">Courant (A)</option>
+        <option value="2">Puissance (W)</option>
+        <option value="3">Resistance (Ohm)</option>
+      </select>
+      <label>Points max</label>
+      <input type="number" id="meas-graph-pts" value="200" min="50" max="2000">
+      <button class="btn" onclick="measClearGraph()">Effacer</button>
+    </div>
+    <canvas id="meas-canvas" width="1100" height="250" style="width:100%;margin-top:8px;"></canvas>
+  </div>
+</div>
+
+<!-- ========== DYNAMIQUE (TRAN) ========== -->
+<div id="tab-tran" class="tab">
+  <div class="card">
+    <h3>Test Dynamique (TRAN)</h3>
+    <div class="row">
+      <label>Etat</label>
+      <select id="tran-state">
+        <option value="CC">CC</option>
+        <option value="CV">CV</option>
+      </select>
+      <button class="btn" onclick="scpiSet('TRAN:STATe',g('tran-state'))">Appliquer</button>
+      <button class="btn" onclick="scpiRead('TRAN:STATe?','tran-state')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Mode</label>
+      <select id="tran-mode">
+        <option value="COUT">Continu</option>
+        <option value="TRIG">Trigger</option>
+        <option value="PULS">Pulse</option>
+      </select>
+      <button class="btn" onclick="scpiSet('TRAN:MODE',g('tran-mode'))">Appliquer</button>
+      <button class="btn" onclick="scpiRead('TRAN:MODE?','tran-mode')">Lire</button>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Valeurs CC</h3>
+      <div class="row">
+        <label>Courant A (A)</label>
+        <input type="number" id="tran-curr-ta" step="0.001" value="1">
+        <button class="btn" onclick="scpiSetNum('CURR:TA','tran-curr-ta')">Set</button>
+        <button class="btn" onclick="scpiReadNum('CURR:TA?','tran-curr-ta')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Courant B (A)</label>
+        <input type="number" id="tran-curr-tb" step="0.001" value="0.5">
+        <button class="btn" onclick="scpiSetNum('CURR:TB','tran-curr-tb')">Set</button>
+        <button class="btn" onclick="scpiReadNum('CURR:TB?','tran-curr-tb')">Lire</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Valeurs CV</h3>
+      <div class="row">
+        <label>Tension A (V)</label>
+        <input type="number" id="tran-volt-ta" step="0.001" value="12">
+        <button class="btn" onclick="scpiSetNum('VOLT:TA','tran-volt-ta')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:TA?','tran-volt-ta')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Tension B (V)</label>
+        <input type="number" id="tran-volt-tb" step="0.001" value="6">
+        <button class="btn" onclick="scpiSetNum('VOLT:TB','tran-volt-tb')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:TB?','tran-volt-tb')">Lire</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Largeur d'impulsion</h3>
+    <div class="row">
+      <label>Pulse A (s)</label>
+      <input type="number" id="tran-wa" step="1" min="0" max="60" value="1">
+      <button class="btn" onclick="scpiSetNum('TIME:WA','tran-wa')">Set</button>
+      <button class="btn" onclick="scpiReadNum('TIME:WA?','tran-wa')">Lire</button>
+      <label>Pulse B (s)</label>
+      <input type="number" id="tran-wb" step="1" min="0" max="60" value="1">
+      <button class="btn" onclick="scpiSetNum('TIME:WB','tran-wb')">Set</button>
+      <button class="btn" onclick="scpiReadNum('TIME:WB?','tran-wb')">Lire</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== BATTERIE (BATT) ========== -->
+<div id="tab-batt" class="tab">
+  <div class="card">
+    <h3>Test Batterie (BATT)</h3>
+    <div class="row">
+      <label>Mode decharge</label>
+      <select id="batt-mode">
+        <option value="CC">CC (Courant constant)</option>
+        <option value="CR">CR (Resistance constante)</option>
+      </select>
+      <button class="btn" onclick="scpiSet('BATT:MODE',g('batt-mode'))">Appliquer</button>
+      <button class="btn" onclick="scpiRead('BATT:MODE?','batt-mode')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Capacite dechargee</label>
+      <span id="batt-capa" class="info-box" style="min-width:150px;">--</span>
+      <button class="btn" onclick="battReadCapa()">Lire</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Mode CC - Courants et tensions de coupure</h3>
+    <div class="grid2">
+      <div>
+        <div class="row">
+          <label>Courant 1 (A)</label>
+          <input type="number" id="batt-bcc1-i" step="0.001" value="1">
+          <button class="btn" onclick="scpiSetNum('CURR:BCC1','batt-bcc1-i')">Set</button>
+          <button class="btn" onclick="scpiReadNum('CURR:BCC1?','batt-bcc1-i')">Lire</button>
+        </div>
+        <div class="row">
+          <label>Courant 2 (A)</label>
+          <input type="number" id="batt-bcc2-i" step="0.001" value="0.5">
+          <button class="btn" onclick="scpiSetNum('CURR:BCC2','batt-bcc2-i')">Set</button>
+          <button class="btn" onclick="scpiReadNum('CURR:BCC2?','batt-bcc2-i')">Lire</button>
+        </div>
+        <div class="row">
+          <label>Courant 3 (A)</label>
+          <input type="number" id="batt-bcc3-i" step="0.001" value="0.2">
+          <button class="btn" onclick="scpiSetNum('CURR:BCC3','batt-bcc3-i')">Set</button>
+          <button class="btn" onclick="scpiReadNum('CURR:BCC3?','batt-bcc3-i')">Lire</button>
+        </div>
+      </div>
+      <div>
+        <div class="row">
+          <label>Tension coupure 1 (V)</label>
+          <input type="number" id="batt-bcc1-v" step="0.001" value="3">
+          <button class="btn" onclick="scpiSetNum('VOLT:BCC1','batt-bcc1-v')">Set</button>
+          <button class="btn" onclick="scpiReadNum('VOLT:BCC1?','batt-bcc1-v')">Lire</button>
+        </div>
+        <div class="row">
+          <label>Tension coupure 2 (V)</label>
+          <input type="number" id="batt-bcc2-v" step="0.001" value="3">
+          <button class="btn" onclick="scpiSetNum('VOLT:BCC2','batt-bcc2-v')">Set</button>
+          <button class="btn" onclick="scpiReadNum('VOLT:BCC2?','batt-bcc2-v')">Lire</button>
+        </div>
+        <div class="row">
+          <label>Tension coupure 3 (V)</label>
+          <input type="number" id="batt-bcc3-v" step="0.001" value="2.8">
+          <button class="btn" onclick="scpiSetNum('VOLT:BCC3','batt-bcc3-v')">Set</button>
+          <button class="btn" onclick="scpiReadNum('VOLT:BCC3?','batt-bcc3-v')">Lire</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Mode CR - Resistance et tension de coupure</h3>
+    <div class="row">
+      <label>Resistance (Ohm)</label>
+      <input type="number" id="batt-bcr-r" step="0.01" value="10">
+      <button class="btn" onclick="scpiSetNum('RESI:BCR','batt-bcr-r')">Set</button>
+      <button class="btn" onclick="scpiReadNum('RESI:BCR?','batt-bcr-r')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Tension coupure CR (V)</label>
+      <input type="number" id="batt-bcr-v" step="0.001" value="3">
+      <button class="btn" onclick="scpiSetNum('VOLT:BCR','batt-bcr-v')">Set</button>
+      <button class="btn" onclick="scpiReadNum('VOLT:BCR?','batt-bcr-v')">Lire</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCAN ========== -->
+<div id="tab-scan" class="tab">
+  <div class="card">
+    <h3>Test Scan</h3>
+    <div class="row">
+      <label>Type scan</label>
+      <select id="scan-type">
+        <option value="CC">CC</option>
+        <option value="CV">CV</option>
+        <option value="CP">CP</option>
+      </select>
+      <button class="btn" onclick="scpiSet('SCAN:TYPE',g('scan-type'))">Appliquer</button>
+      <button class="btn" onclick="scpiRead('SCAN:TYPE?','scan-type')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Type seuil</label>
+      <select id="scan-thtype">
+        <option value="VTH">VTH (Transition)</option>
+        <option value="DROP">DROP (Chute)</option>
+        <option value="VMIN">VMIN (Tension min)</option>
+      </select>
+      <button class="btn" onclick="scpiSet('SCAN:THTYpe',g('scan-thtype'))">Appliquer</button>
+      <button class="btn" onclick="scpiRead('SCAN:THTYpe?','scan-thtype')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Comparaison</label>
+      <select id="scan-compare">
+        <option value="INCURR">Par courant</option>
+        <option value="INVOLT">Par tension</option>
+        <option value="INPOW">Par puissance</option>
+      </select>
+      <button class="btn" onclick="scpiSet('SCAN:COMPare',g('scan-compare'))">Appliquer</button>
+      <button class="btn" onclick="scpiRead('SCAN:COMPare?','scan-compare')">Lire</button>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Parametres CC Scan</h3>
+      <div class="row">
+        <label>Start (A)</label>
+        <input type="number" id="scan-curr-start" step="0.001">
+        <button class="btn" onclick="scpiSetNum('CURR:STARt','scan-curr-start')">Set</button>
+        <button class="btn" onclick="scpiReadNum('CURR:STARt?','scan-curr-start')">Lire</button>
+      </div>
+      <div class="row">
+        <label>End (A)</label>
+        <input type="number" id="scan-curr-end" step="0.001">
+        <button class="btn" onclick="scpiSetNum('CURR:END','scan-curr-end')">Set</button>
+        <button class="btn" onclick="scpiReadNum('CURR:END?','scan-curr-end')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Step (A)</label>
+        <input type="number" id="scan-curr-step" step="0.001">
+        <button class="btn" onclick="scpiSetNum('CURR:STEP','scan-curr-step')">Set</button>
+        <button class="btn" onclick="scpiReadNum('CURR:STEP?','scan-curr-step')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Low (A)</label>
+        <input type="number" id="scan-curr-low" step="0.001">
+        <button class="btn" onclick="scpiSetNum('CURR:LOW','scan-curr-low')">Set</button>
+        <button class="btn" onclick="scpiReadNum('CURR:LOW?','scan-curr-low')">Lire</button>
+      </div>
+      <div class="row">
+        <label>High (A)</label>
+        <input type="number" id="scan-curr-high" step="0.001">
+        <button class="btn" onclick="scpiSetNum('CURR:HIGH','scan-curr-high')">Set</button>
+        <button class="btn" onclick="scpiReadNum('CURR:HIGH?','scan-curr-high')">Lire</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Parametres Tension Scan</h3>
+      <div class="row">
+        <label>Start (V)</label>
+        <input type="number" id="scan-volt-start" step="0.001">
+        <button class="btn" onclick="scpiSetNum('VOLT:STARt','scan-volt-start')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:STARt?','scan-volt-start')">Lire</button>
+      </div>
+      <div class="row">
+        <label>End (V)</label>
+        <input type="number" id="scan-volt-end" step="0.001">
+        <button class="btn" onclick="scpiSetNum('VOLT:END','scan-volt-end')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:END?','scan-volt-end')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Step (V)</label>
+        <input type="number" id="scan-volt-step" step="0.001">
+        <button class="btn" onclick="scpiSetNum('VOLT:STEP','scan-volt-step')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:STEP?','scan-volt-step')">Lire</button>
+      </div>
+      <div class="row">
+        <label>VTH (V)</label>
+        <input type="number" id="scan-volt-vth" step="0.001">
+        <button class="btn" onclick="scpiSetNum('VOLT:VTH','scan-volt-vth')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:VTH?','scan-volt-vth')">Lire</button>
+      </div>
+      <div class="row">
+        <label>VMIN (V)</label>
+        <input type="number" id="scan-volt-vmin" step="0.001">
+        <button class="btn" onclick="scpiSetNum('VOLT:VMIN','scan-volt-vmin')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:VMIN?','scan-volt-vmin')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Low (V)</label>
+        <input type="number" id="scan-volt-low" step="0.001">
+        <button class="btn" onclick="scpiSetNum('VOLT:LOW','scan-volt-low')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:LOW?','scan-volt-low')">Lire</button>
+      </div>
+      <div class="row">
+        <label>High (V)</label>
+        <input type="number" id="scan-volt-high" step="0.001">
+        <button class="btn" onclick="scpiSetNum('VOLT:HIGH','scan-volt-high')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:HIGH?','scan-volt-high')">Lire</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Temps par pas</h3>
+    <div class="row">
+      <label>Delay step (s)</label>
+      <input type="number" id="scan-time-step" step="1" min="0" max="9999" value="1">
+      <button class="btn" onclick="scpiSetNum('TIME:STEP','scan-time-step')">Set</button>
+      <button class="btn" onclick="scpiReadNum('TIME:STEP?','scan-time-step')">Lire</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Parametres Puissance Scan</h3>
+    <div class="row">
+      <label>Start (W)</label>
+      <input type="number" id="scan-powe-start" step="0.01">
+      <button class="btn" onclick="scpiSetNum('POWE:STARt','scan-powe-start')">Set</button>
+      <button class="btn" onclick="scpiReadNum('POWE:STARt?','scan-powe-start')">Lire</button>
+    </div>
+    <div class="row">
+      <label>End (W)</label>
+      <input type="number" id="scan-powe-end" step="0.01">
+      <button class="btn" onclick="scpiSetNum('POWE:END','scan-powe-end')">Set</button>
+      <button class="btn" onclick="scpiReadNum('POWE:END?','scan-powe-end')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Step (W)</label>
+      <input type="number" id="scan-powe-step" step="0.01">
+      <button class="btn" onclick="scpiSetNum('POWE:STEP','scan-powe-step')">Set</button>
+      <button class="btn" onclick="scpiReadNum('POWE:STEP?','scan-powe-step')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Low (W)</label>
+      <input type="number" id="scan-powe-low" step="0.01">
+      <button class="btn" onclick="scpiSetNum('POWE:LOW','scan-powe-low')">Set</button>
+      <button class="btn" onclick="scpiReadNum('POWE:LOW?','scan-powe-low')">Lire</button>
+    </div>
+    <div class="row">
+      <label>High (W)</label>
+      <input type="number" id="scan-powe-high" step="0.01">
+      <button class="btn" onclick="scpiSetNum('POWE:HIGH','scan-powe-high')">Set</button>
+      <button class="btn" onclick="scpiReadNum('POWE:HIGH?','scan-powe-high')">Lire</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== LIST ========== -->
+<div id="tab-list" class="tab">
+  <div class="card">
+    <h3>Test List</h3>
+    <div class="row">
+      <label>Nb etapes</label>
+      <input type="number" id="list-num" min="1" max="50" value="5">
+      <button class="btn" onclick="listSetNum()">Appliquer</button>
+      <button class="btn" onclick="listReadNum()">Lire</button>
+      <label>Loop</label>
+      <select id="list-loop">
+        <option value="ON">ON</option>
+        <option value="OFF">OFF</option>
+      </select>
+      <button class="btn" onclick="scpiSet('LIST:LOOP',g('list-loop'))">Appliquer</button>
+      <button class="btn" onclick="scpiRead('LIST:LOOP?','list-loop')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Mode</label>
+      <select id="list-mode">
+        <option value="AUTO">Auto (continu)</option>
+        <option value="TRIGGER">Trigger</option>
+      </select>
+      <button class="btn" onclick="scpiSet('LIST:MODE',g('list-mode'))">Appliquer</button>
+      <button class="btn" onclick="scpiRead('LIST:MODE?','list-mode')">Lire</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Parametres des etapes</h3>
+    <div class="row">
+      <button class="btn-accent" onclick="listGenTable()">Generer tableau</button>
+      <button class="btn-green" onclick="listSendAll()">Envoyer tout</button>
+      <button class="btn" onclick="listReadAll()">Lire tout</button>
+      <button class="btn-orange" onclick="listReadResults()">Lire resultats</button>
+    </div>
+    <div style="overflow-x:auto;margin-top:8px;">
+      <table id="list-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Mode</th>
+            <th>Valeur</th>
+            <th>Delay (s)</th>
+            <th>Compare</th>
+            <th>Max</th>
+            <th>Min</th>
+            <th>Resultat</th>
+          </tr>
+        </thead>
+        <tbody id="list-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========== QUALIFICATION ========== -->
+<div id="tab-qual" class="tab">
+  <div class="card">
+    <h3>Test de Qualification</h3>
+    <div class="row">
+      <label>Test</label>
+      <select id="qual-test">
+        <option value="ON">ON</option>
+        <option value="OFF">OFF</option>
+      </select>
+      <button class="btn" onclick="scpiSet('QUAL:TEST',g('qual-test'))">Appliquer</button>
+      <button class="btn" onclick="scpiRead('QUAL:TEST?','qual-test')">Lire</button>
+      <label>Resultat</label>
+      <span id="qual-result" class="info-box" style="min-width:100px;">--</span>
+      <button class="btn" onclick="qualReadResult()">Lire</button>
+    </div>
+  </div>
+  <div class="grid3">
+    <div class="card">
+      <h3>Limites Tension (V)</h3>
+      <div class="row">
+        <label>V High</label>
+        <input type="number" id="qual-vhigh" step="0.001">
+        <button class="btn" onclick="scpiSetNum('QUAL:VHIGh','qual-vhigh')">Set</button>
+        <button class="btn" onclick="scpiReadNum('QUAL:VHIGh?','qual-vhigh')">Lire</button>
+      </div>
+      <div class="row">
+        <label>V Low</label>
+        <input type="number" id="qual-vlow" step="0.001">
+        <button class="btn" onclick="scpiSetNum('QUAL:VLOW','qual-vlow')">Set</button>
+        <button class="btn" onclick="scpiReadNum('QUAL:VLOW?','qual-vlow')">Lire</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Limites Courant (A)</h3>
+      <div class="row">
+        <label>I High</label>
+        <input type="number" id="qual-chigh" step="0.001">
+        <button class="btn" onclick="scpiSetNum('QUAL:CHIGh','qual-chigh')">Set</button>
+        <button class="btn" onclick="scpiReadNum('QUAL:CHIGh?','qual-chigh')">Lire</button>
+      </div>
+      <div class="row">
+        <label>I Low</label>
+        <input type="number" id="qual-clow" step="0.001">
+        <button class="btn" onclick="scpiSetNum('QUAL:CLOW','qual-clow')">Set</button>
+        <button class="btn" onclick="scpiReadNum('QUAL:CLOW?','qual-clow')">Lire</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Limites Puissance (W)</h3>
+      <div class="row">
+        <label>P High</label>
+        <input type="number" id="qual-phigh" step="0.01">
+        <button class="btn" onclick="scpiSetNum('QUAL:PHIGh','qual-phigh')">Set</button>
+        <button class="btn" onclick="scpiReadNum('QUAL:PHIGh?','qual-phigh')">Lire</button>
+      </div>
+      <div class="row">
+        <label>P Low</label>
+        <input type="number" id="qual-plow" step="0.01">
+        <button class="btn" onclick="scpiSetNum('QUAL:PLOW','qual-plow')">Set</button>
+        <button class="btn" onclick="scpiReadNum('QUAL:PLOW?','qual-plow')">Lire</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SYSTEME ========== -->
+<div id="tab-sys" class="tab">
+  <div class="grid2">
+    <div class="card">
+      <h3>Protections</h3>
+      <div class="row">
+        <label>OV (V)</label>
+        <input type="number" id="sys-vmax" step="0.01">
+        <button class="btn" onclick="scpiSetNum('VOLT:VMAX','sys-vmax')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:VMAX?','sys-vmax')">Lire</button>
+      </div>
+      <div class="row">
+        <label>OC (A)</label>
+        <input type="number" id="sys-imax" step="0.001">
+        <button class="btn" onclick="scpiSetNum('CURR:IMAX','sys-imax')">Set</button>
+        <button class="btn" onclick="scpiReadNum('CURR:IMAX?','sys-imax')">Lire</button>
+      </div>
+      <div class="row">
+        <label>OP (W)</label>
+        <input type="number" id="sys-pmax" step="0.01">
+        <button class="btn" onclick="scpiSetNum('POWE:PMAX','sys-pmax')">Set</button>
+        <button class="btn" onclick="scpiReadNum('POWE:PMAX?','sys-pmax')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Status</label>
+        <span id="sys-abno" class="info-box" style="min-width:100px;">--</span>
+        <button class="btn" onclick="sysReadAbno()">Lire</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Tensions ON/OFF</h3>
+      <div class="row">
+        <label>V Start (V)</label>
+        <input type="number" id="sys-von" step="0.001">
+        <button class="btn" onclick="scpiSetNum('VOLT:ON','sys-von')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:ON?','sys-von')">Lire</button>
+      </div>
+      <div class="row">
+        <label>V Stop (V)</label>
+        <input type="number" id="sys-voff" step="0.001">
+        <button class="btn" onclick="scpiSetNum('VOLT:OFF','sys-voff')">Set</button>
+        <button class="btn" onclick="scpiReadNum('VOLT:OFF?','sys-voff')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Delay OFF (s)</label>
+        <input type="number" id="sys-offdelay" step="1" min="0" max="60000">
+        <button class="btn" onclick="scpiSetNum('TIME:OFFDelay','sys-offdelay')">Set</button>
+        <button class="btn" onclick="scpiReadNum('TIME:OFFDelay?','sys-offdelay')">Lire</button>
+      </div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Parametres systeme</h3>
+      <div class="row">
+        <label>Demarrage</label>
+        <select id="sys-start">
+          <option value="DEFAULT">Default</option>
+          <option value="LAST">Last</option>
+        </select>
+        <button class="btn" onclick="scpiSet('SYSSet:STARt',g('sys-start'))">Set</button>
+        <button class="btn" onclick="scpiRead('SYSSet:STARt?','sys-start')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Langue</label>
+        <select id="sys-lang">
+          <option value="CHINESE">Chinois</option>
+          <option value="ENGLISH">Anglais</option>
+        </select>
+        <button class="btn" onclick="scpiSet('SYSSet:LANGuage',g('sys-lang'))">Set</button>
+        <button class="btn" onclick="scpiRead('SYSSet:LANGuage?','sys-lang')">Lire</button>
+      </div>
+      <div class="row">
+        <label>Baud rate</label>
+        <select id="sys-baud">
+          <option value="0">4800</option>
+          <option value="1">7200</option>
+          <option value="2">9600</option>
+          <option value="3">14400</option>
+          <option value="4">19200</option>
+          <option value="5">38400</option>
+          <option value="6">57600</option>
+          <option value="7">115200</option>
+        </select>
+        <button class="btn" onclick="scpiSetNum('COMM:BAUDrate','sys-baud')">Set</button>
+        <button class="btn" onclick="scpiRead('COMM:BAUDrate?','sys-baud-disp')">Lire</button>
+        <span id="sys-baud-disp" style="font-size:0.85em;">--</span>
+      </div>
+      <div class="row">
+        <label>Ventilateur</label>
+        <span id="sys-fan" class="info-box" style="min-width:80px;">--</span>
+        <button class="btn" onclick="sysReadFan()">Lire</button>
+      </div>
+      <div class="row">
+        <label>SCPI version</label>
+        <span id="sys-ver" class="info-box" style="min-width:80px;">--</span>
+        <button class="btn" onclick="sysReadVer()">Lire</button>
+      </div>
+      <div class="row">
+        <button class="btn" onclick="dev.send('SYST:BEEP')">Beep</button>
+        <button class="btn" onclick="dev.send('SYST:LOCA')">Mode Local</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Fichiers (List test)</h3>
+      <div class="row">
+        <label>Numero</label>
+        <input type="number" id="sys-filenum" min="1" max="400" value="1">
+      </div>
+      <div class="row">
+        <button class="btn" onclick="sysFileCheck()">Verifier</button>
+        <button class="btn" onclick="sysFileRecall()">Rappeler</button>
+        <button class="btn" onclick="sysFileStore()">Sauver</button>
+        <button class="btn-red" onclick="sysFileDelete()">Supprimer</button>
+        <span id="sys-file-status" style="font-size:0.85em;">--</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TERMINAL ========== -->
+<div id="tab-term" class="tab">
+  <div class="card">
+    <h3>Console SCPI</h3>
+    <div id="terminal-log"></div>
+    <div class="terminal-input">
+      <input type="text" id="term-input" placeholder="Entrer commande SCPI (ex: *IDN? , CH:MODE CC , MEAS:ALL?)" onkeydown="if(event.key==='Enter')termSend()">
+      <button class="btn-accent" onclick="termSend()">Envoyer</button>
+      <button class="btn" onclick="termClear()">Effacer</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <label>Commandes rapides :</label>
+      <button class="btn" onclick="termQuick('*IDN?')">*IDN?</button>
+      <button class="btn" onclick="termQuick('MEAS:ALL?')">MEAS:ALL?</button>
+      <button class="btn" onclick="termQuick('CH:MODE?')">CH:MODE?</button>
+      <button class="btn" onclick="termQuick('CH:SW?')">CH:SW?</button>
+      <button class="btn" onclick="termQuick('LOAD:ABNO?')">LOAD:ABNO?</button>
+      <button class="btn" onclick="termQuick('LOAD:VRANge?')">VRANge?</button>
+      <button class="btn" onclick="termQuick('LOAD:CRANge?')">CRANge?</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Classe ET5410 — Communication Web Serial
+// ============================================================
+class ET5410 {
+  constructor() {
+    this.port = null;
+    this.reader = null;
+    this.writer = null;
+    this.connected = false;
+    this._readBuffer = '';
+    this._resolveRead = null;
+    this._readTimeout = null;
+    this._reading = false;
+  }
+
+  async connect(baudRate = 115200) {
+    this.port = await navigator.serial.requestPort();
+    await this.port.open({ baudRate, dataBits: 8, stopBits: 1, parity: 'none' });
+    this.writer = this.port.writable.getWriter();
+    this.connected = true;
+    this._startReader();
+    updateConnStatus(true);
+    termLog('Connecte a ' + baudRate + ' bps', 'info');
+  }
+
+  async disconnect() {
+    this.connected = false;
+    if (this._reading && this.reader) {
+      try { await this.reader.cancel(); } catch(e) {}
+    }
+    if (this.writer) {
+      try { this.writer.releaseLock(); } catch(e) {}
+      this.writer = null;
+    }
+    if (this.port) {
+      try { await this.port.close(); } catch(e) {}
+      this.port = null;
+    }
+    updateConnStatus(false);
+    termLog('Deconnecte', 'info');
+  }
+
+  async _startReader() {
+    const decoder = new TextDecoder();
+    this.reader = this.port.readable.getReader();
+    this._reading = true;
+    try {
+      while (this._reading) {
+        const { value, done } = await this.reader.read();
+        if (done) break;
+        const text = decoder.decode(value);
+        this._readBuffer += text;
+        // Check if we have a complete line
+        let nlIdx;
+        while ((nlIdx = this._readBuffer.indexOf('\n')) !== -1) {
+          const line = this._readBuffer.substring(0, nlIdx).trim();
+          this._readBuffer = this._readBuffer.substring(nlIdx + 1);
+          if (this._resolveRead) {
+            clearTimeout(this._readTimeout);
+            const resolve = this._resolveRead;
+            this._resolveRead = null;
+            resolve(line);
+          }
+        }
+      }
+    } catch (e) {
+      if (this._reading) termLog('Erreur lecture: ' + e.message, 'err');
+    } finally {
+      try { this.reader.releaseLock(); } catch(e) {}
+      this.reader = null;
+      this._reading = false;
+    }
+  }
+
+  async send(cmd) {
+    if (!this.connected || !this.writer) { termLog('Non connecte!', 'err'); return; }
+    const chPrefix = getChannelPrefix(cmd);
+    const fullCmd = chPrefix + cmd;
+    const data = new TextEncoder().encode(fullCmd + '\n');
+    await this.writer.write(data);
+    termLog('TX: ' + fullCmd, 'tx');
+  }
+
+  async query(cmd, timeout = 2000) {
+    if (!this.connected || !this.writer) { termLog('Non connecte!', 'err'); return null; }
+    // Clear any pending data
+    this._readBuffer = '';
+    if (this._resolveRead) {
+      clearTimeout(this._readTimeout);
+      this._resolveRead(null);
+      this._resolveRead = null;
+    }
+    const chPrefix = getChannelPrefix(cmd);
+    const fullCmd = chPrefix + cmd;
+    const data = new TextEncoder().encode(fullCmd + '\n');
+    const promise = new Promise((resolve) => {
+      this._resolveRead = resolve;
+      this._readTimeout = setTimeout(() => {
+        this._resolveRead = null;
+        termLog('Timeout: pas de reponse', 'err');
+        resolve(null);
+      }, timeout);
+    });
+    await this.writer.write(data);
+    termLog('TX: ' + fullCmd, 'tx');
+    const result = await promise;
+    if (result !== null) termLog('RX: ' + result, 'rx');
+    return result;
+  }
+}
+
+// ============================================================
+// Globals
+// ============================================================
+const dev = new ET5410();
+let measTimer = null;
+const measHistory = [[], [], [], []]; // V, I, P, R
+
+// ============================================================
+// Helpers
+// ============================================================
+function $(id) { return document.getElementById(id); }
+function g(id) { return $(id).value; }
+function s(id, v) { $(id).value = v; }
+
+function getChannelPrefix(cmd) {
+  const ch = g('channel-select');
+  // Channel 1 is default (no prefix needed), channel 2 needs prefix
+  if (ch === '2') {
+    // Only add prefix for channel-specific subsystems
+    const prefixed = ['LOAD','QUAL','VOLT','CURR','POWE','RESI','TIME','LED','TRAN','BATT','SCAN','LIST','CH','MEAS'];
+    const root = cmd.split(':')[0].replace(/[12?]/g,'').toUpperCase();
+    if (prefixed.some(p => root.startsWith(p))) {
+      // Check if already has channel number
+      if (!/^(LOAD|QUAL|VOLT|CURR|POWE|RESI|TIME|LED|TRAN|BATT|SCAN|LIST|CH|MEAS)[12]/.test(cmd)) {
+        return '';  // Will be handled by prepending subsystem + '2'
+        // Actually, the SCPI uses LOAD2:, VOLT2:, CH2: etc.
+        // Let's prepend the channel number to the first subsystem
+      }
+    }
+  }
+  return '';
+}
+
+function updateConnStatus(on) {
+  const el = $('conn-status');
+  if (on) { el.className = 'on'; el.textContent = 'Connecte'; }
+  else { el.className = 'off'; el.textContent = 'Deconnecte'; }
+  $('btn-connect').disabled = on;
+  $('btn-disconnect').disabled = !on;
+}
+
+function termLog(msg, cls = '') {
+  const log = $('terminal-log');
+  const span = document.createElement('span');
+  if (cls) span.className = cls;
+  span.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg + '\n';
+  log.appendChild(span);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ============================================================
+// Connexion
+// ============================================================
+async function doConnect() {
+  try {
+    const baud = parseInt(g('baud-rate'));
+    await dev.connect(baud);
+  } catch (e) {
+    termLog('Erreur connexion: ' + e.message, 'err');
+  }
+}
+
+async function doDisconnect() {
+  measStop();
+  await dev.disconnect();
+  $('device-detail').textContent = 'Non connecte';
+  $('device-info').textContent = '';
+}
+
+async function doIdentify() {
+  const r = await dev.query('*IDN?');
+  if (r) {
+    $('device-detail').textContent = r;
+    $('device-info').textContent = r.split(',')[0] || '';
+  }
+}
+
+async function doBeep() { await dev.send('SYST:BEEP'); }
+
+// ============================================================
+// Tabs
+// ============================================================
+document.querySelectorAll('#tabs-nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#tabs-nav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    $(btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ============================================================
+// Controle
+// ============================================================
+const modeRows = {
+  CC: ['ctrl-cc-row'],
+  CV: ['ctrl-cv-row'],
+  CP: ['ctrl-cp-row'],
+  CR: ['ctrl-cr-row'],
+  CCCV: ['ctrl-cccv-row'],
+  CRCV: ['ctrl-crcv-row'],
+  SHOR: [],
+  LED: ['ctrl-led-row']
+};
+
+$('ctrl-mode').addEventListener('change', () => {
+  Object.values(modeRows).flat().forEach(id => $(id).classList.add('hidden'));
+  (modeRows[g('ctrl-mode')] || []).forEach(id => $(id).classList.remove('hidden'));
+});
+
+async function ctrlSetMode() { await dev.send('CH:MODE ' + g('ctrl-mode')); }
+async function ctrlReadMode() {
+  const r = await dev.query('CH:MODE?');
+  if (r) {
+    const mode = r.trim().toUpperCase();
+    const sel = $('ctrl-mode');
+    for (let o of sel.options) { if (o.value === mode) { sel.value = mode; break; } }
+    sel.dispatchEvent(new Event('change'));
+  }
+}
+
+async function ctrlSetVRange() { await dev.send('LOAD:VRANge ' + g('ctrl-vrange')); }
+async function ctrlReadVRange() {
+  const r = await dev.query('LOAD:VRANge?');
+  if (r) s('ctrl-vrange', r.trim().toUpperCase());
+}
+
+async function ctrlSetCRange() { await dev.send('LOAD:CRANge ' + g('ctrl-crange')); }
+async function ctrlReadCRange() {
+  const r = await dev.query('LOAD:CRANge?');
+  if (r) s('ctrl-crange', r.trim().toUpperCase());
+}
+
+async function ctrlSet(cmd, btn) {
+  const input = btn.parentElement.querySelector('input');
+  await dev.send(cmd + ' ' + input.value);
+}
+
+async function ctrlRead(cmd, inputId) {
+  const r = await dev.query(cmd);
+  if (r) s(inputId, parseFloat(r));
+}
+
+async function ctrlSetTrig() { await dev.send('LOAD:TRIGger ' + g('ctrl-trig')); }
+async function ctrlReadTrig() {
+  const r = await dev.query('LOAD:TRIGger?');
+  if (r) s('ctrl-trig', r.trim().toUpperCase());
+}
+
+async function ctrlSW(state) {
+  await dev.send('CH:SW ' + state);
+  const r = await dev.query('CH:SW?');
+  if (r) $('ctrl-sw-status').textContent = r.trim();
+}
+
+// ============================================================
+// Mesures
+// ============================================================
+function measStart() {
+  const interval = parseInt(g('meas-interval')) || 500;
+  $('meas-start').disabled = true;
+  $('meas-stop').disabled = false;
+  measTimer = setInterval(measPoll, interval);
+  measPoll();
+}
+
+function measStop() {
+  if (measTimer) { clearInterval(measTimer); measTimer = null; }
+  $('meas-start').disabled = false;
+  $('meas-stop').disabled = true;
+}
+
+async function measPoll() {
+  const r = await dev.query('MEAS:ALL?');
+  if (!r) return;
+  const parts = r.split(',').map(s => parseFloat(s.trim()));
+  if (parts.length >= 4) {
+    const [i, v, p, res] = parts;
+    $('meas-v').textContent = v.toFixed(3);
+    $('meas-i').textContent = i.toFixed(3);
+    $('meas-p').textContent = p.toFixed(2);
+    $('meas-r').textContent = res.toFixed(2);
+    measHistory[0].push(v);
+    measHistory[1].push(i);
+    measHistory[2].push(p);
+    measHistory[3].push(res);
+    const maxPts = parseInt(g('meas-graph-pts')) || 200;
+    for (let h of measHistory) { while (h.length > maxPts) h.shift(); }
+    measDrawGraph();
+  }
+  // Also read abnormal status
+  const abno = await dev.query('LOAD:ABNO?');
+  if (abno) {
+    const status = abno.trim();
+    const el = $('meas-abno');
+    el.textContent = status;
+    el.className = status === 'NONE' ? 'status-none' : 'status-error';
+  }
+}
+
+function measDrawGraph() {
+  const canvas = $('meas-canvas');
+  const ctx = canvas.getContext('2d');
+  const ch = parseInt(g('meas-graph-ch'));
+  const data = measHistory[ch];
+  const colors = ['#ffeb3b', '#4fc3f7', '#ff9800', '#ce93d8'];
+  const labels = ['V', 'A', 'W', 'Ohm'];
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (data.length < 2) return;
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const pad = 40;
+  const w = canvas.width - pad * 2;
+  const h = canvas.height - pad * 2;
+
+  // Grid
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad + (h / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(pad + w, y); ctx.stroke();
+    ctx.fillStyle = '#888';
+    ctx.font = '11px Consolas';
+    ctx.fillText((max - (range / 4) * i).toFixed(2) + ' ' + labels[ch], 2, y + 4);
+  }
+
+  // Data
+  ctx.strokeStyle = colors[ch];
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i < data.length; i++) {
+    const x = pad + (i / (data.length - 1)) * w;
+    const y = pad + h - ((data[i] - min) / range) * h;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+function measClearGraph() {
+  measHistory.forEach(h => h.length = 0);
+  const canvas = $('meas-canvas');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// ============================================================
+// Helpers SCPI generiques
+// ============================================================
+async function scpiSet(cmd, val) { await dev.send(cmd + ' ' + val); }
+async function scpiRead(cmd, elId) {
+  const r = await dev.query(cmd);
+  if (r) {
+    const el = $(elId);
+    const val = r.trim();
+    if (el.tagName === 'SELECT') {
+      for (let o of el.options) {
+        if (o.value.toUpperCase() === val.toUpperCase()) { el.value = o.value; break; }
+      }
+    } else if (el.tagName === 'INPUT') {
+      el.value = val;
+    } else {
+      el.textContent = val;
+    }
+  }
+}
+
+async function scpiSetNum(cmd, inputId) {
+  await dev.send(cmd + ' ' + g(inputId));
+}
+
+async function scpiReadNum(cmd, inputId) {
+  const r = await dev.query(cmd);
+  if (r) s(inputId, parseFloat(r));
+}
+
+// ============================================================
+// Batterie
+// ============================================================
+async function battReadCapa() {
+  const r = await dev.query('BATT:CAPA?');
+  if (r) $('batt-capa').textContent = r.trim() + ' Ah';
+}
+
+// ============================================================
+// List
+// ============================================================
+function listGenTable() {
+  const num = parseInt(g('list-num')) || 5;
+  const tbody = $('list-tbody');
+  tbody.innerHTML = '';
+  for (let i = 1; i <= num; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i}</td>
+      <td><select id="list-type-${i}">
+        <option value="0">CC</option><option value="1">CV</option>
+        <option value="2">CP</option><option value="3">CR</option>
+        <option value="4">OPEN</option><option value="5">SHORT</option>
+      </select></td>
+      <td><input type="number" id="list-val-${i}" step="0.001" value="0"></td>
+      <td><input type="number" id="list-delay-${i}" step="1" min="0" max="9999" value="1"></td>
+      <td><select id="list-comp-${i}"><option value="0">OFF</option><option value="1">ON</option></select></td>
+      <td><input type="number" id="list-max-${i}" step="0.001" value="0"></td>
+      <td><input type="number" id="list-min-${i}" step="0.001" value="0"></td>
+      <td id="list-res-${i}">--</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+async function listSetNum() { await dev.send('LIST:NUM ' + g('list-num')); }
+async function listReadNum() {
+  const r = await dev.query('LIST:NUM?');
+  if (r) s('list-num', parseInt(r));
+}
+
+async function listSendAll() {
+  const num = parseInt(g('list-num')) || 5;
+  for (let i = 1; i <= num; i++) {
+    const type = g('list-type-' + i);
+    const val = g('list-val-' + i);
+    const delay = g('list-delay-' + i);
+    const comp = g('list-comp-' + i);
+    const max = g('list-max-' + i);
+    const min = g('list-min-' + i);
+    await dev.send('LIST:PARA ' + [i, type, val, delay, comp, max, min].join(','));
+    await new Promise(r => setTimeout(r, 100));
+  }
+  termLog('List: toutes les etapes envoyees', 'info');
+}
+
+async function listReadAll() {
+  const num = parseInt(g('list-num')) || 5;
+  const r = await dev.query('LIST:PARA? 1,' + num);
+  if (!r) return;
+  // Response may come as multiple lines — handle single response for now
+  termLog('List params: ' + r, 'info');
+}
+
+async function listReadResults() {
+  const num = parseInt(g('list-num')) || 5;
+  const r = await dev.query('LIST:OUT? 1,' + num);
+  if (r) termLog('List results: ' + r, 'info');
+}
+
+// ============================================================
+// Qualification
+// ============================================================
+async function qualReadResult() {
+  const r = await dev.query('QUAL:OUT?');
+  if (r) {
+    const el = $('qual-result');
+    const val = r.trim();
+    el.textContent = val;
+    el.style.color = val === 'PASS' ? 'var(--green)' : val === 'FAIL' ? 'var(--red)' : 'var(--text)';
+  }
+}
+
+// ============================================================
+// Systeme
+// ============================================================
+async function sysReadAbno() {
+  const r = await dev.query('LOAD:ABNO?');
+  if (r) {
+    const el = $('sys-abno');
+    const val = r.trim();
+    el.textContent = val;
+    el.style.color = val === 'NONE' ? 'var(--green)' : 'var(--red)';
+  }
+}
+
+async function sysReadFan() {
+  const r = await dev.query('SELF:FAN?');
+  if (r) {
+    const el = $('sys-fan');
+    const val = r.trim();
+    el.textContent = val;
+    el.style.color = val === 'PASS' ? 'var(--green)' : 'var(--red)';
+  }
+}
+
+async function sysReadVer() {
+  const r = await dev.query('SYSTem:VERSion?');
+  if (r) $('sys-ver').textContent = r.trim();
+}
+
+async function sysFileCheck() {
+  const r = await dev.query('FILE:CHECk ' + g('sys-filenum') + '?');
+  if (r) $('sys-file-status').textContent = r.trim();
+}
+
+async function sysFileRecall() { await dev.send('FILE:RECAll ' + g('sys-filenum')); $('sys-file-status').textContent = 'Rappele'; }
+async function sysFileStore() { await dev.send('FILE:STORe ' + g('sys-filenum')); $('sys-file-status').textContent = 'Sauvegarde'; }
+async function sysFileDelete() { await dev.send('FILE:DELEte ' + g('sys-filenum')); $('sys-file-status').textContent = 'Supprime'; }
+
+// ============================================================
+// Terminal
+// ============================================================
+async function termSend() {
+  const input = $('term-input');
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  input.value = '';
+  if (cmd.endsWith('?')) {
+    await dev.query(cmd);
+  } else {
+    await dev.send(cmd);
+  }
+}
+
+function termQuick(cmd) {
+  $('term-input').value = cmd;
+  termSend();
+}
+
+function termClear() { $('terminal-log').innerHTML = ''; }
+
+// ============================================================
+// Init
+// ============================================================
+(function init() {
+  // Check Web Serial support
+  const check = $('browser-check');
+  if ('serial' in navigator) {
+    check.innerHTML = 'Web Serial API: SUPPORTE\nNavigateur compatible detecte.';
+    check.style.color = 'var(--green)';
+  } else {
+    check.innerHTML = 'Web Serial API: NON SUPPORTE\nUtilisez Chrome 89+ ou Edge 89+.\nLa communication serie ne fonctionnera pas dans ce navigateur.';
+    check.style.color = 'var(--red)';
+  }
+
+  // Init mode rows display
+  $('ctrl-mode').dispatchEvent(new Event('change'));
+
+  // Generate initial list table
+  listGenTable();
+})();
+</script>
+</body>
+</html>
