@@ -1,0 +1,1346 @@
+--- PAGE 1 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+                     Catalog 
+SCPI command syntax - 1 - .................................................................................................................
+1.1 syntax convention -1 -............................................................................................................
+1.2 command delimiter -1 -..........................................................................................................
+ET54 command set - 1 -.......................................................................................................................
+2.1 eee488.2 mandatory order - 2 - ..............................................................................................
+2.2 SCPI instrument requirements - 2 -........................................................................................
+  2.2.1 SYSTem subsystem command set -2 -  ....................................................................
+2.3 ET54 command set -3 -..........................................................................................................
+2.3.1 [LOAD[1|2]] subsystem command set -3 -.................................................................
+2.3.2 [QUAL[1|2]] subsystem command set -4 -.................................................................
+2.3.3 SYSSet subsystem command set -6 -..........................................................................
+2.3.4 COMM subsystem command set -7 - .........................................................................
+2.3.5 [VOLT[1|2]] subsystem command set -7 - .................................................................
+2.3.6 [CURR[1|2]] subsystem command set -12 - ...............................................................
+2.3.7 [POWE[1|2]] subsystem command set -16 -...............................................................
+2.3.8 [RESI[1|2]] subsystem command set -18 - .................................................................
+2.3.9 [TIME[1|2]] subsystem command set -19 - ................................................................
+2.3.10 [LED[1|2]] subsystem command set -20 - ................................................................
+2.3.11 [TRAN[1|2]] subsystem command set -21 - .............................................................
+2.3.12 [BATT[1|2]] subsystem command set -21 -..............................................................
+2.3.13 [SCAN[1|2]] subsystem command set -21 - .............................................................
+2.3.14 [LIST[1|2]] subsystem command set -22 -................................................................
+2.3.15 [CH[1|2]] subsystem command set -24 - ..................................................................
+2.3.16 FILE subsystem command set -25 -..........................................................................
+2.3.17 [MEAS[1|2]] command -26 - ....................................................................................
+
+--- PAGE 2 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+2.3.18 SELF subsystem command set -26 -.........................................................................
+
+--- PAGE 3 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 1 -SCPI command syntax
+1.1Grammar practice
+Take the following two commands as examples to illustrate the meanings of symbols in the 
+SCPI command:
+Case 1: the LOAD [1] | 2: the TRIGger {MAN | EXT | TRG}
+Example 2: TIME: OFFDelay < numeric >
+According to command syntax, most commands (and some parameters) are represented in a 
+mixture of upper and lower case. For shorter program lines, you can send commands in 
+abbreviated format. If you want better program readability, you can send long format commands. 
+For example, in the syntax statement above, TRIGger and TRIG are both acceptable formats.
+The brackets ([]) contain the parameter class for the given command string.Brackets are not 
+sent with the command string.
+Bar (|) separates multiple parameter selections for a given command string. For example, in 
+the  above  command,  {MAN|EXT|TRG}  indicates  that  you  can  specify  a  parameter  in  "MAN", 
+"EXT", "TRG".The bar is not sent with the command string.
+The Angle brackets (< >) in the second example indicate that a value must be specified for 
+the argument in the brackets. For example, in the syntax statement above, the argument in Angle 
+brackets is < the delay value >.Angle brackets are not sent with the command string. You must 
+specify a value for the parameter (for example, "1500").
+Some syntax elements, such as nodes and parameters, are contained within square brackets 
+([]).  This  means  that  the  element  is  optional  and  can  be  omitted.Brackets  are  not  sent  with  the 
+command  string.If  no  value  is  specified  for  the  optional  parameter,  the  instrument  selects  the 
+default  value.  In  the  example  above,  "LOAD[1|2]"  means  that  you  can  refer  to  channel  1  by 
+"LOAD" or "LOAD1". Also, since the entire LOAD node is optional (in square brackets), you can 
+refer to channel 1 by omitting the LOAD node entirely.    This is because channel 1 is the default 
+channel for the LOAD node. To refer to channel 2, on the other hand, use "LOAD2" only on the 
+program line.
+1.2Command separator
+The  colon  (:)  is  used  to  separate  the  command  keyword  from  the  next  level  keyword. 
+Whitespace  must  be  inserted  to  separate  arguments  from  command  keywords.  If  a  command 
+requires more than one argument, the adjacent arguments must be separated by commas, as shown 
+below:
+The VOLT: ON 1
+
+--- PAGE 4 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 2 -In this example, the command specifies that the load setting channel-1 startup voltage is 1V.
+The semicolon (,) is used to separate multiple parameter Settings in the same subsystem.For 
+example, send the following command string:
+LIST:PARA 10,0,3,100,1,3,0.1
+At low current range, set the test mode of step 10 as CC, load value as 2A, delay time as 
+100S, compare the upper and lower limits to open, set the upper limit as 3A, and set the lower 
+limit as 0.1a
+ET54's command set
+The  section  titled  "description"  describes  the  usage  of  the  command  or  the  operations  it 
+performs.
+The  section  titled  "parameters"  describes  the  required  parameters  to  send  the  command. 
+When the parameter is a value or string type within <>, the definition of the parameter, the range 
+of allowable values, the default (factory set) value, and so on are given, and when the parameter is 
+a choice type within {}, the description of each choice is given. 
+The part titled "command syntax" means that the command does not need to answer, and the 
+instrument only needs to perform corresponding actions according to the command. The part titled 
+"query syntax" indicates that the command needs to reply, and the instrument needs to return data 
+to  the  upper  computer.  For  specific  response  content,  please  refer  to  "query  return".  Command 
+syntax and query syntax are both syntax sent to ET54 from the external controller.
+This communication agreement provides that:
+NR1: integer, e.g., 123
+NR2: decimal (fixed point number), e.g. 12.3
+NR3: floating point number, such as: 12.3E+5
+NRf: NR1, NR2 or NR3
+NL: carriage return, integer 10
+     The default baud rate is 115200, which can be modified manually or by instructions in the 
+communication Settings. After the baud rate is modified, set the baud rate of serial port software 
+to  the  corresponding  value,  close  the  serial  port  and  then  open  the  serial  port.  Electronic  load 
+address can be set (485 USES 000-255). 
+Send instruction format, no frame header + instruction content + no checksum +0A (end of frame)
+
+--- PAGE 5 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 3 -RS485 communication send instruction format is
+No frame head + address (m@sxxx) + instruction content + no checksum +0A (frame end) (db-9 1 
+pin A, 2 pin B, 6 pin GNG, load address cannot be set the same, other same as user manual)
+2.1Eee488.2 mandatory order
+The * IDN?
+Description commands are used to query instrument information
+Query syntax *IDN?
+The query returns <model>,<SN>,<software>,<NL>
+Note <model> gives the machine model, namely ET54XX; <SN> gives the serial number; 
+<software> gives the software version number; <hardware> gives the hardware 
+version number.
+* TRG
+Description load Settings trigger source select software as the trigger source, and this command 
+generates a trigger
+Command syntax *TRG
+2.2SCPI instrument request command
+2.2.1 command set of SYSTem subsystem 
+: VERSion?
+Describe the SCPI version number that the query instrument conforms to
+Query syntax SYSTem:VERSion? 
+Query returns 2017.7<NL>
+: BEEP
+
+--- PAGE 6 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 4 -Describe giving off a buzzer.
+Command syntax SYST:BEEP 
+: the LOCA
+Describes  placing  ET54  in  a  local  operation  state.  (the  program-controlled  command  to  set  the 
+instrument to a local or remote operating state is interactive with the key switch of the 
+instrument)
+Command syntax SYST:LOCA 
+2.3ET54 command set
+2.3.1 [LOAD[1|2]] subsystem command set
+     The LOAD subsystem command is primarily used to configure the LOAD Settings for the 
+current channel. You can query the load Settings for the current channel. 
+: the TRIGger
+Set the trigger mode of the trigger source, you can query the current trigger mode of the trigger 
+source.
+Command syntax LOAD:TRIGger{MAN|EXT|TRG}
+parameter 
+describe
+MAN Manual trigger mode
+EXT External trigger mode
+TRG Command trigger mode (software)
+Syntax LOAD:TRIGger?
+The query returns {MAN|EXT|TRG}<NL>
+: VRANge
+Set the voltage range, can query the voltage range.
+LOAD:VRANge{HIGH|LOW}
+parameter 
+describe
+HIGH High range
+
+--- PAGE 7 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 5 -LOW, Low range
+LOAD:VRANge?
+Query returns {HIGH|LOW}<NL>
+: CRANge
+Set the range of current, can query the range of current.
+Command syntax LOAD:CRANge{HIGH|LOW}
+parameter 
+describe
+HIGH High range
+LOW, Low range
+Query syntax LOAD:CRANge?
+Query returns {HIGH|LOW}<NL>
+: the ABNO
+Query whether the current load is abnormal.
+describe 
+describe
+NONE There is no
+OV Over voltage protection
+OC Over current protection
+The OP Overpower protection
+OT Over temperature protection
+LRV Polarity reversal protection
+The UN The actual value does not reach the set 
+value
+FAIL Communication failures
+LOAD:ABNO?
+Query returns {NONE|OV|OC|OP|OT|LRV|UN|FAIL}<NL>
+
+--- PAGE 8 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 6 -2.3.2 [QUAL[1|2]] subsystem command set
+     QUAL subsystem command is mainly used to set up the current channel (CC, CV, CP, CR) 
+mode qualified test. You can query the qualification test Settings for the current channel. 
+: the TEST
+Set the qualified test on or off to check whether the current qualified test is on.
+Command syntax QUAL:TEST{ON|OFF} 
+parameter 
+describe
+ON Qualification test open
+OFF Qualified test closing
+Query syntax QUAL:TEST?
+The query returns {ON|OFF}<NL>
+: OUT
+Check whether the result of qualified test is passed.
+describe
+NONE There is no
+PASS Pass the qualification test
+FAIL Pass the qualified test
+QUAL:OUT?
+The query returns {NONE|PASS|FAIL}<NL>
+: VHIGh
+Set the upper limit voltage value, can query the current upper limit voltage value.
+Command syntax QUAL:VHIGh <numeric>
+parameter 
+The < numeric >
+model5410, 5420, 5411
+rangehighlowhighlow
+
+--- PAGE 9 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 7 -The scope of0.10 ~ 
+150.000.100 ~ 
+19.9990.10 ~ 
+500.000.100 ~ 
+19.999
+The preset 
+value0.100.1000.100.100
+unit V
+QUAL:VHIGh?
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, set the upper limit voltage to 20V
+QUAL:VHIGh 20 (note the middle space);
+Query: QUAL: VHIGh?
+Returns: 20.000
+: VLOW
+Set the lower limit voltage value, can query the current lower limit voltage value.
+Command syntax QUAL:VLOW <numeric>
+parameter 
+The < numeric >
+model5410, 5420, 5411
+rangehighlowhighlow
+The scope of0.10 ~ 
+150.000.100 ~ 
+19.9990.10 ~ 
+500.000.100 ~ 
+19.999
+The preset 
+value0.100.1000.100.100
+unit V
+Query syntax QUAL:VLOW?
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, set the lower limit voltage to 10V
+QUAL:VLOW 10 (note the space in the middle);
+Query: QUAL: VLOW?
+Returns: 10.000
+
+--- PAGE 10 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 8 -: CHIGh
+Set the upper limit current value, can query the current upper limit current value.
+Command syntax QUAL:CHIGh <numeric>
+parameter 
+The < numeric >
+model541054115420
+rangehighlowhighlowhighlow
+The scope of0.00 ~ 
+40.000.000 
+~ 
+3.0000.00 ~ 
+15.000.000 
+~ 
+3.0000.00 ~ 
+20.000.000 
+~ 
+3.000
+The preset 
+value40.003.00015.003.00020.003.000
+unit a.
+QUAL:CHIGh?
+The query returns <NR3><NL>
+Example: in the case of low current range, set the upper current to 3A
+QUAL:CHIGh 3 (notice the space in the middle);
+Query: QUAL: CHIGh?
+Returns: 3.000
+: CLOW
+Set the lower limit current value, can query the current lower limit current value.
+Command syntax QUAL:CLOW <numeric>
+parameter 
+The < numeric >
+model541054115420
+rangehighlowhighlowhighlow
+0.00 ~ 
+40.000.000 
+~ 0.00 ~ 
+15.000.000 
+~ 0.00 ~ 
+20.000.000 
+~ 
+
+--- PAGE 11 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 9 -The scope of 3.0003.0003.000
+The preset 
+value40.003.00015.003.00020.003.000
+unit a.
+QUAL:CLOW?
+The query returns <NR3><NL>
+Example: in the case of low current range, set the lower limit current to 1A
+QUAL:CLOW 1 (note the middle space);
+Query: QUAL: CLOW?
+Returns: 1.000
+: PHIGh
+Set the upper limit power value to query the current upper limit power value.
+Command syntax QUAL:PHIGh <numeric>
+parameter 
+The < numeric >
+model5410, 5411, 5420
+The scope of0.00 ~ 400.00 0.00 ~ 200.00
+The preset 
+value400.00 200.00
+unit W.
+QUAL:PHIGh?
+The query returns <NR3><NL>
+Example: set the upper power value to 200W
+QUAL:PHIGh 200 (note the space in the middle);
+Query: QUAL: PHIGh?
+Returns: 200.00
+: the PLOW
+
+--- PAGE 12 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 10 -Set the lower limit power value to query the current lower limit power value.
+Command syntax QUAL:PLOW <numeric>
+parameter 
+The < numeric >
+model5410, 5411, 5420
+The scope of0.00 ~ 400.00 0.00 ~ 200.00
+The preset 
+value400.00 200.00
+unit W.
+Query syntax QUAL:PLOW?
+The query returns <NR3><NL>
+Example: set the lower limit power value to 100W
+QUAL:PLOW 100 (note the space in the middle);
+Query: QUAL: PLOW?
+Returns: 100.00
+2.3.3 command set of SYSSet subsystem
+SYSSet subsystem command is used to set the relevant contents of the system Settings, you 
+can query the current instrument system Settings.
+: STARt
+Set boot Settings. Check boot Settings.
+Command syntax SYSSet:STARt{DEFAULT|LAST} 
+describe
+The DEFAULT The default value
+LAST (default value) The last value
+Query syntax SYSSet:STARt? 
+Query returns {DEFAULT|LAST}<NL>
+: LANGuage
+
+--- PAGE 13 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 11 -Display language Settings, language Settings can be queried.
+Command syntax SYSSet:LANGuage{CHINESE|ENGLISH} 
+describe
+CHINESE Chinese
+ENGLISH English
+Query syntax SYSSet:LANGuage? 
+The query returns {CHINESE|ENGLISH}<NL>
+2.3.4 command set of COMM subsystem
+The COMM subsystem command set is used to set up remote communication.
+: the BAUDrate
+Set the baud rate.
+Command syntax COMM:BAUDrate <numeric>
+The < numeric >
+Baud rate 0 to 7 corresponds
+(4800  |  7200  |  9600  |  14400  |  19200  | 
+38400 | 57600 | 115200)
+The preset value 0
+Query the syntax COMM:BAUDrate? 
+Query returns {4800|7200|9600|14400|19200|38400|57600|115200}<NL>
+2.3.5 [VOLT[1|2]] subsystem command set
+The VOLT subsystem command set is used to set the voltage.
+parameter 
+The < numeric >
+model5410, 5420, 5411
+rangehighlowhighlow
+The scope of0.10 ~ 
+150.000.100 ~ 
+19.9990.10 ~ 
+500.000.100 ~ 
+19.999
+
+--- PAGE 14 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 12 -The preset 
+value0.100.1000.100.100
+unit V
+: ON
+Set the starting voltage to query the current starting voltage.
+Command syntax VOLT:ON <numeric> 
+Query syntax VOLT:ON? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, set the starting voltage to 1V
+VOLT:ON 1.0 (note the space in the middle);
+Query: the VOLT: ON?
+Returns: 1.000
+: OFF
+Set the closing voltage value, can query the current closing voltage value.
+Command syntax VOLT:OFF <numeric> 
+Query syntax VOLT:OFF? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, set the off voltage to 1V
+VOLT:OFF 1.0 (note the space in the middle);
+Query: the VOLT: OFF?
+Returns: 1.000
+: VMAX
+Set  overvoltage  protection  voltage  value,  can  query  the  current  overvoltage  protection  voltage 
+value.
+Command syntax VOLT:VMAX <numeric> 
+parameter 
+
+--- PAGE 15 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 13 -The < numeric >
+model5410, 5420, 5411
+rangehighlowhighlow
+The scope of0.10 ~ 
+155.000.100 ~ 
+21.0000.10 ~ 
+520.000.100 ~ 
+21.000
+The preset 
+value155.0021.000520.0021.000
+unit V
+Query syntax VOLT:VMAX? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, the overvoltage protection voltage is set to 
+21V
+   VOLT:VMAX 21 (note the space in the middle);
+Query the VOLT, VMAX?
+Returns: 21.000
+: CV
+Set the voltage value of CV mode. Check the voltage value of CV mode.
+Command syntax VOLT:CV <numeric> 
+Query syntax VOLT:CV? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage range, set CV to 15V
+VOLT:CV 15 (note the space in the middle);
+Query: the VOLT: CV?
+Returns: 15.000
+: CCCV
+Set the voltage value of CC+CV mode, and inquire the voltage value of CC+CV mode.
+
+--- PAGE 16 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 14 -Command syntax VOLT:CCCV <numeric> 
+Query syntax VOLT:CCCV? 
+The query returns <NR3><NL>
+Example: set CCCV to 15V in the case of voltage voltage range
+VOLT:CCCV 15 (note the space in the middle);
+Query: the VOLT: CCCV?
+Returns: 15.000
+: CRCV
+Set the voltage value of CR+CV mode, and check the voltage value of CR+CV mode.
+Command syntax VOLT:CRCV <numeric> 
+Query syntax VOLT:CRCV? 
+The query returns <NR3><NL>
+Example: in the case of electric depression range, set CRCV to 15V
+VOLT:CRCV 15 (note the space in the middle);
+Query: the VOLT: CRCV?
+Returns: 15.000
+: TA
+Set the voltage value of dynamic test mode A, and inquire the voltage value of dynamic test mode 
+A.
+Command syntax VOLT:TA<numeric> 
+Query syntax VOLT:TA? 
+The query returns <NR3><NL>
+Example: in the case of electric depression range, the dynamic test A value is set to 15V
+VOLT:TA 15 (note the space in the middle);
+Query: the VOLT: TA?
+Returns: 15.000
+: TB
+
+--- PAGE 17 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 15 -Set the voltage value of dynamic test mode B, and inquire the voltage value of dynamic test mode 
+B.
+Command syntax VOLT:TB<numeric> 
+Query syntax VOLT:TB? 
+The query returns <NR3><NL>
+Example: set the value of dynamic test mode B to 10V in the case of electric low range
+VOLT:TB 10 (note the space in the middle);
+Query: the VOLT: TB?
+Returns: 10.000
+LED:
+Set the voltage value of LED test mode Vo, and inquire the voltage value of LED test mode Vo.
+Command syntax VOLT:LED<numeric> 
+Query syntax VOLT:LED? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage range, set the LED test mode Vo value to 12V
+VOLT:LED 12 (note the space in the middle);
+Query: the VOLT: LED?
+Returns: 12.000
+: BCR
+Set  the  constant  resistance  cut-off  voltage  value  of  battery  test  mode.  Check  the  constant 
+resistance cut-off voltage value of battery test mode.
+The command syntax VOLTage:BCR<numeric> 
+parameter 
+rangehigh low
+The scope of0.10 ~ 120.00 0.100 ~ 19.999
+The preset 
+value0.10 0.100
+
+--- PAGE 18 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 16 -unit V
+Query syntax VOLT:BCR? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, the constant resistance cut-off voltage value 
+of battery test mode is set to 12V
+VOLT:BCR 12 (note the space in the middle);
+Query: the VOLT: BCR?
+Returns: 12.000
+: BCC1
+Set the constant current cut-off voltage value 1 in battery test mode. Check the constant current 
+cut-off voltage value 1 in battery test mode.
+Command syntax VOLT:BCC1<numeric> 
+parameter 
+rangehigh low
+The scope of0.10 ~ 120.00 0.100 ~ 19.999
+The preset 
+value0.10 0.100
+unit V
+Query syntax VOLT:BCC1? 
+The query returns <NR3><NL>
+Example: in the case of the voltage drop range, set the battery test mode constant current cut-off 
+voltage 1 to 18V
+VOLT:BCC1 18 (note the space in the middle);
+Query: the VOLT, BCC1?
+Returns: 18.000
+: BCC2
+Set the constant current cut-off voltage value 2 in battery test mode. Check the constant current 
+cut-off voltage value 2 in battery test mode.
+Command syntax VOLT:BCC2<numeric> 
+
+--- PAGE 19 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 17 -parameter 
+rangehigh low
+The scope of0.10 ~ 120.00 0.100 ~ 19.999
+The preset 
+value0.10 0.100
+unit V
+Query syntax VOLT:BCC2? 
+The query returns <NR3><NL>
+Example: in the case of the voltage drop range, set the battery test mode constant current cut-off 
+voltage 2 to 12V
+VOLT:BCC2 12 (note the space in the middle);
+Query: the VOLT: BCC2?
+Returns: 12.000
+: BCC3
+Set the constant current cut-off voltage value 3 in battery test mode. Check the constant current 
+cut-off voltage value 3 in battery test mode.
+Command syntax VOLT:BCC3<numeric> 
+parameter 
+rangehigh low
+The scope of0.10 ~ 120.00 0.100 ~ 19.999
+The preset 
+value0.10 0.100
+unit V
+Query syntax VOLT:BCC3? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, the constant current cut-off voltage of battery 
+test mode 3 is set to 10V
+VOLT:BCC3 10 (note the space in the middle);
+Inquiry: VOLT:BCC3?
+
+--- PAGE 20 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 18 -Returns: 10.000
+: STARt
+Set the starting voltage value of scanning test, and inquire the starting voltage value of scanning 
+test.
+Command syntax VOLT:STARt<numeric> 
+Query syntax VOLT:STARt? 
+The query returns <NR3><NL>
+Example:  in  the  case  of  electric  voltage  down  range,  the  starting  voltage  value  measured  by 
+scanning test is set to 1V
+VOLT:STARt 1 (note the space in the middle);
+Query: the VOLT: STARt?
+Returns: 1.000
+: the END
+Set the terminal voltage value of scanning test, and inquire the terminal voltage value of scanning 
+test.
+Command syntax VOLT:END<numeric> 
+Query syntax VOLT:END? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, the terminal voltage of scanning test is set to 
+18V
+VOLT:END 18 (note the space in the middle);
+Query: the VOLT: the END?
+Returns: 18.000
+: STEP
+Set the step voltage value of scan test, and inquire the step voltage value of scan test.
+Command syntax VOLT:STEP<numeric> 
+Query syntax VOLT:STEP? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, the step voltage of scanning test is set to 1V
+
+--- PAGE 21 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 19 -VOLT:STEP 1 (notice the space in the middle);
+Query: the VOLT: STEP?
+Returns: 1.000
+: VTH
+Set  the  threshold  of  scan  test  voltage  transition,  and  query  the  threshold  of  scan  test  voltage 
+transition.
+Command syntax VOLT:VTH<numeric> 
+Query syntax VOLT:VTH? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, the threshold of scan test voltage transition is 
+set to 10V
+VOLT:VTH 10 (note the space in the middle);
+Query: the VOLT: VTH?
+Returns: 10.000
+: VMIN
+Set the minimum voltage threshold for scanning test, and query the minimum voltage threshold 
+for scanning test.
+Command syntax VOLT:VMIN<numeric> 
+Query syntax VOLT:VMIN? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, the minimum voltage of scanning test is set 
+to 10V
+VOLT:VMIN 10 (note the space in the middle);
+Query: the VOLT, VMIN?
+Returns: 10.000
+: LOW,
+Set the scan test voltage limit, can query the scan test voltage limit.
+Command syntax VOLT:LOW<numeric> 
+
+--- PAGE 22 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 20 -Query syntax VOLT:LOW? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, scan test scan test voltage lower limit is set to 
+1V
+VOLT:LOW 1 (note the space in the middle);
+Query: the VOLT: LOW?
+Returns: 1.000
+: HIGH
+Set the upper limit of scan test voltage, you can query the upper limit of scan test voltage.
+Command syntax VOLT:HIGH<numeric> 
+Query syntax VOLT:HIGH? 
+The query returns <NR3><NL>
+Example: in the case of electric voltage down range, the upper limit of scanning test voltage is set 
+to 18V
+VOLT:HIGH 18 (note the space in the middle);
+Query: the VOLT: HIGH?
+Returns: 18.000
+2.3.6 [CURR[1|2]] subsystem command set
+  The CURR subsystem command set is used to set current values.
+parameter 
+The < numeric >
+model541054115420
+rangehighlowhighlowhighlow
+The scope of0.00 ~ 
+40.000.000 
+~ 
+3.0000.00 ~ 
+15.000.000 
+~ 
+3.0000.00 ~ 
+20.000.000 
+~ 
+3.000
+
+--- PAGE 23 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 21 -The preset 
+value40.003.00015.003.00020.003.000
+unit a.
+: IMAX
+Set  overcurrent  protection  current  value,  can  query  the  current  overcurrent  protection  current 
+value.
+Command syntax CURR:IMAX <numeric>
+parameter 
+The < numeric >
+model541054115420
+rangehighlowhighlowhighlow
+The scope of0.00 ~ 
+45.000.000 
+~ 
+3.3000.00 ~ 
+16.000.000 
+~ 
+3.3000.00 ~ 
+22.000.000 
+~ 
+3.300
+The preset 
+value45.003.30016.003.30022.003.300
+unit a.
+Query syntax CURR:IMAX?
+The query returns <NR3><NL>
+Example: in the case of low current range, set the overcurrent protection current to 3A
+CURR:IMAX 3 (note the space in the middle);
+Query: CURR: IMAX?
+Returns: 3.000
+: CC
+Set CC mode current value, can query CC mode current value.
+Command syntax CURR:CC <numeric> 
+Query syntax CURR:CC? 
+
+--- PAGE 24 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 22 -The query returns <NR3><NL>
+Example: in the case of low current range, set CC mode current value to 3A
+CURR:CC 15 (note the space in the middle);
+Query: CURR: CC?
+Returns: 3.000
+: CCCV
+Set CC+CV mode current value, can query CC+CV mode current value.
+Command syntax CURR:CCCV <numeric> 
+Query syntax CURR:CCCV? 
+The query returns <NR3><NL>
+Example: in the case of low current range, CCCV mode current value is set to 3A
+CURR:CCCV 15 (notice the middle space);
+Query: CURR: CCCV?
+Returns: 3.000
+: TA
+Set  the  current  value  of  dynamic  manual  mode  A,  and  query  the  current  value  of  dynamic  test 
+mode A.
+Command syntax CURR:TA<numeric> 
+Query syntax CURR:TA? 
+The query returns <NR3><NL>
+Example: in the case of current range, set the value of dynamic test A to 3A
+CURR:TA 3 (notice the space in the middle);
+Query: CURR: TA?
+Returns: 3.000
+: TB
+Set  the  current  value  of  dynamic  manual  mode  B  and  query  the  current  value  of  dynamic  test 
+mode B.
+Command syntax CURR:TB<numeric> 
+
+--- PAGE 25 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 23 -Query syntax CURR:TB? 
+The query returns <NR3><NL>
+Example: in the case of low current range, set the value of dynamic test mode B to 1A
+CURR:TB 1 (note the space in the middle);
+Query: CURR: TB?
+Returns: 1.000
+LED:
+Set LED test mode Io current value, you can query LED test mode Io current value.
+Command syntax CURR:LED<numeric> 
+Query syntax CURR:LED? 
+The query returns <NR3><NL>
+Example: in the case of low current range, the Io value of LED test mode is set to 3A
+CURR:LED 3 (note the space in the middle);
+Query: CURR: LED?
+Returns: 3.000
+: BCC1
+Set  the  constant  current  current  value  1  in  the  battery  test  mode.  Check  the  constant  current 
+current value 1 in the battery test mode.
+Command syntax CURR:BCC1<numeric> 
+Query syntax CURR:BCC1? 
+The query returns <NR3><NL>
+Example:  in  the  case  of  low  current  range,  set  the  battery  test  mode  constant  current  discharge 
+value 1 to 3A
+CURR:BCC1 3 (notice the space in the middle);
+Query: CURR: BCC1?
+Returns: 3.000
+: BCC2
+Set the battery test mode constant current discharge value 2, you can query the battery test mode 
+constant current discharge value 2.
+
+--- PAGE 26 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 24 -Command syntax CURR:BCC2<numeric> 
+Query syntax CURR:BCC2? 
+The query returns <NR3><NL>
+Example:  in  the  case  of  low  current  range,  set  the  battery  test  mode  constant  current  discharge 
+value 2 to 2A
+CURR:BCC2 2 (notice the space in the middle);
+Query: CURR: BCC2?
+Returns: 2.000
+: BCC3
+Set  the  battery  test  mode  constant  current  discharge  value  3,  and  check  the  battery  test  mode 
+constant current discharge value 3.
+Command syntax CURR:BCC3<numeric> 
+Query syntax CURR:BCC3? 
+The query returns <NR3><NL>
+Example:  in  the  case  of  low  current  range,  set  the  battery  test  mode  constant  current  discharge 
+value 3 to 1A
+CURR:BCC3 1 (notice the space in the middle);
+Query: CURR: BCC3?
+Returns: 1.000
+: STARt
+Set the scan test starting current value, can query the scan test starting current value.
+Command syntax CURR:STARt<numeric> 
+Query syntax CURR:STARt? 
+The query returns <NR3><NL>
+Example: in the case of low current range, set the starting current value of scanning test to 1A
+CURR:STARt 1 (notice the space in the middle);
+Query: CURR: STARt?
+
+--- PAGE 27 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 25 -Returns: 1.000
+: the END
+Set the terminal current value of scanning test, and query the terminal current value of scanning 
+test.
+Command syntax CURR:END<numeric> 
+Query syntax CURR:END? 
+The query returns <NR3><NL>
+Example: in the case of low current range, set the terminal current value of scanning test to 3A
+CURR:END 3 (note the space in the middle);
+Query: CURR: the END?
+Returns: 3.000
+: STEP
+Set up scan test step current value, scan test step current value can be inquired.
+Command syntax CURR:STEP<numeric> 
+Query syntax CURR:STEP? 
+The query returns <NR3><NL>
+Example: in the case of low current range, set the step current value of scanning test to 1A
+CURR:STEP 1 (notice the space in the middle);
+Query: CURR: STEP?
+Returns: 1.000
+: LOW,
+Set the scan test current-limit, and inquire the scan test current-limit.
+Command syntax CURR:LOW<numeric> 
+Query syntax CURR:LOW? 
+The query returns <NR3><NL>
+Example: in the case of low current range, the lower limit of scanning test current is set as 0.5a
+CURR:LOW 0.5 (note the space in the middle);
+
+--- PAGE 28 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 26 -Query: CURR: LOW?
+Returns: 0.500
+: HIGH
+Set the upper limit of scan test current, and query the upper limit of scan test current.
+Command syntax CURR:HIGH<numeric> 
+Query syntax CURR:HIGH? 
+The query returns <NR3><NL>
+Example: in the case of low current range, the upper limit of scan test current is set as 3A
+CURR:HIGH 3 (note the space in the middle);
+Query: CURR: HIGH?
+Returns: 3.000
+2.3.7 [POWE[1|2]] subsystem command set
+  The POWE subsystem command set is used to set the power value.
+parameter 
+The < numeric >
+model5410, 5411, 5420
+The scope of0.00 ~ 400.00 0.00 ~ 200.00
+The preset 
+value400.00 200.00
+unit W.
+: PMAX
+Set overpower protection value, can query the current overpower protection value.
+Command syntax POWE:PMAX <numeric> 
+parameter 
+The < numeric >
+model5410, 5411, 5420
+The scope of0.00 ~ 420.00 0.00 ~ 220.00
+
+--- PAGE 29 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 27 -The preset 
+value420.00 220.00
+unit W.
+Query syntax POWE:PMAX? 
+The query returns <NR3><NL>
+Example: set the overpower protection value to 200W
+POWE:PMAX 200 (note the space in the middle);
+Query: POWE: PMAX?
+Returns: 200.00
+CP:
+Set CP mode power value, can query CP mode power value.
+Command syntax POWE:CP <numeric> 
+Query syntax POWE:CP? 
+The query returns <NR3><NL>
+Example: set the power value to 50W
+POWE:CP 50 (note the space in the middle);
+Query: POWE: CP?
+Returns: 50.00
+: STARt
+Set the starting power value of scanning test, and inquire the starting power value of scanning test.
+Command syntax POWE:STARt<numeric> 
+Query syntax POWE:STARt? 
+The query returns <NR3><NL>
+Example: set the power value to 50W
+POWE:STARt 50 (note the space in the middle);
+Query: POWE: STARt?
+Returns: 50.00
+
+--- PAGE 30 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 28 -: the END
+Set the power value of scanning test end point, and query the power value of scanning test end 
+point.
+Command syntax POWE:END<numeric> 
+Query syntax POWE:END? 
+The query returns <NR3><NL>
+Example: set the power value to 200W
+POWE:END 200 (note the space in the middle);
+Query: POWE: the END?
+Returns: 200.00
+: STEP
+Set the step power value of scan test, and inquire the step power value of scan test.
+Command syntax POWE:STEP<numeric> 
+Query syntax POWE:STEP? 
+The query returns <NR3><NL>
+Example: set the power value to 5W
+POWE:STEP5 (note the space in the middle);
+Query: POWE: STEP?
+Returns: 5.00
+: LOW,
+Set the scan test power lower limit, can query the scan test power lower limit.
+Command syntax POWE:LOW<numeric> 
+Query syntax POWE:LOW? 
+The query returns <NR3><NL>
+Example: set the power value to 50W
+POWE:LOW 50 (note the space in the middle);
+Query: POWE: LOW?
+
+--- PAGE 31 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 29 -Returns: 50.00
+: HIGH
+Set the upper limit of scan test power and query the upper limit of scan test power.
+Command syntax POWE:HIGH<numeric> 
+Query syntax POWE:HIGH? 
+The query returns <NR3><NL>
+Example: set the power value to 200W
+POWE:HIGH 200 (note the space in the middle);
+Query: POWE: HIGH?
+Returns: 200.00
+2.3.8 [RESI[1|2]] subsystem command set
+  The RESI subsystem command set is used to set resistance values.
+: CR
+Set the resistance value of CR mode. Check the resistance value of CR mode.
+Command syntax RESI:CR <numeric> 
+parameter 
+The < numeric >
+The scope of 0.03 ~ 7500.00
+The preset value 500
+unit Ω
+Query grammar RESI:CR? 
+The query returns <NR3><NL>
+Example: the resistance value is set to 500 Ω
+RESI:CR 50 (note the space in the middle);
+Query: the rsei: CR?
+Returns: 500.00
+
+--- PAGE 32 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 30 -: CRCV
+Set the resistance value of CR+CV mode. Check the resistance value of CR+CV mode.
+Command syntax RESI:CRCV <numeric> 
+parameter 
+The < numeric >
+The scope of 0.03 ~ 7500.00
+The preset value 500
+unit Ω
+Query grammar RESI:CRCV? 
+The query returns <NR3><NL>
+Example: the resistance value is set to 500 Ω
+RESI:CRCV 50 (note the middle space);
+Query: the rsei: CRCV?
+Returns: 500.00
+: BCR
+Set the resistance value of constant resistance discharge in battery test mode. Check the resistance 
+value of constant resistance discharge in battery test mode.
+Command syntax RESI:BCR<numeric> 
+parameter 
+The < numeric >
+The scope of 0.03 ~ 4500.00
+The preset value 500
+unit Ω
+Query syntax RESI:BCR? 
+The query returns <NR3><NL>
+Example: the resistance value is set to 500 Ω
+RESI:BCR 50 (note the middle space);
+
+--- PAGE 33 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 31 -Query: the rsei: BCR?
+Returns: 500.00
+2.3.9 [TIME[1|2]] subsystem command set
+The  command  set  of  the  TIME  subsystem  is  used  to  set  the  TIME  value  of  delayed 
+shutdown, dynamic test and scan test.
+: OFFDelay
+Set the delay shutdown time to query the current delay shutdown time value.
+Command syntax TIME:OFFDelay <numeric> 
+parameter 
+The < numeric >
+The scope of 0 ~ 60000
+The preset value 10
+unit s.
+Query syntax TIME:OFFDelay? 
+The query returns <NR1><NL>
+Example: set the delay shutdown time to 1500S
+TIME:OFFDelay 1500 (note the space in the middle);
+Query: TIME: OFFDelay?
+Returns: 1500
+: WA
+Set the dynamic test pulse width A value.
+Command syntax TIME:WA <numeric>
+parameter 
+The < numeric >
+The scope of 0 ~ 60
+The preset value 1
+
+--- PAGE 34 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 32 -unit s.
+Query syntax TIME:WA?
+The query returns <NR1><NL>
+Example: set the delay shutdown time to 15S
+TIME:WIDThA 15 (notice the space in the middle);
+Query: TIME: WIDThA?
+Returns: 15000
+: WB
+Set the dynamic test pulse width B value.
+Command syntax TIME:WB <numeric>
+parameter 
+The < numeric >
+The scope of 0 ~ 60
+The preset value 1
+unit s.
+Query syntax TIME:WB?
+The query returns <NR1><NL>
+Example: set the delay shutdown time to 15S
+TIME:WB 15 (notice the middle space);
+Query: TIME: WB?
+Returns: 15000
+: STEP
+Set the scan test step delay value.
+Command syntax TIME:STEP<numeric>
+parameter 
+The < numeric >
+The scope of 0 ~ 9999
+
+--- PAGE 35 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 33 -The preset value 1
+unit s.
+Query syntax TIME:STEP?
+The query returns <NR1><NL>
+Example: set the delay shutdown time to 15S
+TIME:STEP 15 (notice the space in the middle);
+Query: TIME: STEP?
+Returns: 15
+2.3.10 [LED[1|2]] subsystem command set
+The LED subsystem command set is used to set the LED COEFF coefficient.
+: COEFf
+Set the LED test mode coefficient value, you can query the LED test mode coefficient value.
+Command syntax LED:COEFf <numeric> 
+parameter 
+The < numeric >
+The scope of 0.001 ~ 1.000
+The preset value 1.00
+Query syntax LED:COEFf? 
+The query returns <NR3><NL>
+Example: set the coefficient value to 0.5
+LED:COEFf 0.5 (note the space in the middle);
+Query: LED:COEFf?
+Returns: 0.500
+2.3.11 [TRAN[1|2]] subsystem command set
+The TRAN subsystem command set is used to set the dynamic state and dynamic mode of 
+dynamic test.
+: STATe
+Set the dynamic state of dynamic test, can query the dynamic state of dynamic test.
+Command syntax TRAN:STATe{CC|CV} 
+
+--- PAGE 36 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 34 -describe
+CC(default value) The dynamic carrier state is CC
+CV The dynamic loading state is CV
+Query syntax TRAN:STATe? 
+Query returns {CC|CV}<NL>
+: MODE
+Set dynamic test dynamic mode, can query dynamic test dynamic mode.
+Command syntax TRAN:MODE{COUT|TRIG|PULS} 
+describe
+COUT(default value) Dynamic mode is continuous
+TRIG The dynamic mode is trigger
+PULS The dynamic mode is pulse
+Query syntax TRAN:MODE? 
+Query returns {COUT|TRIG|PULS}<NL>
+2.3.12 [BATT[1|2]] subsystem command set
+The BATT subsystem command set is used to set the discharge mode of the battery test.
+: MODE
+Set the discharge mode of the battery test, and inquire the dynamic state of the dynamic test.
+Command syntax BATT:MODE{CC|CR} 
+describe
+CC(default value) The discharge mode is CC
+CR The discharge mode is CR
+Query syntax BATT:MODE? 
+Query returns {CC|CR}<NL>
+: CAPA
+
+--- PAGE 37 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 35 -Describe query battery discharge capacity.
+Query syntax BATT:CAPA? 
+The query returns <NR3><NL>
+2.3.13 [SCAN[1|2]] subsystem command set
+The  SCAN  subsystem  command  set  is  used  to  set  the  SCAN  type,  threshold  type,  and 
+comparison type of the SCAN test.
+: TYPE
+Set scan type of scan test, scan type of scan test can be queried.
+Command syntax SCAN:TYPE{CC|CV|CP} 
+describe
+CC(default value) The scan type is CC
+CV The scan type is CV
+The CP The scan type is CP
+Query syntax BATT:MODE? 
+Query returns {CC|CV|CP}<NL>
+: THTYpe
+Set the threshold type of the scan test to query the threshold type of the scan test.
+Command syntax SCAN:THTYpe{VTH|DROP|VMIN} 
+describe
+VTH(default value) The threshold type is voltage 
+transition
+The DROP The threshold type is drop
+VMIN The  threshold  type  is  the  minimum 
+voltage
+Query syntax BATT:THTYpe? 
+Query returns {VTH|DROP|VMIN}<NL> 
+: COMPare
+
+--- PAGE 38 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 36 -Sets the comparison type of the scan test to query the comparison type of the scan test.
+Command syntax SCAN: COMPare {INCURR | INVOLT | INPOW} 
+describe
+INCURR (default) The comparison type is by current
+INVOLT The comparison type is by voltage
+INPOW The comparison type is by power
+Query syntax BATT:COMPare? 
+Query returns {INCURR | INVOLT | INPOW} < NL > 
+2.3.14 [LIST[1|2]] subsystem command set
+The LIST subsystem command set is used to set the LIST test test steps, loop switches, and 
+step modes.
+: LOOP
+Set to open or close the loop to query whether the current test has the loop open.
+LIST:LOOP{ON|OFF} 
+parameter 
+describe
+ON Open loop
+OFF Loop closed
+LIST:LOOP? 
+The query returns {ON|OFF}<NL>
+: MODE
+Set list test step mode to query the current test step mode.
+LIST:MODE{AUTO|TRIGGER} 
+parameter 
+describe
+AUTO Step mode is continuous
+The TRIGGER Step mode is trigger
+
+--- PAGE 39 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 37 -LIST:MODE? 
+Query returns {AUTO|TRIGGER} <NL>
+: the NUM
+Set the number of test steps in the list to query the current number of test steps.
+The command syntax LIST:NUM <numeric> 
+parameter 
+The < numeric >
+The scope of 1 ~ 50
+The preset value 5
+Query syntax LIST:NUM? 
+The query returns <NR1><NL>
+Example: set test steps to 10
+LIST:NUM 10 (notice the space in the middle);
+Query: LIST:NUM?
+Returns: 10
+: PARAmeter
+Sets the parameter for the specified number of steps.
+Command syntax LIST:PARA <secnum>,<type>,<value>,< delay>,<compar>,< Max >,<min> 
+ 
+Set the number of steps < secnum> 
+The scope of 1 ~ 50
+The preset value 1
+Set the test mode corresponding to the number of steps.
+The type describe
+0 The test mode is CC
+1 The test mode is CV
+
+--- PAGE 40 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 38 -2 The test mode is CP
+3 The test mode is CR
+4 Test mode open circuit
+5 The test mode is short circuit
+Sets the upper and lower limits for the number of steps to turn on or off
+The COMPare describe
+1 Open loop
+0 Loop closed
+Set the corresponding step delay value.
+DELAy The < numeric >
+The scope of 0 ~ 9999
+The preset value 1
+unit s.
+VALUe, MAX, MIN
+     Set the load size value, upper limit and lower limit of the specified edit step number. You 
+can query that the current specified edit step number is load value, upper limit and lower limit. 
+     The  range  of  setting  values  was  determined  according  to  the  test  mode  of  specifying  the 
+number  of  editing  steps.  CV  and  OPEN  belonged  to  the  voltage  value  range,  CC  and  SHORT 
+belonged to the current value range, CR to the resistance value range,CP to the power value range. 
+See the command VOLTage range of 2.3.5VOLTage subsystem for the VOLTage value.
+CURRent value see 2.3.6CURRent subsystem command CURRent value range.
+See 2.3.7POWEr subsystem command POWEr range.
+The resistance value is shown in the command resistance range of 2.3.8RESIstancee 
+subsystem.
+Example: at low current range, set the test mode of step 5 to CC, load value to 2A, delay time to 
+100S, open the upper and lower limits, set the upper limit to 3A, and set the lower limit to 0.1a
+LIST:PARA 5,0,3,100,1,3,0.1
+
+--- PAGE 41 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 39 -Query list set parameters to get the step to step Settings parameters.
+LIST:PARA? < start >, < end >
+ 
+< start >, < end >
+The scope of 1 ~ 50
+The preset value 1
+Example: gets the set parameters for the 2 groups starting from step 1.
+Query: the LIST: PARA?1, 2,
+return
+1,0,3,100,1,3,0.1
+2,0,3,100,0,3,0.1
+: OUT
+After the query list test is completed, the list result specifies the parameter of the number of steps.
+LIST:OUT? < start >, < end >
+Return  the  corresponding  <  secnum  >,  <  type  >,  <  value  >,  <  delay  >,  <  Max  >,  <  min  >,  < 
+pass_fail >
+pass_fail describe
+0 The  current  number  of  steps  is  not 
+open
+1 PASS
+2 FAIL
+Example: gets the list result parameters for steps 1 through 2.
+Query: the LIST: OUT?1, 2,
+return
+1,0,3,100,3,0.1, 1
+2,0,3,100,3,0.1, 0
+
+--- PAGE 42 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 40 -2.3.15 [CH[1|2]] subsystem command set
+The  CH  subsystem  command  set  is  mainly  used  to  set  the  mode  and  open  or  close  the 
+channel.
+: MODE
+Describes setting channel mode
+CH:MODE{CC|CV|CP|CR|CCCV|CRCV|TRAN|LIST|SCAN|SHOR|BATT |0 LED} 
+Query syntax CH:MODE? 
+Query returns {CC|CV|CP|CR|CCCV|CRCV|TRAN|LIST|SCAN|SHOR |0 BATT |1 LED}<NL>
+: SW
+Description mode ON and OFF (ON|OFF)
+Command syntax CH:SW{ON|OFF} 
+parameter 
+describe
+ONClose  the  current  mode  (channel),  the  mode  (channel)  is  closed 
+after the mode switch
+OFFOpen current mode (channel)
+CH:SW? 
+The query returns {ON|OFF}<NL>
+2.3.16 command set of FILE subsystem
+The FILE subsystem command set is used for some file-related operations.
+: CHECk
+Description checks if the number exists in the file. 
+Query the syntax FILE:CHECk <numeric>? 
+parameter 
+The < numeric >
+Channel 1 list test data save range 1-100
+
+--- PAGE 43 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 41 -Channel 1 list test result save range 101 ~ 200
+Channel 2 list test data saving range 201 ~ 300
+Channel 2 list test result save range 301 ~ 400
+describe
+NO There is no file
+YES There are files
+Query returns {NO|YES}<NL>
+: RECAll
+Describes the invocation file.
+The command syntax FILE:RECAll<numeric> 
+The < numeric >
+Channel 1 list test data save range 1-100
+Channel 1 list test result save range 101 ~ 200
+Channel 2 list test data saving range 201 ~ 300
+Channel 2 list test result save range 301 ~ 400
+: DELEte
+Describes deleting files.
+The command syntax FILE:DELEte<numeric> 
+The < numeric >
+Channel 1 list test data save range 1-100
+Channel 1 list test result save range 101 ~ 200
+Channel 2 list test data saving range 201 ~ 300
+Channel 2 list test result save range 301 ~ 400
+: STORe
+
+--- PAGE 44 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 42 -Describes the save file.
+The command syntax FILE:STORe<numeric> 
+The < numeric >
+Channel 1 list test data save range 1-100
+Channel 1 list test result save range 101 ~ 200
+Channel 2 list test data saving range 201 ~ 300
+Channel 2 list test result save range 301 ~ 400
+Store the file in file address n, save it as FSN
+2.3.17 [MEAS | 2 [1]] command
+Describe the current value of the query measurement.
+Query syntax MEAS:CURRent? 
+The query returns <NR3><NL>
+Describe the voltage value measured by the query.
+"MEAS:VOLTage? 
+The query returns <NR3><NL>
+Describe the power value measured by the query.
+Query syntax MEAS:POWer? 
+The query returns <NR3><NL>
+Describes the resistance value measured by the query.
+Query syntax MEAS:RESIstance? 
+The query returns <NR3><NL>
+Describe the input values (current, voltage, power, resistance) of the query measurement.
+Query syntax MEAS:ALL? 
+The query returns <NR3>, <NR3>, <NR3>, <NR3><NL>
+2.3.18 SELF subsystem command set
+: FAN
+Describe the operation of the query fan.
+
+--- PAGE 45 ---
+ET54Programmable DC LOAD SCPI PROTOCOL                     Hangzhou zhongchuang electron co ltd 
+- 43 -describe
+FAIL Fan fault
+PASS The fan is normal
+SELF:FAN? 
+The query returns <FAIL|PASS><NL>
+

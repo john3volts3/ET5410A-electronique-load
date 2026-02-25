@@ -88,6 +88,18 @@ nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
   align-items: center;
   margin-bottom: 8px;
 }
+.radio-grid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 6px 18px;
+  margin: 6px 0;
+}
+.radio-label {
+  font-size: 0.85em;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
 label {
   font-size: 0.85em;
   color: var(--text2);
@@ -281,14 +293,9 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <div class="row">
       <label>Baud Rate</label>
       <select id="baud-rate">
-        <option value="4800">4800</option>
         <option value="7200">7200</option>
         <option value="9600">9600</option>
-        <option value="14400">14400</option>
-        <option value="19200">19200</option>
-        <option value="38400">38400</option>
-        <option value="57600">57600</option>
-        <option value="115200" selected>115200</option>
+        <option value="14400" selected>14400</option>
       </select>
       <label>Canal</label>
       <select id="channel-select">
@@ -317,18 +324,21 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
 <div id="tab-ctrl" class="tab">
   <div class="card">
     <h3>Mode de charge</h3>
-    <div class="row">
-      <label>Mode</label>
-      <select id="ctrl-mode">
-        <option value="CC">CC (Courant constant)</option>
-        <option value="CV">CV (Tension constante)</option>
-        <option value="CP">CP (Puissance constante)</option>
-        <option value="CR">CR (Resistance constante)</option>
-        <option value="CCCV">CC+CV</option>
-        <option value="CRCV">CR+CV</option>
-        <option value="SHOR">Short</option>
-        <option value="LED">LED</option>
-      </select>
+    <div class="radio-grid">
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CC" checked> 01. CC</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CV"> 02. CV</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CP"> 03. CP</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CR"> 04. CR</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CCCV"> 05. CC+CV</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CRCV"> 06. CR+CV</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="TRAN"> 07. Tran</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="LIST"> 08. List</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="SCAN"> 09. Scan</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="SHOR"> 10. Short</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="BATT"> 11. Battery</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="LED"> 12. Led</label>
+    </div>
+    <div class="row" style="margin-top:8px;">
       <button class="btn" onclick="ctrlSetMode()">Appliquer</button>
       <button class="btn" onclick="ctrlReadMode()">Lire</button>
     </div>
@@ -572,6 +582,11 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <span id="batt-capa" class="info-box" style="min-width:150px;">--</span>
       <button class="btn" onclick="battReadCapa()">Lire</button>
     </div>
+    <div class="row">
+      <label>Energie dechargee</label>
+      <span id="batt-ener" class="info-box" style="min-width:150px;">--</span>
+      <button class="btn" onclick="battReadEner()">Lire</button>
+    </div>
   </div>
   <div class="card">
     <h3>Mode CC - Courants et tensions de coupure</h3>
@@ -631,6 +646,27 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <input type="number" id="batt-bcr-v" step="0.001" value="3">
       <button class="btn" onclick="scpiSetNum('VOLT:BCR','batt-bcr-v')">Set</button>
       <button class="btn" onclick="scpiReadNum('VOLT:BCR?','batt-bcr-v')">Lire</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Conditions de coupure (Cutoff)</h3>
+    <div class="row">
+      <label>Cutoff Capacite (Ah)</label>
+      <input type="number" id="batt-btc" step="0.01" min="0" value="0">
+      <button class="btn" onclick="scpiSetNum('BATT:BTC','batt-btc')">Set</button>
+      <button class="btn" onclick="scpiReadNum('BATT:BTC?','batt-btc')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Cutoff Energie (Wh)</label>
+      <input type="number" id="batt-bte" step="0.01" min="0" value="0">
+      <button class="btn" onclick="scpiSetNum('BATT:BTE','batt-bte')">Set</button>
+      <button class="btn" onclick="scpiReadNum('BATT:BTE?','batt-bte')">Lire</button>
+    </div>
+    <div class="row">
+      <label>Cutoff Temps (s)</label>
+      <input type="number" id="batt-btt" step="1" min="0" value="0">
+      <button class="btn" onclick="scpiSetNum('TIME:BTT','batt-btt')">Set</button>
+      <button class="btn" onclick="scpiReadNum('TIME:BTT?','batt-btt')">Lire</button>
     </div>
   </div>
 </div>
@@ -990,14 +1026,9 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <div class="row">
         <label>Baud rate</label>
         <select id="sys-baud">
-          <option value="0">4800</option>
           <option value="1">7200</option>
           <option value="2">9600</option>
-          <option value="3">14400</option>
-          <option value="4">19200</option>
-          <option value="5">38400</option>
-          <option value="6">57600</option>
-          <option value="7">115200</option>
+          <option value="3" selected>14400</option>
         </select>
         <button class="btn" onclick="scpiSetNum('COMM:BAUDrate','sys-baud')">Set</button>
         <button class="btn" onclick="scpiRead('COMM:BAUDrate?','sys-baud-disp')">Lire</button>
@@ -1234,6 +1265,7 @@ async function doConnect() {
 
 async function doDisconnect() {
   measStop();
+  if (dev.connected) await dev.send('SYST:LOCA');
   await dev.disconnect();
   $('device-detail').textContent = 'Non connecte';
   $('device-info').textContent = '';
@@ -1271,23 +1303,39 @@ const modeRows = {
   CR: ['ctrl-cr-row'],
   CCCV: ['ctrl-cccv-row'],
   CRCV: ['ctrl-crcv-row'],
+  TRAN: [],
+  LIST: [],
+  SCAN: [],
   SHOR: [],
+  BATT: [],
   LED: ['ctrl-led-row']
 };
 
-$('ctrl-mode').addEventListener('change', () => {
+function getCtrlMode() {
+  const r = document.querySelector('input[name="ctrl-mode"]:checked');
+  return r ? r.value : 'CC';
+}
+
+function setCtrlMode(mode) {
+  const r = document.querySelector('input[name="ctrl-mode"][value="' + mode + '"]');
+  if (r) { r.checked = true; updateCtrlModeRows(); }
+}
+
+function updateCtrlModeRows() {
   Object.values(modeRows).flat().forEach(id => $(id).classList.add('hidden'));
-  (modeRows[g('ctrl-mode')] || []).forEach(id => $(id).classList.remove('hidden'));
+  (modeRows[getCtrlMode()] || []).forEach(id => $(id).classList.remove('hidden'));
+}
+
+document.querySelectorAll('input[name="ctrl-mode"]').forEach(r => {
+  r.addEventListener('change', updateCtrlModeRows);
 });
 
-async function ctrlSetMode() { await dev.send('CH:MODE ' + g('ctrl-mode')); }
+async function ctrlSetMode() { await dev.send('CH:MODE ' + getCtrlMode()); }
 async function ctrlReadMode() {
   const r = await dev.query('CH:MODE?');
   if (r) {
-    const mode = r.trim().toUpperCase();
-    const sel = $('ctrl-mode');
-    for (let o of sel.options) { if (o.value === mode) { sel.value = mode; break; } }
-    sel.dispatchEvent(new Event('change'));
+    const mode = stripPrefix(r).toUpperCase();
+    setCtrlMode(mode);
   }
 }
 
@@ -1310,7 +1358,7 @@ async function ctrlSet(cmd, btn) {
 
 async function ctrlRead(cmd, inputId) {
   const r = await dev.query(cmd);
-  if (r) s(inputId, parseFloat(r));
+  if (r) s(inputId, stripPrefix(r));
 }
 
 async function ctrlSetTrig() { await dev.send('LOAD:TRIGger ' + g('ctrl-trig')); }
@@ -1345,7 +1393,8 @@ function measStop() {
 async function measPoll() {
   const r = await dev.query('MEAS:ALL?');
   if (!r) return;
-  const parts = r.split(',').map(s => parseFloat(s.trim()));
+  const cleaned = r.replace(/^[A-Za-z]\s+/, '');
+  const parts = cleaned.trim().split(/\s+/).map(s => parseFloat(s));
   if (parts.length >= 4) {
     const [i, v, p, res] = parts;
     $('meas-v').textContent = v.toFixed(3);
@@ -1420,12 +1469,18 @@ function measClearGraph() {
 // ============================================================
 // Helpers SCPI generiques
 // ============================================================
+function stripPrefix(r) {
+  const s = r.trim();
+  if (/^R\s*[-.\d]/.test(s)) return s.substring(1).trim();
+  return s;
+}
+
 async function scpiSet(cmd, val) { await dev.send(cmd + ' ' + val); }
 async function scpiRead(cmd, elId) {
   const r = await dev.query(cmd);
   if (r) {
     const el = $(elId);
-    const val = r.trim();
+    const val = stripPrefix(r);
     if (el.tagName === 'SELECT') {
       for (let o of el.options) {
         if (o.value.toUpperCase() === val.toUpperCase()) { el.value = o.value; break; }
@@ -1444,7 +1499,7 @@ async function scpiSetNum(cmd, inputId) {
 
 async function scpiReadNum(cmd, inputId) {
   const r = await dev.query(cmd);
-  if (r) s(inputId, parseFloat(r));
+  if (r) s(inputId, stripPrefix(r));
 }
 
 // ============================================================
@@ -1452,7 +1507,12 @@ async function scpiReadNum(cmd, inputId) {
 // ============================================================
 async function battReadCapa() {
   const r = await dev.query('BATT:CAPA?');
-  if (r) $('batt-capa').textContent = r.trim() + ' Ah';
+  if (r) $('batt-capa').textContent = stripPrefix(r) + ' Ah';
+}
+
+async function battReadEner() {
+  const r = await dev.query('BATT:ENER?');
+  if (r) $('batt-ener').textContent = stripPrefix(r) + ' Wh';
 }
 
 // ============================================================
