@@ -306,6 +306,7 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <button class="btn-green" id="btn-connect" onclick="doConnect()">Connecter</button>
       <button class="btn-red" id="btn-disconnect" onclick="doDisconnect()" disabled>Deconnecter</button>
       <button class="btn" onclick="doIdentify()">Identifier (*IDN?)</button>
+      <button class="btn" onclick="refreshAll()">Lire tout</button>
       <button class="btn" onclick="doBeep()">Beep</button>
     </div>
   </div>
@@ -324,22 +325,18 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
   <div class="card">
     <h3>Mode de charge</h3>
     <div class="radio-grid">
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CC" checked> 01. CC</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CV"> 02. CV</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CP"> 03. CP</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CR"> 04. CR</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CCCV"> 05. CC+CV</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CRCV"> 06. CR+CV</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="TRAN"> 07. Tran</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="LIST"> 08. List</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="SCAN"> 09. Scan</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="SHOR"> 10. Short</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="BATT"> 11. Battery</label>
-      <label class="radio-label"><input type="radio" name="ctrl-mode" value="LED"> 12. Led</label>
-    </div>
-    <div class="row" style="margin-top:8px;">
-      <button class="btn" onclick="ctrlSetMode()">Appliquer</button>
-      <button class="btn" onclick="ctrlReadMode()">Lire</button>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CC" checked> CC</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CV"> CV</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CP"> CP</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CR"> CR</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CCCV"> CC+CV</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="CRCV"> CR+CV</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="TRAN"> Tran</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="LIST"> List</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="SCAN"> Scan</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="SHOR"> Short</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="BATT"> Battery</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="LED"> Led</label>
     </div>
   </div>
   <div class="card" id="ctrl-value-card">
@@ -347,54 +344,39 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <div id="ctrl-value-section">
       <div class="row" id="ctrl-cc-row">
         <label>Courant CC (A)</label>
-        <input type="number" id="ctrl-cc-val" step="0.001" min="0" max="40" value="1">
-        <button class="btn" onclick="ctrlSet('CURR:CC',this)">Appliquer</button>
-        <button class="btn" onclick="ctrlRead('CURR:CC?','ctrl-cc-val')">Lire</button>
+        <input type="number" id="ctrl-cc-val" step="0.001" min="0" max="40" value="1" data-cmd="CURR:CC">
       </div>
       <div class="row hidden" id="ctrl-cv-row">
         <label>Tension CV (V)</label>
-        <input type="number" id="ctrl-cv-val" step="0.001" min="0" max="150" value="12">
-        <button class="btn" onclick="ctrlSet('VOLT:CV',this)">Appliquer</button>
-        <button class="btn" onclick="ctrlRead('VOLT:CV?','ctrl-cv-val')">Lire</button>
+        <input type="number" id="ctrl-cv-val" step="0.001" min="0" max="150" value="12" data-cmd="VOLT:CV">
       </div>
       <div class="row hidden" id="ctrl-cp-row">
         <label>Puissance CP (W)</label>
-        <input type="number" id="ctrl-cp-val" step="0.01" min="0" max="400" value="50">
-        <button class="btn" onclick="ctrlSet('POWE:CP',this)">Appliquer</button>
-        <button class="btn" onclick="ctrlRead('POWE:CP?','ctrl-cp-val')">Lire</button>
+        <input type="number" id="ctrl-cp-val" step="0.01" min="0" max="400" value="50" data-cmd="POWE:CP">
       </div>
       <div class="row hidden" id="ctrl-cr-row">
         <label>Resistance CR (Ohm)</label>
-        <input type="number" id="ctrl-cr-val" step="0.01" min="0.03" max="7500" value="100">
-        <button class="btn" onclick="ctrlSet('RESI:CR',this)">Appliquer</button>
-        <button class="btn" onclick="ctrlRead('RESI:CR?','ctrl-cr-val')">Lire</button>
+        <input type="number" id="ctrl-cr-val" step="0.01" min="0.03" max="7500" value="100" data-cmd="RESI:CR">
       </div>
       <div class="row hidden" id="ctrl-cccv-row">
         <label>Courant CCCV (A)</label>
-        <input type="number" id="ctrl-cccv-i" step="0.001" min="0" max="40" value="1">
-        <button class="btn" onclick="ctrlSet('CURR:CCCV',this)">Appliquer I</button>
+        <input type="number" id="ctrl-cccv-i" step="0.001" min="0" max="40" value="1" data-cmd="CURR:CCCV">
         <label>Tension CCCV (V)</label>
-        <input type="number" id="ctrl-cccv-v" step="0.001" min="0" max="150" value="12">
-        <button class="btn" onclick="ctrlSet('VOLT:CCCV',this)">Appliquer V</button>
+        <input type="number" id="ctrl-cccv-v" step="0.001" min="0" max="150" value="12" data-cmd="VOLT:CCCV">
       </div>
       <div class="row hidden" id="ctrl-crcv-row">
         <label>Resistance CRCV (Ohm)</label>
-        <input type="number" id="ctrl-crcv-r" step="0.01" min="0.03" max="7500" value="100">
-        <button class="btn" onclick="ctrlSet('RESI:CRCV',this)">Appliquer R</button>
+        <input type="number" id="ctrl-crcv-r" step="0.01" min="0.03" max="7500" value="100" data-cmd="RESI:CRCV">
         <label>Tension CRCV (V)</label>
-        <input type="number" id="ctrl-crcv-v" step="0.001" min="0" max="150" value="12">
-        <button class="btn" onclick="ctrlSet('VOLT:CRCV',this)">Appliquer V</button>
+        <input type="number" id="ctrl-crcv-v" step="0.001" min="0" max="150" value="12" data-cmd="VOLT:CRCV">
       </div>
       <div class="row hidden" id="ctrl-led-row">
         <label>Courant LED Io (A)</label>
-        <input type="number" id="ctrl-led-i" step="0.001" min="0" max="40" value="0.5">
-        <button class="btn" onclick="ctrlSet('CURR:LED',this)">Appliquer I</button>
+        <input type="number" id="ctrl-led-i" step="0.001" min="0" max="40" value="0.5" data-cmd="CURR:LED">
         <label>Tension LED Vo (V)</label>
-        <input type="number" id="ctrl-led-v" step="0.001" min="0" max="150" value="12">
-        <button class="btn" onclick="ctrlSet('VOLT:LED',this)">Appliquer V</button>
+        <input type="number" id="ctrl-led-v" step="0.001" min="0" max="150" value="12" data-cmd="VOLT:LED">
         <label>Coeff</label>
-        <input type="number" id="ctrl-led-c" step="0.001" min="0.001" max="1" value="1">
-        <button class="btn" onclick="ctrlSet('LED:COEFf',this)">Appliquer</button>
+        <input type="number" id="ctrl-led-c" step="0.001" min="0.001" max="1" value="1" data-cmd="LED:COEFf">
       </div>
     </div>
   </div>
@@ -406,10 +388,6 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <label class="radio-label"><input type="radio" name="batt-dmode" value="CC" checked> CC (Courant constant)</label>
         <label class="radio-label"><input type="radio" name="batt-dmode" value="CR"> CR (Resistance constante)</label>
       </div>
-      <div class="row" style="margin-top:8px;">
-        <button class="btn" onclick="scpiSet('BATT:MODE',getBattDMode())">Appliquer</button>
-        <button class="btn" onclick="battReadDMode()">Lire</button>
-      </div>
     </div>
     <div class="card" id="ctrl-batt-cc-card">
       <h3>Parametres CC - Courants et tensions de coupure</h3>
@@ -417,41 +395,29 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <div>
           <div class="row">
             <label>Courant 1 (A)</label>
-            <input type="number" id="batt-bcc1-i" step="0.001" value="1">
-            <button class="btn" onclick="scpiSetNum('CURR:BCC1','batt-bcc1-i')">Set</button>
-            <button class="btn" onclick="scpiReadNum('CURR:BCC1?','batt-bcc1-i')">Lire</button>
+            <input type="number" id="batt-bcc1-i" step="0.001" value="1" data-cmd="CURR:BCC1">
           </div>
           <div class="row">
             <label>Courant 2 (A)</label>
-            <input type="number" id="batt-bcc2-i" step="0.001" value="0.5">
-            <button class="btn" onclick="scpiSetNum('CURR:BCC2','batt-bcc2-i')">Set</button>
-            <button class="btn" onclick="scpiReadNum('CURR:BCC2?','batt-bcc2-i')">Lire</button>
+            <input type="number" id="batt-bcc2-i" step="0.001" value="0.5" data-cmd="CURR:BCC2">
           </div>
           <div class="row">
             <label>Courant 3 (A)</label>
-            <input type="number" id="batt-bcc3-i" step="0.001" value="0.2">
-            <button class="btn" onclick="scpiSetNum('CURR:BCC3','batt-bcc3-i')">Set</button>
-            <button class="btn" onclick="scpiReadNum('CURR:BCC3?','batt-bcc3-i')">Lire</button>
+            <input type="number" id="batt-bcc3-i" step="0.001" value="0.2" data-cmd="CURR:BCC3">
           </div>
         </div>
         <div>
           <div class="row">
             <label>Tension coupure 1 (V)</label>
-            <input type="number" id="batt-bcc1-v" step="0.001" value="3">
-            <button class="btn" onclick="scpiSetNum('VOLT:BCC1','batt-bcc1-v')">Set</button>
-            <button class="btn" onclick="scpiReadNum('VOLT:BCC1?','batt-bcc1-v')">Lire</button>
+            <input type="number" id="batt-bcc1-v" step="0.001" value="3" data-cmd="VOLT:BCC1">
           </div>
           <div class="row">
             <label>Tension coupure 2 (V)</label>
-            <input type="number" id="batt-bcc2-v" step="0.001" value="3">
-            <button class="btn" onclick="scpiSetNum('VOLT:BCC2','batt-bcc2-v')">Set</button>
-            <button class="btn" onclick="scpiReadNum('VOLT:BCC2?','batt-bcc2-v')">Lire</button>
+            <input type="number" id="batt-bcc2-v" step="0.001" value="3" data-cmd="VOLT:BCC2">
           </div>
           <div class="row">
             <label>Tension coupure 3 (V)</label>
-            <input type="number" id="batt-bcc3-v" step="0.001" value="2.8">
-            <button class="btn" onclick="scpiSetNum('VOLT:BCC3','batt-bcc3-v')">Set</button>
-            <button class="btn" onclick="scpiReadNum('VOLT:BCC3?','batt-bcc3-v')">Lire</button>
+            <input type="number" id="batt-bcc3-v" step="0.001" value="2.8" data-cmd="VOLT:BCC3">
           </div>
         </div>
       </div>
@@ -460,15 +426,11 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <h3>Parametres CR - Resistance et tension de coupure</h3>
       <div class="row">
         <label>Resistance (Ohm)</label>
-        <input type="number" id="batt-bcr-r" step="0.01" value="10">
-        <button class="btn" onclick="scpiSetNum('RESI:BCR','batt-bcr-r')">Set</button>
-        <button class="btn" onclick="scpiReadNum('RESI:BCR?','batt-bcr-r')">Lire</button>
+        <input type="number" id="batt-bcr-r" step="0.01" value="10" data-cmd="RESI:BCR">
       </div>
       <div class="row">
         <label>Tension coupure CR (V)</label>
-        <input type="number" id="batt-bcr-v" step="0.001" value="3">
-        <button class="btn" onclick="scpiSetNum('VOLT:BCR','batt-bcr-v')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:BCR?','batt-bcr-v')">Lire</button>
+        <input type="number" id="batt-bcr-v" step="0.001" value="3" data-cmd="VOLT:BCR">
       </div>
     </div>
     <div class="card">
@@ -486,21 +448,15 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       </div>
       <div id="batt-cut-capa" class="row hidden" style="margin-top:8px;">
         <label>Cutoff Capacite (Ah)</label>
-        <input type="number" id="batt-btc" step="0.01" min="0" value="0">
-        <button class="btn" onclick="scpiSetNum('BATT:BTC','batt-btc')">Set</button>
-        <button class="btn" onclick="scpiReadNum('BATT:BTC?','batt-btc')">Lire</button>
+        <input type="number" id="batt-btc" step="0.01" min="0" value="0" data-cmd="BATT:BTC">
       </div>
       <div id="batt-cut-ener" class="row hidden" style="margin-top:8px;">
         <label>Cutoff Energie (Wh)</label>
-        <input type="number" id="batt-bte" step="0.01" min="0" value="0">
-        <button class="btn" onclick="scpiSetNum('BATT:BTE','batt-bte')">Set</button>
-        <button class="btn" onclick="scpiReadNum('BATT:BTE?','batt-bte')">Lire</button>
+        <input type="number" id="batt-bte" step="0.01" min="0" value="0" data-cmd="BATT:BTE">
       </div>
       <div id="batt-cut-time" class="row hidden" style="margin-top:8px;">
         <label>Cutoff Temps (s)</label>
-        <input type="number" id="batt-btt" step="1" min="0" value="0">
-        <button class="btn" onclick="scpiSetNum('TIME:BTT','batt-btt')">Set</button>
-        <button class="btn" onclick="scpiReadNum('TIME:BTT?','batt-btt')">Lire</button>
+        <input type="number" id="batt-btt" step="1" min="0" value="0" data-cmd="TIME:BTT">
       </div>
     </div>
     <div class="card">
@@ -523,13 +479,11 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <h3>Canal ON/OFF</h3>
     <div class="row">
       <label>Trigger</label>
-      <select id="ctrl-trig">
+      <select id="ctrl-trig" data-cmd="LOAD:TRIGger">
         <option value="MAN">Manuel</option>
         <option value="EXT">Externe</option>
         <option value="TRG">Software</option>
       </select>
-      <button class="btn" onclick="ctrlSetTrig()">Appliquer</button>
-      <button class="btn" onclick="ctrlReadTrig()">Lire</button>
     </div>
     <div class="row" style="margin-top:12px;">
       <button class="btn-green" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlSW('ON')">ON</button>
@@ -598,22 +552,18 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <h3>Test Dynamique (TRAN)</h3>
     <div class="row">
       <label>Etat</label>
-      <select id="tran-state">
+      <select id="tran-state" data-cmd="TRAN:STATe">
         <option value="CC">CC</option>
         <option value="CV">CV</option>
       </select>
-      <button class="btn" onclick="scpiSet('TRAN:STATe',g('tran-state'))">Appliquer</button>
-      <button class="btn" onclick="scpiRead('TRAN:STATe?','tran-state')">Lire</button>
     </div>
     <div class="row">
       <label>Mode</label>
-      <select id="tran-mode">
+      <select id="tran-mode" data-cmd="TRAN:MODE">
         <option value="COUT">Continu</option>
         <option value="TRIG">Trigger</option>
         <option value="PULS">Pulse</option>
       </select>
-      <button class="btn" onclick="scpiSet('TRAN:MODE',g('tran-mode'))">Appliquer</button>
-      <button class="btn" onclick="scpiRead('TRAN:MODE?','tran-mode')">Lire</button>
     </div>
   </div>
   <div class="grid2">
@@ -621,30 +571,22 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <h3>Valeurs CC</h3>
       <div class="row">
         <label>Courant A (A)</label>
-        <input type="number" id="tran-curr-ta" step="0.001" value="1">
-        <button class="btn" onclick="scpiSetNum('CURR:TA','tran-curr-ta')">Set</button>
-        <button class="btn" onclick="scpiReadNum('CURR:TA?','tran-curr-ta')">Lire</button>
+        <input type="number" id="tran-curr-ta" step="0.001" value="1" data-cmd="CURR:TA">
       </div>
       <div class="row">
         <label>Courant B (A)</label>
-        <input type="number" id="tran-curr-tb" step="0.001" value="0.5">
-        <button class="btn" onclick="scpiSetNum('CURR:TB','tran-curr-tb')">Set</button>
-        <button class="btn" onclick="scpiReadNum('CURR:TB?','tran-curr-tb')">Lire</button>
+        <input type="number" id="tran-curr-tb" step="0.001" value="0.5" data-cmd="CURR:TB">
       </div>
     </div>
     <div class="card">
       <h3>Valeurs CV</h3>
       <div class="row">
         <label>Tension A (V)</label>
-        <input type="number" id="tran-volt-ta" step="0.001" value="12">
-        <button class="btn" onclick="scpiSetNum('VOLT:TA','tran-volt-ta')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:TA?','tran-volt-ta')">Lire</button>
+        <input type="number" id="tran-volt-ta" step="0.001" value="12" data-cmd="VOLT:TA">
       </div>
       <div class="row">
         <label>Tension B (V)</label>
-        <input type="number" id="tran-volt-tb" step="0.001" value="6">
-        <button class="btn" onclick="scpiSetNum('VOLT:TB','tran-volt-tb')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:TB?','tran-volt-tb')">Lire</button>
+        <input type="number" id="tran-volt-tb" step="0.001" value="6" data-cmd="VOLT:TB">
       </div>
     </div>
   </div>
@@ -652,13 +594,9 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <h3>Largeur d'impulsion</h3>
     <div class="row">
       <label>Pulse A (s)</label>
-      <input type="number" id="tran-wa" step="1" min="0" max="60" value="1">
-      <button class="btn" onclick="scpiSetNum('TIME:WA','tran-wa')">Set</button>
-      <button class="btn" onclick="scpiReadNum('TIME:WA?','tran-wa')">Lire</button>
+      <input type="number" id="tran-wa" step="1" min="0" max="60" value="1" data-cmd="TIME:WA">
       <label>Pulse B (s)</label>
-      <input type="number" id="tran-wb" step="1" min="0" max="60" value="1">
-      <button class="btn" onclick="scpiSetNum('TIME:WB','tran-wb')">Set</button>
-      <button class="btn" onclick="scpiReadNum('TIME:WB?','tran-wb')">Lire</button>
+      <input type="number" id="tran-wb" step="1" min="0" max="60" value="1" data-cmd="TIME:WB">
     </div>
   </div>
 </div>
@@ -669,33 +607,27 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <h3>Test Scan</h3>
     <div class="row">
       <label>Type scan</label>
-      <select id="scan-type">
+      <select id="scan-type" data-cmd="SCAN:TYPE">
         <option value="CC">CC</option>
         <option value="CV">CV</option>
         <option value="CP">CP</option>
       </select>
-      <button class="btn" onclick="scpiSet('SCAN:TYPE',g('scan-type'))">Appliquer</button>
-      <button class="btn" onclick="scpiRead('SCAN:TYPE?','scan-type')">Lire</button>
     </div>
     <div class="row">
       <label>Type seuil</label>
-      <select id="scan-thtype">
+      <select id="scan-thtype" data-cmd="SCAN:THTYpe">
         <option value="VTH">VTH (Transition)</option>
         <option value="DROP">DROP (Chute)</option>
         <option value="VMIN">VMIN (Tension min)</option>
       </select>
-      <button class="btn" onclick="scpiSet('SCAN:THTYpe',g('scan-thtype'))">Appliquer</button>
-      <button class="btn" onclick="scpiRead('SCAN:THTYpe?','scan-thtype')">Lire</button>
     </div>
     <div class="row">
       <label>Comparaison</label>
-      <select id="scan-compare">
+      <select id="scan-compare" data-cmd="SCAN:COMPare">
         <option value="INCURR">Par courant</option>
         <option value="INVOLT">Par tension</option>
         <option value="INPOW">Par puissance</option>
       </select>
-      <button class="btn" onclick="scpiSet('SCAN:COMPare',g('scan-compare'))">Appliquer</button>
-      <button class="btn" onclick="scpiRead('SCAN:COMPare?','scan-compare')">Lire</button>
     </div>
   </div>
   <div class="grid2">
@@ -703,78 +635,54 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <h3>Parametres CC Scan</h3>
       <div class="row">
         <label>Start (A)</label>
-        <input type="number" id="scan-curr-start" step="0.001">
-        <button class="btn" onclick="scpiSetNum('CURR:STARt','scan-curr-start')">Set</button>
-        <button class="btn" onclick="scpiReadNum('CURR:STARt?','scan-curr-start')">Lire</button>
+        <input type="number" id="scan-curr-start" step="0.001" data-cmd="CURR:STARt">
       </div>
       <div class="row">
         <label>End (A)</label>
-        <input type="number" id="scan-curr-end" step="0.001">
-        <button class="btn" onclick="scpiSetNum('CURR:END','scan-curr-end')">Set</button>
-        <button class="btn" onclick="scpiReadNum('CURR:END?','scan-curr-end')">Lire</button>
+        <input type="number" id="scan-curr-end" step="0.001" data-cmd="CURR:END">
       </div>
       <div class="row">
         <label>Step (A)</label>
-        <input type="number" id="scan-curr-step" step="0.001">
-        <button class="btn" onclick="scpiSetNum('CURR:STEP','scan-curr-step')">Set</button>
-        <button class="btn" onclick="scpiReadNum('CURR:STEP?','scan-curr-step')">Lire</button>
+        <input type="number" id="scan-curr-step" step="0.001" data-cmd="CURR:STEP">
       </div>
       <div class="row">
         <label>Low (A)</label>
-        <input type="number" id="scan-curr-low" step="0.001">
-        <button class="btn" onclick="scpiSetNum('CURR:LOW','scan-curr-low')">Set</button>
-        <button class="btn" onclick="scpiReadNum('CURR:LOW?','scan-curr-low')">Lire</button>
+        <input type="number" id="scan-curr-low" step="0.001" data-cmd="CURR:LOW">
       </div>
       <div class="row">
         <label>High (A)</label>
-        <input type="number" id="scan-curr-high" step="0.001">
-        <button class="btn" onclick="scpiSetNum('CURR:HIGH','scan-curr-high')">Set</button>
-        <button class="btn" onclick="scpiReadNum('CURR:HIGH?','scan-curr-high')">Lire</button>
+        <input type="number" id="scan-curr-high" step="0.001" data-cmd="CURR:HIGH">
       </div>
     </div>
     <div class="card">
       <h3>Parametres Tension Scan</h3>
       <div class="row">
         <label>Start (V)</label>
-        <input type="number" id="scan-volt-start" step="0.001">
-        <button class="btn" onclick="scpiSetNum('VOLT:STARt','scan-volt-start')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:STARt?','scan-volt-start')">Lire</button>
+        <input type="number" id="scan-volt-start" step="0.001" data-cmd="VOLT:STARt">
       </div>
       <div class="row">
         <label>End (V)</label>
-        <input type="number" id="scan-volt-end" step="0.001">
-        <button class="btn" onclick="scpiSetNum('VOLT:END','scan-volt-end')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:END?','scan-volt-end')">Lire</button>
+        <input type="number" id="scan-volt-end" step="0.001" data-cmd="VOLT:END">
       </div>
       <div class="row">
         <label>Step (V)</label>
-        <input type="number" id="scan-volt-step" step="0.001">
-        <button class="btn" onclick="scpiSetNum('VOLT:STEP','scan-volt-step')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:STEP?','scan-volt-step')">Lire</button>
+        <input type="number" id="scan-volt-step" step="0.001" data-cmd="VOLT:STEP">
       </div>
       <div class="row">
         <label>VTH (V)</label>
-        <input type="number" id="scan-volt-vth" step="0.001">
-        <button class="btn" onclick="scpiSetNum('VOLT:VTH','scan-volt-vth')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:VTH?','scan-volt-vth')">Lire</button>
+        <input type="number" id="scan-volt-vth" step="0.001" data-cmd="VOLT:VTH">
       </div>
       <div class="row">
         <label>VMIN (V)</label>
-        <input type="number" id="scan-volt-vmin" step="0.001">
-        <button class="btn" onclick="scpiSetNum('VOLT:VMIN','scan-volt-vmin')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:VMIN?','scan-volt-vmin')">Lire</button>
+        <input type="number" id="scan-volt-vmin" step="0.001" data-cmd="VOLT:VMIN">
       </div>
       <div class="row">
         <label>Low (V)</label>
-        <input type="number" id="scan-volt-low" step="0.001">
-        <button class="btn" onclick="scpiSetNum('VOLT:LOW','scan-volt-low')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:LOW?','scan-volt-low')">Lire</button>
+        <input type="number" id="scan-volt-low" step="0.001" data-cmd="VOLT:LOW">
       </div>
       <div class="row">
         <label>High (V)</label>
-        <input type="number" id="scan-volt-high" step="0.001">
-        <button class="btn" onclick="scpiSetNum('VOLT:HIGH','scan-volt-high')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:HIGH?','scan-volt-high')">Lire</button>
+        <input type="number" id="scan-volt-high" step="0.001" data-cmd="VOLT:HIGH">
       </div>
     </div>
   </div>
@@ -782,42 +690,30 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <h3>Temps par pas</h3>
     <div class="row">
       <label>Delay step (s)</label>
-      <input type="number" id="scan-time-step" step="1" min="0" max="9999" value="1">
-      <button class="btn" onclick="scpiSetNum('TIME:STEP','scan-time-step')">Set</button>
-      <button class="btn" onclick="scpiReadNum('TIME:STEP?','scan-time-step')">Lire</button>
+      <input type="number" id="scan-time-step" step="1" min="0" max="9999" value="1" data-cmd="TIME:STEP">
     </div>
   </div>
   <div class="card">
     <h3>Parametres Puissance Scan</h3>
     <div class="row">
       <label>Start (W)</label>
-      <input type="number" id="scan-powe-start" step="0.01">
-      <button class="btn" onclick="scpiSetNum('POWE:STARt','scan-powe-start')">Set</button>
-      <button class="btn" onclick="scpiReadNum('POWE:STARt?','scan-powe-start')">Lire</button>
+      <input type="number" id="scan-powe-start" step="0.01" data-cmd="POWE:STARt">
     </div>
     <div class="row">
       <label>End (W)</label>
-      <input type="number" id="scan-powe-end" step="0.01">
-      <button class="btn" onclick="scpiSetNum('POWE:END','scan-powe-end')">Set</button>
-      <button class="btn" onclick="scpiReadNum('POWE:END?','scan-powe-end')">Lire</button>
+      <input type="number" id="scan-powe-end" step="0.01" data-cmd="POWE:END">
     </div>
     <div class="row">
       <label>Step (W)</label>
-      <input type="number" id="scan-powe-step" step="0.01">
-      <button class="btn" onclick="scpiSetNum('POWE:STEP','scan-powe-step')">Set</button>
-      <button class="btn" onclick="scpiReadNum('POWE:STEP?','scan-powe-step')">Lire</button>
+      <input type="number" id="scan-powe-step" step="0.01" data-cmd="POWE:STEP">
     </div>
     <div class="row">
       <label>Low (W)</label>
-      <input type="number" id="scan-powe-low" step="0.01">
-      <button class="btn" onclick="scpiSetNum('POWE:LOW','scan-powe-low')">Set</button>
-      <button class="btn" onclick="scpiReadNum('POWE:LOW?','scan-powe-low')">Lire</button>
+      <input type="number" id="scan-powe-low" step="0.01" data-cmd="POWE:LOW">
     </div>
     <div class="row">
       <label>High (W)</label>
-      <input type="number" id="scan-powe-high" step="0.01">
-      <button class="btn" onclick="scpiSetNum('POWE:HIGH','scan-powe-high')">Set</button>
-      <button class="btn" onclick="scpiReadNum('POWE:HIGH?','scan-powe-high')">Lire</button>
+      <input type="number" id="scan-powe-high" step="0.01" data-cmd="POWE:HIGH">
     </div>
   </div>
 </div>
@@ -828,25 +724,19 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <h3>Test List</h3>
     <div class="row">
       <label>Nb etapes</label>
-      <input type="number" id="list-num" min="1" max="50" value="5">
-      <button class="btn" onclick="listSetNum()">Appliquer</button>
-      <button class="btn" onclick="listReadNum()">Lire</button>
+      <input type="number" id="list-num" min="1" max="50" value="5" data-cmd="LIST:NUM">
       <label>Loop</label>
-      <select id="list-loop">
+      <select id="list-loop" data-cmd="LIST:LOOP">
         <option value="ON">ON</option>
         <option value="OFF">OFF</option>
       </select>
-      <button class="btn" onclick="scpiSet('LIST:LOOP',g('list-loop'))">Appliquer</button>
-      <button class="btn" onclick="scpiRead('LIST:LOOP?','list-loop')">Lire</button>
     </div>
     <div class="row">
       <label>Mode</label>
-      <select id="list-mode">
+      <select id="list-mode" data-cmd="LIST:MODE">
         <option value="AUTO">Auto (continu)</option>
         <option value="TRIGGER">Trigger</option>
       </select>
-      <button class="btn" onclick="scpiSet('LIST:MODE',g('list-mode'))">Appliquer</button>
-      <button class="btn" onclick="scpiRead('LIST:MODE?','list-mode')">Lire</button>
     </div>
   </div>
   <div class="card">
@@ -883,12 +773,10 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <h3>Test de Qualification</h3>
     <div class="row">
       <label>Test</label>
-      <select id="qual-test">
+      <select id="qual-test" data-cmd="QUAL:TEST">
         <option value="ON">ON</option>
         <option value="OFF">OFF</option>
       </select>
-      <button class="btn" onclick="scpiSet('QUAL:TEST',g('qual-test'))">Appliquer</button>
-      <button class="btn" onclick="scpiRead('QUAL:TEST?','qual-test')">Lire</button>
       <label>Resultat</label>
       <span id="qual-result" class="info-box" style="min-width:100px;">--</span>
       <button class="btn" onclick="qualReadResult()">Lire</button>
@@ -898,21 +786,17 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
     <h3>Ranges</h3>
     <div class="row">
       <label>Tension</label>
-      <select id="ctrl-vrange">
+      <select id="ctrl-vrange" data-cmd="LOAD:VRANge">
         <option value="HIGH">HIGH (0.1 - 150V)</option>
         <option value="LOW">LOW (0.1 - 20V)</option>
       </select>
-      <button class="btn" onclick="ctrlSetVRange()">Appliquer</button>
-      <button class="btn" onclick="ctrlReadVRange()">Lire</button>
     </div>
     <div class="row">
       <label>Courant</label>
-      <select id="ctrl-crange">
+      <select id="ctrl-crange" data-cmd="LOAD:CRANge">
         <option value="HIGH">HIGH (0 - 40A)</option>
         <option value="LOW">LOW (0 - 3A)</option>
       </select>
-      <button class="btn" onclick="ctrlSetCRange()">Appliquer</button>
-      <button class="btn" onclick="ctrlReadCRange()">Lire</button>
     </div>
   </div>
   <div class="grid3">
@@ -920,45 +804,33 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <h3>Limites Tension (V)</h3>
       <div class="row">
         <label>V High</label>
-        <input type="number" id="qual-vhigh" step="0.001">
-        <button class="btn" onclick="scpiSetNum('QUAL:VHIGh','qual-vhigh')">Set</button>
-        <button class="btn" onclick="scpiReadNum('QUAL:VHIGh?','qual-vhigh')">Lire</button>
+        <input type="number" id="qual-vhigh" step="0.001" data-cmd="QUAL:VHIGh">
       </div>
       <div class="row">
         <label>V Low</label>
-        <input type="number" id="qual-vlow" step="0.001">
-        <button class="btn" onclick="scpiSetNum('QUAL:VLOW','qual-vlow')">Set</button>
-        <button class="btn" onclick="scpiReadNum('QUAL:VLOW?','qual-vlow')">Lire</button>
+        <input type="number" id="qual-vlow" step="0.001" data-cmd="QUAL:VLOW">
       </div>
     </div>
     <div class="card">
       <h3>Limites Courant (A)</h3>
       <div class="row">
         <label>I High</label>
-        <input type="number" id="qual-chigh" step="0.001">
-        <button class="btn" onclick="scpiSetNum('QUAL:CHIGh','qual-chigh')">Set</button>
-        <button class="btn" onclick="scpiReadNum('QUAL:CHIGh?','qual-chigh')">Lire</button>
+        <input type="number" id="qual-chigh" step="0.001" data-cmd="QUAL:CHIGh">
       </div>
       <div class="row">
         <label>I Low</label>
-        <input type="number" id="qual-clow" step="0.001">
-        <button class="btn" onclick="scpiSetNum('QUAL:CLOW','qual-clow')">Set</button>
-        <button class="btn" onclick="scpiReadNum('QUAL:CLOW?','qual-clow')">Lire</button>
+        <input type="number" id="qual-clow" step="0.001" data-cmd="QUAL:CLOW">
       </div>
     </div>
     <div class="card">
       <h3>Limites Puissance (W)</h3>
       <div class="row">
         <label>P High</label>
-        <input type="number" id="qual-phigh" step="0.01">
-        <button class="btn" onclick="scpiSetNum('QUAL:PHIGh','qual-phigh')">Set</button>
-        <button class="btn" onclick="scpiReadNum('QUAL:PHIGh?','qual-phigh')">Lire</button>
+        <input type="number" id="qual-phigh" step="0.01" data-cmd="QUAL:PHIGh">
       </div>
       <div class="row">
         <label>P Low</label>
-        <input type="number" id="qual-plow" step="0.01">
-        <button class="btn" onclick="scpiSetNum('QUAL:PLOW','qual-plow')">Set</button>
-        <button class="btn" onclick="scpiReadNum('QUAL:PLOW?','qual-plow')">Lire</button>
+        <input type="number" id="qual-plow" step="0.01" data-cmd="QUAL:PLOW">
       </div>
     </div>
   </div>
@@ -971,21 +843,15 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <h3>Protections</h3>
       <div class="row">
         <label>OV (V)</label>
-        <input type="number" id="sys-vmax" step="0.01">
-        <button class="btn" onclick="scpiSetNum('VOLT:VMAX','sys-vmax')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:VMAX?','sys-vmax')">Lire</button>
+        <input type="number" id="sys-vmax" step="0.01" data-cmd="VOLT:VMAX">
       </div>
       <div class="row">
         <label>OC (A)</label>
-        <input type="number" id="sys-imax" step="0.001">
-        <button class="btn" onclick="scpiSetNum('CURR:IMAX','sys-imax')">Set</button>
-        <button class="btn" onclick="scpiReadNum('CURR:IMAX?','sys-imax')">Lire</button>
+        <input type="number" id="sys-imax" step="0.001" data-cmd="CURR:IMAX">
       </div>
       <div class="row">
         <label>OP (W)</label>
-        <input type="number" id="sys-pmax" step="0.01">
-        <button class="btn" onclick="scpiSetNum('POWE:PMAX','sys-pmax')">Set</button>
-        <button class="btn" onclick="scpiReadNum('POWE:PMAX?','sys-pmax')">Lire</button>
+        <input type="number" id="sys-pmax" step="0.01" data-cmd="POWE:PMAX">
       </div>
       <div class="row">
         <label>Status</label>
@@ -997,21 +863,15 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <h3>Tensions ON/OFF</h3>
       <div class="row">
         <label>V Start (V)</label>
-        <input type="number" id="sys-von" step="0.001">
-        <button class="btn" onclick="scpiSetNum('VOLT:ON','sys-von')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:ON?','sys-von')">Lire</button>
+        <input type="number" id="sys-von" step="0.001" data-cmd="VOLT:ON">
       </div>
       <div class="row">
         <label>V Stop (V)</label>
-        <input type="number" id="sys-voff" step="0.001">
-        <button class="btn" onclick="scpiSetNum('VOLT:OFF','sys-voff')">Set</button>
-        <button class="btn" onclick="scpiReadNum('VOLT:OFF?','sys-voff')">Lire</button>
+        <input type="number" id="sys-voff" step="0.001" data-cmd="VOLT:OFF">
       </div>
       <div class="row">
         <label>Delay OFF (s)</label>
-        <input type="number" id="sys-offdelay" step="1" min="0" max="60000">
-        <button class="btn" onclick="scpiSetNum('TIME:OFFDelay','sys-offdelay')">Set</button>
-        <button class="btn" onclick="scpiReadNum('TIME:OFFDelay?','sys-offdelay')">Lire</button>
+        <input type="number" id="sys-offdelay" step="1" min="0" max="60000" data-cmd="TIME:OFFDelay">
       </div>
     </div>
   </div>
@@ -1020,30 +880,25 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <h3>Parametres systeme</h3>
       <div class="row">
         <label>Demarrage</label>
-        <select id="sys-start">
+        <select id="sys-start" data-cmd="SYSSet:STARt">
           <option value="DEFAULT">Default</option>
           <option value="LAST">Last</option>
         </select>
-        <button class="btn" onclick="scpiSet('SYSSet:STARt',g('sys-start'))">Set</button>
-        <button class="btn" onclick="scpiRead('SYSSet:STARt?','sys-start')">Lire</button>
       </div>
       <div class="row">
         <label>Langue</label>
-        <select id="sys-lang">
+        <select id="sys-lang" data-cmd="SYSSet:LANGuage">
           <option value="CHINESE">Chinois</option>
           <option value="ENGLISH">Anglais</option>
         </select>
-        <button class="btn" onclick="scpiSet('SYSSet:LANGuage',g('sys-lang'))">Set</button>
-        <button class="btn" onclick="scpiRead('SYSSet:LANGuage?','sys-lang')">Lire</button>
       </div>
       <div class="row">
         <label>Baud rate</label>
-        <select id="sys-baud">
+        <select id="sys-baud" data-cmd="COMM:BAUDrate">
           <option value="1">7200</option>
           <option value="2">9600</option>
           <option value="3" selected>14400</option>
         </select>
-        <button class="btn" onclick="scpiSetNum('COMM:BAUDrate','sys-baud')">Set</button>
         <button class="btn" onclick="scpiRead('COMM:BAUDrate?','sys-baud-disp')">Lire</button>
         <span id="sys-baud-disp" style="font-size:0.85em;">--</span>
       </div>
@@ -1272,9 +1127,39 @@ async function doConnect() {
   try {
     const baud = parseInt(g('baud-rate'));
     await dev.connect(baud);
+    await refreshAll();
   } catch (e) {
     termLog('Erreur connexion: ' + e.message, 'err');
   }
+}
+
+async function refreshAll() {
+  if (!dev.connected) return;
+  // Identify device
+  await doIdentify();
+  // Read mode and update UI
+  await ctrlReadMode();
+  if (getCtrlMode() === 'BATT') await battReadDMode();
+  // Read all inputs with data-cmd
+  for (const el of document.querySelectorAll('input[data-cmd]')) {
+    const r = await dev.query(el.dataset.cmd + '?');
+    if (r) el.value = stripPrefix(r);
+  }
+  // Read all selects with data-cmd
+  for (const el of document.querySelectorAll('select[data-cmd]')) {
+    const r = await dev.query(el.dataset.cmd + '?');
+    if (r) {
+      const val = stripPrefix(r).toUpperCase();
+      for (const o of el.options) {
+        if (o.value.toUpperCase() === val) { el.value = o.value; break; }
+      }
+    }
+  }
+  // Read channel state
+  const sw = await dev.query('CH:SW?');
+  if (sw) $('ctrl-sw-status').textContent = sw.trim();
+  // Read battery results if in BATT mode
+  if (getCtrlMode() === 'BATT') { await battReadCapa(); await battReadEner(); }
 }
 
 async function doDisconnect() {
@@ -1342,7 +1227,7 @@ function updateCtrlModeRows() {
 }
 
 document.querySelectorAll('input[name="ctrl-mode"]').forEach(r => {
-  r.addEventListener('change', updateCtrlModeRows);
+  r.addEventListener('change', () => { updateCtrlModeRows(); ctrlSetMode(); });
 });
 
 async function ctrlSetMode() { await dev.send('CH:MODE ' + getCtrlMode()); }
@@ -1383,9 +1268,12 @@ async function ctrlReadTrig() {
 }
 
 async function ctrlSW(state) {
-  await dev.send('CH:SW ' + state);
+  await dev.query('CH:SW ' + state);
   const r = await dev.query('CH:SW?');
-  if (r) $('ctrl-sw-status').textContent = r.trim();
+  if (r) {
+    const v = stripPrefix(r).toUpperCase();
+    $('ctrl-sw-status').textContent = (v === 'ON' || v === 'OFF') ? v : state;
+  }
 }
 
 // ============================================================
@@ -1532,7 +1420,7 @@ function updateBattDModeRows() {
 }
 
 document.querySelectorAll('input[name="batt-dmode"]').forEach(r => {
-  r.addEventListener('change', updateBattDModeRows);
+  r.addEventListener('change', () => { updateBattDModeRows(); dev.send('BATT:MODE ' + getBattDMode()); });
 });
 
 function updateBattCutoffRows() {
@@ -1732,6 +1620,14 @@ function termClear() { $('terminal-log').innerHTML = ''; }
     check.innerHTML = 'Web Serial API: NON SUPPORTE\nUtilisez Chrome 89+ ou Edge 89+.\nLa communication serie ne fonctionnera pas dans ce navigateur.';
     check.style.color = 'var(--red)';
   }
+
+  // Auto-apply: inputs and selects with data-cmd send SCPI on change
+  document.querySelectorAll('input[data-cmd]').forEach(el => {
+    el.addEventListener('change', () => { if (dev.connected) dev.send(el.dataset.cmd + ' ' + el.value); });
+  });
+  document.querySelectorAll('select[data-cmd]').forEach(el => {
+    el.addEventListener('change', () => { if (dev.connected) dev.send(el.dataset.cmd + ' ' + el.value); });
+  });
 
   // Init mode rows display
   updateCtrlModeRows();
