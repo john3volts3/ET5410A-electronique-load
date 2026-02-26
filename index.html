@@ -270,6 +270,7 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
   <div>
     <span id="device-info" style="font-size:0.8em;color:var(--text2);margin-right:12px;"></span>
     <span id="conn-status" class="off">Deconnecte</span>
+    <button id="btn-localpc" class="btn" style="margin-left:8px;padding:4px 10px;font-size:0.8em;display:none;" onclick="toggleLocalPC()">PC</button>
   </div>
 </header>
 
@@ -1094,6 +1095,26 @@ function updateConnStatus(on) {
   else { el.className = 'off'; el.textContent = 'Deconnecte'; }
   $('btn-connect').disabled = on;
   $('btn-disconnect').disabled = !on;
+  const lp = $('btn-localpc');
+  lp.style.display = on ? '' : 'none';
+  if (on) { lp.textContent = 'PC'; lp.style.background = 'var(--accent)'; }
+}
+
+let localMode = false;
+async function toggleLocalPC() {
+  if (!dev.connected) return;
+  const btn = $('btn-localpc');
+  if (!localMode) {
+    await dev.send('SYST:LOCA');
+    localMode = true;
+    btn.textContent = 'LOCAL';
+    btn.style.background = 'var(--orange)';
+  } else {
+    await dev.query('*IDN?');
+    localMode = false;
+    btn.textContent = 'PC';
+    btn.style.background = 'var(--accent)';
+  }
 }
 
 function termLog(msg, cls = '') {
