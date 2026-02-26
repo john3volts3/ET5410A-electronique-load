@@ -277,9 +277,6 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
   <button class="active" data-tab="tab-conn">Connexion</button>
   <button data-tab="tab-ctrl">Controle</button>
   <button data-tab="tab-meas">Mesures</button>
-  <button data-tab="tab-tran">Dynamique</button>
-  <button data-tab="tab-scan">Scan</button>
-  <button data-tab="tab-list">List</button>
   <button data-tab="tab-qual">Qualification</button>
   <button data-tab="tab-sys">Systeme</button>
   <button data-tab="tab-term">Terminal</button>
@@ -377,6 +374,239 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <input type="number" id="ctrl-led-v" step="0.001" min="0" max="150" value="12" data-cmd="VOLT:LED">
         <label>Coeff</label>
         <input type="number" id="ctrl-led-c" step="0.001" min="0.001" max="1" value="1" data-cmd="LED:COEFf">
+      </div>
+    </div>
+  </div>
+  <div class="card hidden" id="ctrl-limits-card">
+    <h3>Limites et temporisation</h3>
+    <div class="row hidden" id="ctrl-offdelay-row">
+      <label>Off Delay (s)</label>
+      <input type="number" id="ctrl-offdelay" step="1" min="0" max="60000" data-cmd="TIME:OFFDelay">
+    </div>
+    <div class="row">
+      <label>Limite V (V)</label>
+      <input type="number" id="ctrl-vmax" step="0.01" data-cmd="VOLT:VMAX">
+      <label>Limite A (A)</label>
+      <input type="number" id="ctrl-imax" step="0.001" data-cmd="CURR:IMAX">
+      <label>Limite W (W)</label>
+      <input type="number" id="ctrl-pmax" step="0.01" data-cmd="POWE:PMAX">
+    </div>
+  </div>
+  <!-- Tran sub-section (visible only when mode=TRAN) -->
+  <div id="ctrl-tran-section" class="hidden">
+    <div class="card">
+      <h3>Test Dynamique (TRAN)</h3>
+      <div class="row">
+        <label>Etat</label>
+        <select id="tran-state" data-cmd="TRAN:STATe">
+          <option value="CC">CC</option>
+          <option value="CV">CV</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Mode</label>
+        <select id="tran-mode" data-cmd="TRAN:MODE">
+          <option value="COUT">Continu</option>
+          <option value="TRIG">Trigger</option>
+          <option value="PULS">Pulse</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Valeurs CC</h3>
+        <div class="row">
+          <label>Courant A (A)</label>
+          <input type="number" id="tran-curr-ta" step="0.001" value="1" data-cmd="CURR:TA">
+        </div>
+        <div class="row">
+          <label>Courant B (A)</label>
+          <input type="number" id="tran-curr-tb" step="0.001" value="0.5" data-cmd="CURR:TB">
+        </div>
+      </div>
+      <div class="card">
+        <h3>Valeurs CV</h3>
+        <div class="row">
+          <label>Tension A (V)</label>
+          <input type="number" id="tran-volt-ta" step="0.001" value="12" data-cmd="VOLT:TA">
+        </div>
+        <div class="row">
+          <label>Tension B (V)</label>
+          <input type="number" id="tran-volt-tb" step="0.001" value="6" data-cmd="VOLT:TB">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Largeur d'impulsion</h3>
+      <div class="row">
+        <label>Pulse A (s)</label>
+        <input type="number" id="tran-wa" step="1" min="0" max="60" value="1" data-cmd="TIME:WA">
+        <label>Pulse B (s)</label>
+        <input type="number" id="tran-wb" step="1" min="0" max="60" value="1" data-cmd="TIME:WB">
+      </div>
+    </div>
+  </div>
+  <!-- Scan sub-section (visible only when mode=SCAN) -->
+  <div id="ctrl-scan-section" class="hidden">
+    <div class="card">
+      <h3>Test Scan</h3>
+      <div class="row">
+        <label>Type scan</label>
+        <select id="scan-type" data-cmd="SCAN:TYPE">
+          <option value="CC">CC</option>
+          <option value="CV">CV</option>
+          <option value="CP">CP</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Type seuil</label>
+        <select id="scan-thtype" data-cmd="SCAN:THTYpe">
+          <option value="VTH">VTH (Transition)</option>
+          <option value="DROP">DROP (Chute)</option>
+          <option value="VMIN">VMIN (Tension min)</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Comparaison</label>
+        <select id="scan-compare" data-cmd="SCAN:COMPare">
+          <option value="INCURR">Par courant</option>
+          <option value="INVOLT">Par tension</option>
+          <option value="INPOW">Par puissance</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Parametres CC Scan</h3>
+        <div class="row">
+          <label>Start (A)</label>
+          <input type="number" id="scan-curr-start" step="0.001" data-cmd="CURR:STARt">
+        </div>
+        <div class="row">
+          <label>End (A)</label>
+          <input type="number" id="scan-curr-end" step="0.001" data-cmd="CURR:END">
+        </div>
+        <div class="row">
+          <label>Step (A)</label>
+          <input type="number" id="scan-curr-step" step="0.001" data-cmd="CURR:STEP">
+        </div>
+        <div class="row">
+          <label>Low (A)</label>
+          <input type="number" id="scan-curr-low" step="0.001" data-cmd="CURR:LOW">
+        </div>
+        <div class="row">
+          <label>High (A)</label>
+          <input type="number" id="scan-curr-high" step="0.001" data-cmd="CURR:HIGH">
+        </div>
+      </div>
+      <div class="card">
+        <h3>Parametres Tension Scan</h3>
+        <div class="row">
+          <label>Start (V)</label>
+          <input type="number" id="scan-volt-start" step="0.001" data-cmd="VOLT:STARt">
+        </div>
+        <div class="row">
+          <label>End (V)</label>
+          <input type="number" id="scan-volt-end" step="0.001" data-cmd="VOLT:END">
+        </div>
+        <div class="row">
+          <label>Step (V)</label>
+          <input type="number" id="scan-volt-step" step="0.001" data-cmd="VOLT:STEP">
+        </div>
+        <div class="row">
+          <label>VTH (V)</label>
+          <input type="number" id="scan-volt-vth" step="0.001" data-cmd="VOLT:VTH">
+        </div>
+        <div class="row">
+          <label>VMIN (V)</label>
+          <input type="number" id="scan-volt-vmin" step="0.001" data-cmd="VOLT:VMIN">
+        </div>
+        <div class="row">
+          <label>Low (V)</label>
+          <input type="number" id="scan-volt-low" step="0.001" data-cmd="VOLT:LOW">
+        </div>
+        <div class="row">
+          <label>High (V)</label>
+          <input type="number" id="scan-volt-high" step="0.001" data-cmd="VOLT:HIGH">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Temps par pas</h3>
+      <div class="row">
+        <label>Delay step (s)</label>
+        <input type="number" id="scan-time-step" step="1" min="0" max="9999" value="1" data-cmd="TIME:STEP">
+      </div>
+    </div>
+    <div class="card">
+      <h3>Parametres Puissance Scan</h3>
+      <div class="row">
+        <label>Start (W)</label>
+        <input type="number" id="scan-powe-start" step="0.01" data-cmd="POWE:STARt">
+      </div>
+      <div class="row">
+        <label>End (W)</label>
+        <input type="number" id="scan-powe-end" step="0.01" data-cmd="POWE:END">
+      </div>
+      <div class="row">
+        <label>Step (W)</label>
+        <input type="number" id="scan-powe-step" step="0.01" data-cmd="POWE:STEP">
+      </div>
+      <div class="row">
+        <label>Low (W)</label>
+        <input type="number" id="scan-powe-low" step="0.01" data-cmd="POWE:LOW">
+      </div>
+      <div class="row">
+        <label>High (W)</label>
+        <input type="number" id="scan-powe-high" step="0.01" data-cmd="POWE:HIGH">
+      </div>
+    </div>
+  </div>
+  <!-- List sub-section (visible only when mode=LIST) -->
+  <div id="ctrl-list-section" class="hidden">
+    <div class="card">
+      <h3>Test List</h3>
+      <div class="row">
+        <label>Nb etapes</label>
+        <input type="number" id="list-num" min="1" max="50" value="5" data-cmd="LIST:NUM">
+        <label>Loop</label>
+        <select id="list-loop" data-cmd="LIST:LOOP">
+          <option value="ON">ON</option>
+          <option value="OFF">OFF</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Mode</label>
+        <select id="list-mode" data-cmd="LIST:MODE">
+          <option value="AUTO">Auto (continu)</option>
+          <option value="TRIGGER">Trigger</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Parametres des etapes</h3>
+      <div class="row">
+        <button class="btn-accent" onclick="listGenTable()">Generer tableau</button>
+        <button class="btn-green" onclick="listSendAll()">Envoyer tout</button>
+        <button class="btn" onclick="listReadAll()">Lire tout</button>
+        <button class="btn-orange" onclick="listReadResults()">Lire resultats</button>
+      </div>
+      <div style="overflow-x:auto;margin-top:8px;">
+        <table id="list-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Mode</th>
+              <th>Valeur</th>
+              <th>Delay (s)</th>
+              <th>Compare</th>
+              <th>Max</th>
+              <th>Min</th>
+              <th>Resultat</th>
+            </tr>
+          </thead>
+          <tbody id="list-tbody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -543,227 +773,6 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <button class="btn" onclick="measClearGraph()">Effacer</button>
     </div>
     <canvas id="meas-canvas" width="1100" height="250" style="width:100%;margin-top:8px;"></canvas>
-  </div>
-</div>
-
-<!-- ========== DYNAMIQUE (TRAN) ========== -->
-<div id="tab-tran" class="tab">
-  <div class="card">
-    <h3>Test Dynamique (TRAN)</h3>
-    <div class="row">
-      <label>Etat</label>
-      <select id="tran-state" data-cmd="TRAN:STATe">
-        <option value="CC">CC</option>
-        <option value="CV">CV</option>
-      </select>
-    </div>
-    <div class="row">
-      <label>Mode</label>
-      <select id="tran-mode" data-cmd="TRAN:MODE">
-        <option value="COUT">Continu</option>
-        <option value="TRIG">Trigger</option>
-        <option value="PULS">Pulse</option>
-      </select>
-    </div>
-  </div>
-  <div class="grid2">
-    <div class="card">
-      <h3>Valeurs CC</h3>
-      <div class="row">
-        <label>Courant A (A)</label>
-        <input type="number" id="tran-curr-ta" step="0.001" value="1" data-cmd="CURR:TA">
-      </div>
-      <div class="row">
-        <label>Courant B (A)</label>
-        <input type="number" id="tran-curr-tb" step="0.001" value="0.5" data-cmd="CURR:TB">
-      </div>
-    </div>
-    <div class="card">
-      <h3>Valeurs CV</h3>
-      <div class="row">
-        <label>Tension A (V)</label>
-        <input type="number" id="tran-volt-ta" step="0.001" value="12" data-cmd="VOLT:TA">
-      </div>
-      <div class="row">
-        <label>Tension B (V)</label>
-        <input type="number" id="tran-volt-tb" step="0.001" value="6" data-cmd="VOLT:TB">
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Largeur d'impulsion</h3>
-    <div class="row">
-      <label>Pulse A (s)</label>
-      <input type="number" id="tran-wa" step="1" min="0" max="60" value="1" data-cmd="TIME:WA">
-      <label>Pulse B (s)</label>
-      <input type="number" id="tran-wb" step="1" min="0" max="60" value="1" data-cmd="TIME:WB">
-    </div>
-  </div>
-</div>
-
-<!-- ========== SCAN ========== -->
-<div id="tab-scan" class="tab">
-  <div class="card">
-    <h3>Test Scan</h3>
-    <div class="row">
-      <label>Type scan</label>
-      <select id="scan-type" data-cmd="SCAN:TYPE">
-        <option value="CC">CC</option>
-        <option value="CV">CV</option>
-        <option value="CP">CP</option>
-      </select>
-    </div>
-    <div class="row">
-      <label>Type seuil</label>
-      <select id="scan-thtype" data-cmd="SCAN:THTYpe">
-        <option value="VTH">VTH (Transition)</option>
-        <option value="DROP">DROP (Chute)</option>
-        <option value="VMIN">VMIN (Tension min)</option>
-      </select>
-    </div>
-    <div class="row">
-      <label>Comparaison</label>
-      <select id="scan-compare" data-cmd="SCAN:COMPare">
-        <option value="INCURR">Par courant</option>
-        <option value="INVOLT">Par tension</option>
-        <option value="INPOW">Par puissance</option>
-      </select>
-    </div>
-  </div>
-  <div class="grid2">
-    <div class="card">
-      <h3>Parametres CC Scan</h3>
-      <div class="row">
-        <label>Start (A)</label>
-        <input type="number" id="scan-curr-start" step="0.001" data-cmd="CURR:STARt">
-      </div>
-      <div class="row">
-        <label>End (A)</label>
-        <input type="number" id="scan-curr-end" step="0.001" data-cmd="CURR:END">
-      </div>
-      <div class="row">
-        <label>Step (A)</label>
-        <input type="number" id="scan-curr-step" step="0.001" data-cmd="CURR:STEP">
-      </div>
-      <div class="row">
-        <label>Low (A)</label>
-        <input type="number" id="scan-curr-low" step="0.001" data-cmd="CURR:LOW">
-      </div>
-      <div class="row">
-        <label>High (A)</label>
-        <input type="number" id="scan-curr-high" step="0.001" data-cmd="CURR:HIGH">
-      </div>
-    </div>
-    <div class="card">
-      <h3>Parametres Tension Scan</h3>
-      <div class="row">
-        <label>Start (V)</label>
-        <input type="number" id="scan-volt-start" step="0.001" data-cmd="VOLT:STARt">
-      </div>
-      <div class="row">
-        <label>End (V)</label>
-        <input type="number" id="scan-volt-end" step="0.001" data-cmd="VOLT:END">
-      </div>
-      <div class="row">
-        <label>Step (V)</label>
-        <input type="number" id="scan-volt-step" step="0.001" data-cmd="VOLT:STEP">
-      </div>
-      <div class="row">
-        <label>VTH (V)</label>
-        <input type="number" id="scan-volt-vth" step="0.001" data-cmd="VOLT:VTH">
-      </div>
-      <div class="row">
-        <label>VMIN (V)</label>
-        <input type="number" id="scan-volt-vmin" step="0.001" data-cmd="VOLT:VMIN">
-      </div>
-      <div class="row">
-        <label>Low (V)</label>
-        <input type="number" id="scan-volt-low" step="0.001" data-cmd="VOLT:LOW">
-      </div>
-      <div class="row">
-        <label>High (V)</label>
-        <input type="number" id="scan-volt-high" step="0.001" data-cmd="VOLT:HIGH">
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Temps par pas</h3>
-    <div class="row">
-      <label>Delay step (s)</label>
-      <input type="number" id="scan-time-step" step="1" min="0" max="9999" value="1" data-cmd="TIME:STEP">
-    </div>
-  </div>
-  <div class="card">
-    <h3>Parametres Puissance Scan</h3>
-    <div class="row">
-      <label>Start (W)</label>
-      <input type="number" id="scan-powe-start" step="0.01" data-cmd="POWE:STARt">
-    </div>
-    <div class="row">
-      <label>End (W)</label>
-      <input type="number" id="scan-powe-end" step="0.01" data-cmd="POWE:END">
-    </div>
-    <div class="row">
-      <label>Step (W)</label>
-      <input type="number" id="scan-powe-step" step="0.01" data-cmd="POWE:STEP">
-    </div>
-    <div class="row">
-      <label>Low (W)</label>
-      <input type="number" id="scan-powe-low" step="0.01" data-cmd="POWE:LOW">
-    </div>
-    <div class="row">
-      <label>High (W)</label>
-      <input type="number" id="scan-powe-high" step="0.01" data-cmd="POWE:HIGH">
-    </div>
-  </div>
-</div>
-
-<!-- ========== LIST ========== -->
-<div id="tab-list" class="tab">
-  <div class="card">
-    <h3>Test List</h3>
-    <div class="row">
-      <label>Nb etapes</label>
-      <input type="number" id="list-num" min="1" max="50" value="5" data-cmd="LIST:NUM">
-      <label>Loop</label>
-      <select id="list-loop" data-cmd="LIST:LOOP">
-        <option value="ON">ON</option>
-        <option value="OFF">OFF</option>
-      </select>
-    </div>
-    <div class="row">
-      <label>Mode</label>
-      <select id="list-mode" data-cmd="LIST:MODE">
-        <option value="AUTO">Auto (continu)</option>
-        <option value="TRIGGER">Trigger</option>
-      </select>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Parametres des etapes</h3>
-    <div class="row">
-      <button class="btn-accent" onclick="listGenTable()">Generer tableau</button>
-      <button class="btn-green" onclick="listSendAll()">Envoyer tout</button>
-      <button class="btn" onclick="listReadAll()">Lire tout</button>
-      <button class="btn-orange" onclick="listReadResults()">Lire resultats</button>
-    </div>
-    <div style="overflow-x:auto;margin-top:8px;">
-      <table id="list-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Mode</th>
-            <th>Valeur</th>
-            <th>Delay (s)</th>
-            <th>Compare</th>
-            <th>Max</th>
-            <th>Min</th>
-            <th>Resultat</th>
-          </tr>
-        </thead>
-        <tbody id="list-tbody"></tbody>
-      </table>
-    </div>
   </div>
 </div>
 
@@ -1197,15 +1206,15 @@ document.querySelectorAll('#tabs-nav button').forEach(btn => {
 // Controle
 // ============================================================
 const modeRows = {
-  CC: ['ctrl-value-card', 'ctrl-cc-row'],
-  CV: ['ctrl-value-card', 'ctrl-cv-row'],
-  CP: ['ctrl-value-card', 'ctrl-cp-row'],
-  CR: ['ctrl-value-card', 'ctrl-cr-row'],
-  CCCV: ['ctrl-value-card', 'ctrl-cccv-row'],
-  CRCV: ['ctrl-value-card', 'ctrl-crcv-row'],
-  TRAN: [],
-  LIST: [],
-  SCAN: [],
+  CC: ['ctrl-value-card', 'ctrl-cc-row', 'ctrl-limits-card', 'ctrl-offdelay-row'],
+  CV: ['ctrl-value-card', 'ctrl-cv-row', 'ctrl-limits-card', 'ctrl-offdelay-row'],
+  CP: ['ctrl-value-card', 'ctrl-cp-row', 'ctrl-limits-card', 'ctrl-offdelay-row'],
+  CR: ['ctrl-value-card', 'ctrl-cr-row', 'ctrl-limits-card', 'ctrl-offdelay-row'],
+  CCCV: ['ctrl-value-card', 'ctrl-cccv-row', 'ctrl-limits-card'],
+  CRCV: ['ctrl-value-card', 'ctrl-crcv-row', 'ctrl-limits-card'],
+  TRAN: ['ctrl-tran-section'],
+  LIST: ['ctrl-list-section'],
+  SCAN: ['ctrl-scan-section'],
   SHOR: [],
   BATT: ['ctrl-batt-section'],
   LED: ['ctrl-value-card', 'ctrl-led-row']
