@@ -620,61 +620,35 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       </div>
     </div>
     <div class="card" id="ctrl-batt-cc-card">
-      <h3>Parametres CC - Courants et tensions de coupure</h3>
-      <div class="grid2">
-        <div>
-          <div class="row">
-            <label>Courant 1 (A)</label>
-            <input type="number" id="batt-bcc1-i" step="0.001" value="1" data-cmd="CURR:BCC1">
-          </div>
-          <div class="row">
-            <label>Courant 2 (A)</label>
-            <input type="number" id="batt-bcc2-i" step="0.001" value="0.5" data-cmd="CURR:BCC2">
-          </div>
-          <div class="row">
-            <label>Courant 3 (A)</label>
-            <input type="number" id="batt-bcc3-i" step="0.001" value="0.2" data-cmd="CURR:BCC3">
-          </div>
-        </div>
-        <div>
-          <div class="row">
-            <label>Tension coupure 1 (V)</label>
-            <input type="number" id="batt-bcc1-v" step="0.001" value="3" data-cmd="VOLT:BCC1">
-          </div>
-          <div class="row">
-            <label>Tension coupure 2 (V)</label>
-            <input type="number" id="batt-bcc2-v" step="0.001" value="3" data-cmd="VOLT:BCC2">
-          </div>
-          <div class="row">
-            <label>Tension coupure 3 (V)</label>
-            <input type="number" id="batt-bcc3-v" step="0.001" value="2.8" data-cmd="VOLT:BCC3">
-          </div>
-        </div>
+      <h3>Parametres CC</h3>
+      <div class="row">
+        <label>Courant de decharge (A)</label>
+        <input type="number" id="batt-bcc1-i" step="0.001" value="1" data-cmd="CURR:BCC1">
       </div>
     </div>
     <div class="card hidden" id="ctrl-batt-cr-card">
-      <h3>Parametres CR - Resistance et tension de coupure</h3>
+      <h3>Parametres CR</h3>
       <div class="row">
         <label>Resistance (Ohm)</label>
         <input type="number" id="batt-bcr-r" step="0.01" value="10" data-cmd="RESI:BCR">
       </div>
-      <div class="row">
-        <label>Tension coupure CR (V)</label>
-        <input type="number" id="batt-bcr-v" step="0.001" value="3" data-cmd="VOLT:BCR">
-      </div>
     </div>
     <div class="card">
       <h3>Conditions de coupure (Cutoff)</h3>
-      <small style="color:var(--text2);display:block;margin-bottom:8px;">Le mode de coupure actif se selectionne depuis le panneau avant de l'appareil.</small>
       <div class="radio-grid">
         <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="volt" checked> Voltage</label>
         <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="capa"> Capacite</label>
         <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="ener"> Energie</label>
         <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="time"> Temps</label>
       </div>
-      <div id="batt-cut-volt" class="row" style="margin-top:8px;">
-        <label>Tension coupure (V)</label>
-        <span class="info-box" style="font-size:0.85em;color:var(--text2);">Voir parametres CC/CR ci-dessus</span>
+      <small style="color:var(--text2);display:block;margin-top:4px;">Le type de coupure actif doit etre selectionne sur le panneau avant — aucune commande SCPI n'existe pour ce reglage.</small>
+      <div id="batt-cut-volt-cc" class="row" style="margin-top:8px;">
+        <label>Tension de coupure (V)</label>
+        <input type="number" id="batt-bcc1-v" step="0.001" value="3" data-cmd="VOLT:BCC1">
+      </div>
+      <div id="batt-cut-volt-cr" class="row hidden" style="margin-top:8px;">
+        <label>Tension de coupure (V)</label>
+        <input type="number" id="batt-bcr-v" step="0.001" value="3" data-cmd="VOLT:BCR">
       </div>
       <div id="batt-cut-capa" class="row hidden" style="margin-top:8px;">
         <label>Cutoff Capacite (Ah)</label>
@@ -685,8 +659,10 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <input type="number" id="batt-bte" step="0.01" min="0" value="0" data-cmd="BATT:BTE">
       </div>
       <div id="batt-cut-time" class="row hidden" style="margin-top:8px;">
-        <label>Cutoff Temps (s)</label>
-        <input type="number" id="batt-btt" step="1" min="0" value="0" data-cmd="TIME:BTT">
+        <label>Cutoff Temps</label>
+        <input type="number" id="batt-btt-h" min="0" max="999" value="0" style="width:60px"> h
+        <input type="number" id="batt-btt-m" min="0" max="59" value="0" style="width:60px"> min
+        <input type="number" id="batt-btt-s" min="0" max="59" value="0" style="width:60px"> s
       </div>
     </div>
     <div class="card">
@@ -705,7 +681,7 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       </div>
     </div>
   </div>
-  <div class="card">
+  <div class="card" id="ctrl-onoff-card">
     <h3>Canal ON/OFF</h3>
     <div class="row">
       <label>Trigger</label>
@@ -1168,7 +1144,11 @@ async function refreshAll() {
   const sw = await dev.query('CH:SW?');
   if (sw) $('ctrl-sw-status').textContent = sw.trim();
   // Read battery results if in BATT mode
-  if (getCtrlMode() === 'BATT') { await battReadCapa(); await battReadEner(); }
+  if (getCtrlMode() === 'BATT') {
+    await battReadCapa(); await battReadEner();
+    const btt = await dev.query('TIME:BTT?');
+    if (btt) battSetTimeFields(parseFloat(stripPrefix(btt)));
+  }
 }
 
 async function doDisconnect() {
@@ -1233,6 +1213,7 @@ function setCtrlMode(mode) {
 function updateCtrlModeRows() {
   Object.values(modeRows).flat().forEach(id => $(id).classList.add('hidden'));
   (modeRows[getCtrlMode()] || []).forEach(id => $(id).classList.remove('hidden'));
+  $('ctrl-onoff-card').classList.toggle('hidden', getCtrlMode() === 'BATT');
 }
 
 document.querySelectorAll('input[name="ctrl-mode"]').forEach(r => {
@@ -1426,22 +1407,60 @@ function updateBattDModeRows() {
   const mode = getBattDMode();
   $('ctrl-batt-cc-card').classList.toggle('hidden', mode !== 'CC');
   $('ctrl-batt-cr-card').classList.toggle('hidden', mode !== 'CR');
+  updateBattCutoffRows();
 }
 
 document.querySelectorAll('input[name="batt-dmode"]').forEach(r => {
-  r.addEventListener('change', () => { updateBattDModeRows(); dev.send('BATT:MODE ' + getBattDMode()); });
+  r.addEventListener('change', async () => { updateBattDModeRows(); if (dev.connected) await dev.query('BATT:MODE ' + getBattDMode()); });
 });
 
 function updateBattCutoffRows() {
   const mode = document.querySelector('input[name="batt-cutoff-mode"]:checked');
-  const val = mode ? mode.value : 'volt';
-  ['volt', 'capa', 'ener', 'time'].forEach(k => {
-    $('batt-cut-' + k).classList.toggle('hidden', k !== val);
-  });
+  const cut = mode ? mode.value : 'volt';
+  const dmode = getBattDMode();
+  $('batt-cut-volt-cc').classList.toggle('hidden', !(cut === 'volt' && dmode === 'CC'));
+  $('batt-cut-volt-cr').classList.toggle('hidden', !(cut === 'volt' && dmode === 'CR'));
+  $('batt-cut-capa').classList.toggle('hidden', cut !== 'capa');
+  $('batt-cut-ener').classList.toggle('hidden', cut !== 'ener');
+  $('batt-cut-time').classList.toggle('hidden', cut !== 'time');
+}
+
+async function battSendCutoffValue() {
+  if (!dev.connected) return;
+  const mode = document.querySelector('input[name="batt-cutoff-mode"]:checked');
+  const cut = mode ? mode.value : 'volt';
+  if (cut === 'volt') {
+    const dmode = getBattDMode();
+    if (dmode === 'CC') await dev.query('VOLT:BCC1 ' + $('batt-bcc1-v').value);
+    else await dev.query('VOLT:BCR ' + $('batt-bcr-v').value);
+  } else if (cut === 'capa') {
+    await dev.query('BATT:BTC ' + $('batt-btc').value);
+  } else if (cut === 'ener') {
+    await dev.query('BATT:BTE ' + $('batt-bte').value);
+  } else if (cut === 'time') {
+    await dev.query('TIME:BTT ' + battGetTimeSeconds());
+  }
 }
 
 document.querySelectorAll('input[name="batt-cutoff-mode"]').forEach(r => {
-  r.addEventListener('change', updateBattCutoffRows);
+  r.addEventListener('change', () => { updateBattCutoffRows(); battSendCutoffValue(); });
+});
+
+function battGetTimeSeconds() {
+  return (parseInt($('batt-btt-h').value) || 0) * 3600
+       + (parseInt($('batt-btt-m').value) || 0) * 60
+       + (parseInt($('batt-btt-s').value) || 0);
+}
+
+function battSetTimeFields(totalSec) {
+  const s = Math.round(totalSec);
+  $('batt-btt-h').value = Math.floor(s / 3600);
+  $('batt-btt-m').value = Math.floor((s % 3600) / 60);
+  $('batt-btt-s').value = s % 60;
+}
+
+['batt-btt-h', 'batt-btt-m', 'batt-btt-s'].forEach(id => {
+  $(id).addEventListener('change', async () => { if (dev.connected) await dev.query('TIME:BTT ' + battGetTimeSeconds()); });
 });
 
 async function battReadDMode() {
@@ -1632,10 +1651,10 @@ function termClear() { $('terminal-log').innerHTML = ''; }
 
   // Auto-apply: inputs and selects with data-cmd send SCPI on change
   document.querySelectorAll('input[data-cmd]').forEach(el => {
-    el.addEventListener('change', () => { if (dev.connected) dev.send(el.dataset.cmd + ' ' + el.value); });
+    el.addEventListener('change', async () => { if (dev.connected) await dev.query(el.dataset.cmd + ' ' + el.value); });
   });
   document.querySelectorAll('select[data-cmd]').forEach(el => {
-    el.addEventListener('change', () => { if (dev.connected) dev.send(el.dataset.cmd + ' ' + el.value); });
+    el.addEventListener('change', async () => { if (dev.connected) await dev.query(el.dataset.cmd + ' ' + el.value); });
   });
 
   // Init mode rows display
