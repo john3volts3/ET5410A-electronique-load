@@ -1061,15 +1061,21 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <button class="btn" style="padding:4px 12px;font-size:0.85em;" onclick="mpptConfigLoad()">Charger config</button>
       </span>
     </div>
+    <div class="row" style="margin-bottom:4px;">
+      <label class="radio-label"><input type="radio" name="mppt-mode" value="scan" checked onchange="mpptModeChanged()"> Scan lineaire</label>
+      <label class="radio-label"><input type="radio" name="mppt-mode" value="dicho" onchange="mpptModeChanged()"> Dichotomie</label>
+    </div>
     <div class="row">
       <label>Courant depart (A)</label>
       <input type="number" id="mppt-i-start" step="0.01" min="0" value="0.1" style="width:90px;">
       <label>Courant max (A)</label>
       <input type="number" id="mppt-i-max" step="0.1" min="0" value="10" style="width:90px;">
-      <label>Step (A)</label>
-      <input type="number" id="mppt-i-step" step="0.01" min="0.01" value="0.05" style="width:90px;">
+      <span id="mppt-step-wrap"><label>Step (A)</label>
+      <input type="number" id="mppt-i-step" step="0.01" min="0.01" value="0.05" style="width:90px;"></span>
+      <span id="mppt-dicho-delay-wrap" style="display:none;"><label>Delai (ms)</label>
+      <input type="number" id="mppt-dicho-delay" step="50" min="100" value="500" style="width:90px;"></span>
     </div>
-    <div class="row">
+    <div class="row" id="mppt-row-extra">
       <label>Tension min (V)</label>
       <input type="number" id="mppt-v-min" step="0.1" min="0" value="1.0" style="width:90px;">
       <label>Delai entre steps (ms)</label>
@@ -2765,8 +2771,15 @@ async function mpptStart() {
   await dev.query('CH:SW ON');
   await new Promise(r => setTimeout(r, 500));
 
-  termLog('MPPT: scan demarre — I=' + iStart + ' -> ' + iMax + ' A, step=' + iStep + ' A', 'info');
-  mpptPollLoop(++mpptPollId);
+  const mode = document.querySelector('input[name="mppt-mode"]:checked').value;
+  if (mode === 'dicho') {
+    $('mppt-status').textContent = 'Dichotomie en cours...';
+    termLog('MPPT: dichotomie demarree — I=' + iStart + ' -> ' + iMax + ' A, tolerance=' + iStep + ' A', 'info');
+    mpptDichoLoop(++mpptPollId);
+  } else {
+    termLog('MPPT: scan demarre — I=' + iStart + ' -> ' + iMax + ' A, step=' + iStep + ' A', 'info');
+    mpptPollLoop(++mpptPollId);
+  }
 }
 
 async function mpptStop(sendOff) {
@@ -2817,56 +2830,101 @@ function mpptReset() {
   $('mppt-res-r').textContent = '--';
 }
 
-async function mpptPollLoop(myId) {
-  while (mpptTimer && mpptPollId === myId) {
-    const t0 = Date.now();
-    const shouldContinue = await mpptPoll();
-    if (!shouldContinue) { await mpptStop(); return; }
-    const elapsed = Date.now() - t0;
-    const delay = parseInt(g('mppt-delay')) || 500;
-    if (mpptTimer && mpptPollId === myId) {
-      await new Promise(r => setTimeout(r, Math.max(0, delay - elapsed)));
-    }
-  }
+function mpptModeChanged() {
+  const dicho = document.querySelector('input[name="mppt-mode"]:checked').value === 'dicho';
+  $('mppt-step-wrap').style.display = dicho ? 'none' : '';
+  $('mppt-dicho-delay-wrap').style.display = dicho ? '' : 'none';
+  $('mppt-row-extra').style.display = dicho ? 'none' : '';
 }
 
-async function mpptPoll() {
+async function mpptMeasureAt(current) {
+  await dev.query('CURR:CC ' + current.toFixed(3));
+  const mode = document.querySelector('input[name="mppt-mode"]:checked').value;
+  const delay = parseInt(g(mode === 'dicho' ? 'mppt-dicho-delay' : 'mppt-delay')) || 500;
+  await new Promise(r => setTimeout(r, delay));
   const r = await dev.query('MEAS:ALL?');
-  if (!r) return false;
+  if (!r) return null;
 
   const cleaned = r.replace(/^[A-Za-z]\s+/, '');
   const parts = cleaned.trim().split(/\s+/).map(s => parseFloat(s));
-  if (parts.length < 3) return false;
+  if (parts.length < 3) return null;
 
   const [ci, v, p] = parts;
+  const vMin = parseFloat(g('mppt-v-min'));
 
-  // Enregistrer le point
-  mpptData.i.push(mpptCurrentI);
+  // Enregistrer le point avec le courant mesure
+  mpptData.i.push(ci);
   mpptData.v.push(v);
   mpptData.p.push(p);
 
-  // Mettre à jour le meilleur point
+  // Mettre a jour le meilleur point
   if (p > mpptBest.p) {
-    mpptBest = { i: mpptCurrentI, v: v, p: p, r: mpptCurrentI > 0 ? v / mpptCurrentI : 0 };
+    mpptBest = { i: ci, v: v, p: p, r: ci > 0 ? v / ci : 0 };
   }
 
   // Stats live
   $('mppt-stat-v').textContent = v.toFixed(3) + ' V';
-  $('mppt-stat-i').textContent = mpptCurrentI.toFixed(3) + ' A';
+  $('mppt-stat-i').textContent = ci.toFixed(3) + ' A';
   $('mppt-stat-p').textContent = p.toFixed(3) + ' W';
   $('mppt-stat-step').textContent = 'Step: ' + mpptData.i.length;
 
   mpptDrawGraph();
 
-  // Vérifier conditions d'arrêt
-  const vMin = parseFloat(g('mppt-v-min'));
-  const iMax = parseFloat(g('mppt-i-max'));
-  const iStep = parseFloat(g('mppt-i-step'));
-
   if (v < vMin) {
     termLog('MPPT: arret — tension ' + v.toFixed(3) + ' V < Vmin ' + vMin + ' V', 'info');
-    return false;
+    return { v: v, p: p, lowV: true };
   }
+
+  return { v: v, p: p };
+}
+
+async function mpptDichoLoop(myId) {
+  let lo = parseFloat(g('mppt-i-start'));
+  let hi = parseFloat(g('mppt-i-max'));
+  const tol = parseFloat(g('mppt-i-step'));
+
+  while ((hi - lo) > tol && mpptTimer && mpptPollId === myId) {
+    const m1 = lo + (hi - lo) / 3;
+    const m2 = hi - (hi - lo) / 3;
+
+    const r1 = await mpptMeasureAt(m1);
+    if (!r1 || !mpptTimer || mpptPollId !== myId) break;
+    if (r1.lowV) { hi = m1; continue; }
+
+    const r2 = await mpptMeasureAt(m2);
+    if (!r2 || !mpptTimer || mpptPollId !== myId) break;
+    if (r2.lowV) { hi = m2; continue; }
+
+    if (r1.p < r2.p) {
+      lo = m1;
+    } else {
+      hi = m2;
+    }
+  }
+
+  // Mesure finale au milieu
+  if (mpptTimer && mpptPollId === myId) {
+    await mpptMeasureAt((lo + hi) / 2);
+  }
+
+  if (mpptTimer && mpptPollId === myId) {
+    await mpptStop();
+  }
+}
+
+async function mpptPollLoop(myId) {
+  while (mpptTimer && mpptPollId === myId) {
+    const shouldContinue = await mpptPoll();
+    if (!shouldContinue) { await mpptStop(); return; }
+  }
+}
+
+async function mpptPoll() {
+  const result = await mpptMeasureAt(mpptCurrentI);
+  if (!result || result.lowV) return false;
+
+  const iMax = parseFloat(g('mppt-i-max'));
+  const iStep = parseFloat(g('mppt-i-step'));
 
   mpptCurrentI += iStep;
   if (mpptCurrentI > iMax) {
@@ -2874,8 +2932,6 @@ async function mpptPoll() {
     return false;
   }
 
-  // Appliquer le nouveau courant
-  await dev.query('CURR:CC ' + mpptCurrentI.toFixed(3));
   return true;
 }
 
@@ -2888,15 +2944,22 @@ function mpptDrawGraph() {
 
   ctx.fillStyle = th.bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  if (d.i.length < 2) return;
+  const mpptMode = document.querySelector('input[name="mppt-mode"]:checked').value;
+  if (d.i.length < 1 || (d.i.length < 2 && mpptMode !== 'dicho')) return;
 
   const padL = 100, padR = 100, padT = 40, padB = 45;
   const w = canvas.width - padL - padR;
   const h = canvas.height - padT - padB;
 
   // Calcul des plages
-  const iMin = Math.min(...d.i);
-  const iMax = Math.max(...d.i);
+  let iMin, iMax;
+  if (mpptMode === 'dicho') {
+    iMin = parseFloat(g('mppt-i-start'));
+    iMax = parseFloat(g('mppt-i-max'));
+  } else {
+    iMin = Math.min(...d.i);
+    iMax = Math.max(...d.i);
+  }
   const iRange = iMax - iMin || 1;
 
   let vMin = Math.floor(Math.min(...d.v) * 10) / 10;
@@ -2941,27 +3004,44 @@ function mpptDrawGraph() {
     ctx.fillText(iVal.toFixed(2) + ' A', x, padT + h + 28);
   }
 
-  // Courbe tension
-  ctx.strokeStyle = th.voltLine;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (let j = 0; j < d.i.length; j++) {
-    const x = padL + ((d.i[j] - iMin) / iRange) * w;
-    const y = padT + h - ((d.v[j] - vMin) / vRange) * h;
-    if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
+  if (mpptMode === 'dicho') {
+    // Nuage de points
+    for (let j = 0; j < d.i.length; j++) {
+      const x = padL + ((d.i[j] - iMin) / iRange) * w;
+      const yV = padT + h - ((d.v[j] - vMin) / vRange) * h;
+      ctx.fillStyle = th.voltLine;
+      ctx.beginPath();
+      ctx.arc(x, yV, 4, 0, Math.PI * 2);
+      ctx.fill();
+      const yP = padT + h - ((d.p[j] - pMin) / pRange) * h;
+      ctx.fillStyle = th.powLine;
+      ctx.beginPath();
+      ctx.arc(x, yP, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else {
+    // Courbe tension
+    ctx.strokeStyle = th.voltLine;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let j = 0; j < d.i.length; j++) {
+      const x = padL + ((d.i[j] - iMin) / iRange) * w;
+      const y = padT + h - ((d.v[j] - vMin) / vRange) * h;
+      if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
 
-  // Courbe puissance
-  ctx.strokeStyle = th.powLine;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (let j = 0; j < d.i.length; j++) {
-    const x = padL + ((d.i[j] - iMin) / iRange) * w;
-    const y = padT + h - ((d.p[j] - pMin) / pRange) * h;
-    if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    // Courbe puissance
+    ctx.strokeStyle = th.powLine;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let j = 0; j < d.i.length; j++) {
+      const x = padL + ((d.i[j] - iMin) / iRange) * w;
+      const y = padT + h - ((d.p[j] - pMin) / pRange) * h;
+      if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
   }
-  ctx.stroke();
 
   // Point MPP
   if (mpptBest.p > 0) {
@@ -3047,7 +3127,7 @@ function mpptExportPNG() {
   });
 }
 
-const MPPT_CONFIG_IDS = ['mppt-i-start', 'mppt-i-max', 'mppt-i-step', 'mppt-v-min', 'mppt-delay'];
+const MPPT_CONFIG_IDS = ['mppt-i-start', 'mppt-i-max', 'mppt-i-step', 'mppt-v-min', 'mppt-delay', 'mppt-dicho-delay'];
 
 async function mpptConfigSave() {
   const now = new Date();
@@ -3060,6 +3140,7 @@ async function mpptConfigSave() {
   lines.push('');
   lines.push('# MPPT');
   lines = lines.concat(configCollect(MPPT_CONFIG_IDS));
+  lines.push('mppt-mode=' + document.querySelector('input[name="mppt-mode"]:checked').value);
   const content = lines.join('\n');
   try {
     const handle = await window.showSaveFilePicker({
@@ -3093,6 +3174,11 @@ async function mpptConfigLoad() {
     if (eq < 0) continue;
     const id = trimmed.substring(0, eq);
     const val = trimmed.substring(eq + 1);
+    if (id === 'mppt-mode') {
+      const radio = document.querySelector('input[name="mppt-mode"][value="' + val + '"]');
+      if (radio) radio.checked = true;
+      continue;
+    }
     if (MPPT_CONFIG_IDS.includes(id) || CONFIG_SYSTEM.includes(id)) {
       const el = $(id);
       if (el) el.value = val;
