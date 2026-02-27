@@ -262,6 +262,8 @@ table td input, table td select {
 .meas-card .value.curr { color: var(--color-curr); }
 .meas-card .value.powe { color: var(--color-powe); }
 .meas-card .value.resi { color: var(--color-resi); }
+.graph-volt { color: #e05050; }
+body.light .graph-volt { color: #c03030; }
 canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border); }
 @keyframes blink { 50% { opacity: 0; } }
 .status-none { color: var(--green); }
@@ -316,9 +318,9 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       </select>
     </div>
     <div class="row" style="margin-top:8px;">
-      <button class="btn" onclick="doIdentify()">Identifier (*IDN?)</button>
-      <button class="btn" onclick="refreshAll()">Lire tout</button>
-      <button class="btn" onclick="doBeep()">Beep</button>
+      <button class="btn needs-conn" onclick="doIdentify()">Identifier (*IDN?)</button>
+      <button class="btn needs-conn" onclick="refreshAll()">Lire tout</button>
+      <button class="btn needs-conn" onclick="doBeep()">Beep</button>
     </div>
   </div>
   <div class="card">
@@ -336,8 +338,8 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <div class="card">
     <h3>Mode de charge</h3>
     <div style="text-align:right;margin-bottom:4px;">
-      <button class="btn" onclick="configSave()">Sauver config</button>
-      <button class="btn" onclick="configLoad()">Charger config</button>
+      <button class="btn needs-conn" onclick="configSave()">Sauver config</button>
+      <button class="btn needs-conn" onclick="configLoad()">Charger config</button>
     </div>
     <div class="radio-grid">
       <label class="radio-label"><input type="radio" name="ctrl-mode" value="CC" checked> CC</label>
@@ -607,9 +609,9 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <h3>Parametres des etapes</h3>
       <div class="row">
         <button class="btn-accent" onclick="listGenTable()">Generer tableau</button>
-        <button class="btn-accent" onclick="listSendAll()">Envoyer tout</button>
-        <button class="btn" onclick="listReadAll()">Lire tout</button>
-        <button class="btn" onclick="listReadResults()">Lire resultats</button>
+        <button class="btn-accent needs-conn" onclick="listSendAll()">Envoyer tout</button>
+        <button class="btn needs-conn" onclick="listReadAll()">Lire tout</button>
+        <button class="btn needs-conn" onclick="listReadResults()">Lire resultats</button>
       </div>
       <div style="overflow-x:auto;margin-top:8px;">
         <table id="list-table">
@@ -692,10 +694,10 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
     <div class="card">
       <h3>Test Batterie</h3>
       <div class="row">
-        <button class="btn-accent" id="batt-start" onclick="battDoStart()">Start</button>
-        <button class="btn" id="batt-pause" onclick="battPauseResume()" disabled style="font-weight:bold;">Pause</button>
-        <button class="btn" id="batt-stop" onclick="battStop()" disabled>Stop</button>
-        <button class="btn" id="batt-reset" onclick="battReset()" style="display:none;">Reset</button>
+        <button class="btn-accent needs-conn" id="batt-start" onclick="battDoStart()">Start</button>
+        <button class="btn needs-conn" id="batt-pause" onclick="battPauseResume()" disabled style="font-weight:bold;">Pause</button>
+        <button class="btn needs-conn" id="batt-stop" onclick="battStop()" disabled>Stop</button>
+        <button class="btn needs-conn" id="batt-reset" onclick="battReset()" style="display:none;">Reset</button>
         <span id="batt-paused-label" style="display:none;color:var(--accent);font-weight:bold;font-size:1.1em;margin-left:8px;animation:blink 1s step-end infinite;">PAUSE</span>
       </div>
       <div class="row" style="margin-top:8px;">
@@ -711,7 +713,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <div id="batt-stats" style="display:flex;gap:32px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;">
         <div style="text-align:center;">
           <div style="color:var(--text2);font-size:0.75em;">TENSION</div>
-          <div id="batt-stat-v" style="font-size:1.3em;color:var(--color-volt);font-family:Consolas,monospace;">--.--- V</div>
+          <div id="batt-stat-v" class="graph-volt" style="font-size:1.3em;font-family:Consolas,monospace;">--.--- V</div>
         </div>
         <div style="text-align:center;">
           <div style="color:var(--text2);font-size:0.75em;" id="batt-stat-consigne-label">CONSIGNE</div>
@@ -765,8 +767,8 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       </select>
     </div>
     <div class="row" style="margin-top:12px;">
-      <button class="btn-accent" id="ctrl-btn-on" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlON()">ON</button>
-      <button class="btn" id="ctrl-btn-off" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlOFF()">OFF</button>
+      <button class="btn-accent needs-conn" id="ctrl-btn-on" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlON()">ON</button>
+      <button class="btn needs-conn" id="ctrl-btn-off" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlOFF()">OFF</button>
       <span id="ctrl-sw-status" style="font-size:1.1em;margin-left:10px;">--</span>
       <span id="ctrl-offdelay-countdown" style="display:none;margin-left:16px;font-family:Consolas,monospace;font-size:1.1em;color:var(--accent);">OFF dans --:--:--</span>
     </div>
@@ -819,8 +821,8 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <div class="card">
     <h3>Mesures temps reel</h3>
     <div class="row">
-      <button class="btn-accent" id="meas-start" onclick="measStart()">Demarrer</button>
-      <button class="btn" id="meas-stop" onclick="measStop()" disabled>Arreter</button>
+      <button class="btn-accent needs-conn" id="meas-start" onclick="measStart()">Demarrer</button>
+      <button class="btn needs-conn" id="meas-stop" onclick="measStop()" disabled>Arreter</button>
       <label>Intervalle (ms)</label>
       <input type="number" id="meas-interval" value="500" min="100" max="10000" step="100">
       <label>Status</label>
@@ -879,7 +881,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       </select>
       <label>Resultat</label>
       <span id="qual-result" class="info-box" style="min-width:100px;">--</span>
-      <button class="btn" onclick="qualReadResult()">Lire</button>
+      <button class="btn needs-conn" onclick="qualReadResult()">Lire</button>
     </div>
   </div>
   <div class="card">
@@ -956,7 +958,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <div class="row">
         <label>Status</label>
         <span id="sys-abno" class="info-box" style="min-width:100px;">--</span>
-        <button class="btn" onclick="sysReadAbno()">Lire</button>
+        <button class="btn needs-conn" onclick="sysReadAbno()">Lire</button>
       </div>
     </div>
     <div class="card">
@@ -1001,22 +1003,22 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
           <option value="2">9600</option>
           <option value="3" selected>14400</option>
         </select>
-        <button class="btn" onclick="scpiRead('COMM:BAUDrate?','sys-baud-disp')">Lire</button>
+        <button class="btn needs-conn" onclick="scpiRead('COMM:BAUDrate?','sys-baud-disp')">Lire</button>
         <span id="sys-baud-disp" style="font-size:0.85em;">--</span>
       </div>
       <div class="row">
         <label>Ventilateur</label>
         <span id="sys-fan" class="info-box" style="min-width:80px;">--</span>
-        <button class="btn" onclick="sysReadFan()">Lire</button>
+        <button class="btn needs-conn" onclick="sysReadFan()">Lire</button>
       </div>
       <div class="row">
         <label>SCPI version</label>
         <span id="sys-ver" class="info-box" style="min-width:80px;">--</span>
-        <button class="btn" onclick="sysReadVer()">Lire</button>
+        <button class="btn needs-conn" onclick="sysReadVer()">Lire</button>
       </div>
       <div class="row">
-        <button class="btn" onclick="dev.send('SYST:BEEP')">Beep</button>
-        <button class="btn" onclick="dev.send('SYST:LOCA')">Mode Local</button>
+        <button class="btn needs-conn" onclick="dev.send('SYST:BEEP')">Beep</button>
+        <button class="btn needs-conn" onclick="dev.send('SYST:LOCA')">Mode Local</button>
       </div>
     </div>
     <div class="card">
@@ -1026,10 +1028,10 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
         <input type="number" id="sys-filenum" min="1" max="400" value="1">
       </div>
       <div class="row">
-        <button class="btn" onclick="sysFileCheck()">Verifier</button>
-        <button class="btn" onclick="sysFileRecall()">Rappeler</button>
-        <button class="btn" onclick="sysFileStore()">Sauver</button>
-        <button class="btn" onclick="sysFileDelete()">Supprimer</button>
+        <button class="btn needs-conn" onclick="sysFileCheck()">Verifier</button>
+        <button class="btn needs-conn" onclick="sysFileRecall()">Rappeler</button>
+        <button class="btn needs-conn" onclick="sysFileStore()">Sauver</button>
+        <button class="btn needs-conn" onclick="sysFileDelete()">Supprimer</button>
         <span id="sys-file-status" style="font-size:0.85em;">--</span>
       </div>
     </div>
@@ -1064,8 +1066,8 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <div class="card">
     <h3>Configuration MPPT</h3>
     <div style="text-align:right;margin-bottom:4px;">
-      <button class="btn" onclick="mpptConfigSave()">Sauver config</button>
-      <button class="btn" onclick="mpptConfigLoad()">Charger config</button>
+      <button class="btn needs-conn" onclick="mpptConfigSave()">Sauver config</button>
+      <button class="btn needs-conn" onclick="mpptConfigLoad()">Charger config</button>
     </div>
     <div class="row" style="margin-bottom:4px;gap:40px;">
       <label class="radio-label"><input type="radio" name="mppt-mode" value="scan" checked onchange="mpptModeChanged()"> Scan lineaire</label>
@@ -1092,9 +1094,9 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <div class="card">
     <h3>Controle MPPT</h3>
     <div class="row">
-      <button class="btn-accent" id="mppt-start" onclick="mpptStart()">Start</button>
-      <button class="btn" id="mppt-stop" onclick="mpptStop()" disabled>Stop</button>
-      <button class="btn" id="mppt-reset" onclick="mpptReset()" style="display:none;">Reset</button>
+      <button class="btn-accent needs-conn" id="mppt-start" onclick="mpptStart()">Start</button>
+      <button class="btn needs-conn" id="mppt-stop" onclick="mpptStop()" disabled>Stop</button>
+      <button class="btn needs-conn" id="mppt-reset" onclick="mpptReset()" style="display:none;">Reset</button>
       <span id="mppt-status" style="margin-left:12px; font-weight:bold;"></span>
     </div>
     <div id="mppt-result" class="row" style="display:none; margin-top:10px; gap:24px; font-size:1.1em;">
@@ -1108,7 +1110,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <div class="card" id="mppt-graph-card" style="display:none;">
     <h3>Graphique MPPT</h3>
     <div class="row" style="gap:20px; font-family:Consolas,monospace; font-size:0.9em;">
-      <span style="color:var(--color-volt);" id="mppt-stat-v">-- V</span>
+      <span class="graph-volt" id="mppt-stat-v">-- V</span>
       <span style="color:var(--color-curr);" id="mppt-stat-i">-- A</span>
       <span style="color:var(--color-powe);" id="mppt-stat-p">-- W</span>
       <span style="color:var(--text2);" id="mppt-stat-step">Step: --</span>
@@ -1255,8 +1257,8 @@ let battGraphData = { t: [], v: [] };
 let battStartTime = 0;
 let battTheme = 'dark';
 const BATT_THEMES = {
-  dark: { bg:'#1a1b2e', grid:'#35354a', text:'#8888a0', voltLine:'#e8c84a', currLine:'#5ab0d6', voltText:'#e8c84a', currText:'#5ab0d6', cursor:'rgba(255,255,255,0.3)', tooltipBg:'rgba(30,30,50,0.9)', tooltipBorder:'#555', tooltipText:'#d4d4dc' },
-  light: { bg:'#f0f1f5', grid:'#d0d0de', text:'#6c6c82', voltLine:'#b09020', currLine:'#2878a6', voltText:'#b09020', currText:'#2878a6', cursor:'rgba(0,0,0,0.25)', tooltipBg:'rgba(255,255,255,0.95)', tooltipBorder:'#bbb', tooltipText:'#2a2a3e' }
+  dark: { bg:'#1a1b2e', grid:'#35354a', text:'#8888a0', voltLine:'#e05050', currLine:'#5ab0d6', voltText:'#e05050', currText:'#5ab0d6', cursor:'rgba(255,255,255,0.3)', tooltipBg:'rgba(30,30,50,0.9)', tooltipBorder:'#555', tooltipText:'#d4d4dc' },
+  light: { bg:'#f0f1f5', grid:'#d0d0de', text:'#6c6c82', voltLine:'#c03030', currLine:'#2878a6', voltText:'#c03030', currText:'#2878a6', cursor:'rgba(0,0,0,0.25)', tooltipBg:'rgba(255,255,255,0.95)', tooltipBorder:'#bbb', tooltipText:'#2a2a3e' }
 };
 let battPaused = false;
 let battElapsedAtPause = 0; // secondes accumulées avant la pause
@@ -1271,8 +1273,8 @@ let mpptBest = { i: 0, v: 0, p: 0, r: 0 };
 let mpptCurrentI = 0;
 let mpptTheme = 'dark';
 const MPPT_THEMES = {
-  dark:  { bg:'#1a1b2e', grid:'#35354a', text:'#8888a0', voltLine:'#e8c84a', powLine:'#d4a054', currText:'#5ab0d6', voltText:'#e8c84a', powText:'#d4a054', mppColor:'#5cb87a' },
-  light: { bg:'#f0f1f5', grid:'#d0d0de', text:'#6c6c82', voltLine:'#b09020', powLine:'#b08030', currText:'#2878a6', voltText:'#b09020', powText:'#b08030', mppColor:'#3d8f58' }
+  dark:  { bg:'#1a1b2e', grid:'#35354a', text:'#8888a0', voltLine:'#e05050', powLine:'#d4a054', currText:'#5ab0d6', voltText:'#e05050', powText:'#d4a054', mppColor:'#5cb87a' },
+  light: { bg:'#f0f1f5', grid:'#d0d0de', text:'#6c6c82', voltLine:'#c03030', powLine:'#b08030', currText:'#2878a6', voltText:'#c03030', powText:'#b08030', mppColor:'#3d8f58' }
 };
 
 // ============================================================
@@ -1317,6 +1319,14 @@ function updateConnStatus(on) {
   const lp = $('localpc-bar');
   lp.style.display = on ? '' : 'none';
   if (on) { pcSession = false; updateLocalPCBar(); }
+  updateUIConnState(on);
+}
+
+function updateUIConnState(on) {
+  document.querySelectorAll('.needs-conn').forEach(el => {
+    el.disabled = !on;
+    el.title = on ? '' : 'Connecter la charge d\'abord';
+  });
 }
 
 let pcSession = false;  // true = rester en PC, false = retour LOCAL après chaque commande
@@ -1655,9 +1665,9 @@ function ctrlLiveDrawGraph() {
   const ch = parseInt(g('ctrl-live-graph-ch'));
   const data = ctrlLiveHistory[ch];
   const cs = getComputedStyle(document.documentElement);
-  const colors = [cs.getPropertyValue('--color-volt').trim(), cs.getPropertyValue('--color-curr').trim(), cs.getPropertyValue('--color-powe').trim(), cs.getPropertyValue('--color-resi').trim()];
-  const labels = ['V', 'A', 'W', 'Ohm'];
   const isLight = document.body.classList.contains('light');
+  const colors = [isLight ? '#c03030' : '#e05050', cs.getPropertyValue('--color-curr').trim(), cs.getPropertyValue('--color-powe').trim(), cs.getPropertyValue('--color-resi').trim()];
+  const labels = ['V', 'A', 'W', 'Ohm'];
   const gridColor = isLight ? '#d0d0de' : '#35354a';
   const textColor = isLight ? '#6c6c82' : '#8888a0';
   const bgColor = isLight ? '#f0f1f5' : '#1a1b2e';
@@ -1917,9 +1927,9 @@ function measDrawGraph() {
   const ch = parseInt(g('meas-graph-ch'));
   const data = measHistory[ch];
   const cs = getComputedStyle(document.documentElement);
-  const colors = [cs.getPropertyValue('--color-volt').trim(), cs.getPropertyValue('--color-curr').trim(), cs.getPropertyValue('--color-powe').trim(), cs.getPropertyValue('--color-resi').trim()];
-  const labels = ['V', 'A', 'W', 'Ohm'];
   const isLight = document.body.classList.contains('light');
+  const colors = [isLight ? '#c03030' : '#e05050', cs.getPropertyValue('--color-curr').trim(), cs.getPropertyValue('--color-powe').trim(), cs.getPropertyValue('--color-resi').trim()];
+  const labels = ['V', 'A', 'W', 'Ohm'];
   const gridColor = isLight ? '#d0d0de' : '#35354a';
   const textColor = isLight ? '#6c6c82' : '#8888a0';
   const bgColor = isLight ? '#f0f1f5' : '#1a1b2e';
@@ -3374,6 +3384,9 @@ function toggleAppTheme() {
 
   // Generate initial list table
   listGenTable();
+
+  // Disable action buttons until connected
+  updateUIConnState(false);
 })();
 </script>
 </body>

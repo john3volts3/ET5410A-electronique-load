@@ -33,6 +33,9 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 - **Header** : titre, boutons Connecter/Déconnecter, radios PC/Auto, toggle thème ◐, status connexion
 - **Thème dark/light** : palette Slate neutre (accent bleu-gris), toggle persisté via localStorage
 - **Boutons ghost/outline** uniformes, cards avec h3 legend-style, police system-ui 18px
+- **needs-conn** : classe sur les boutons d'action SCPI, désactivés quand non connecté (tooltip explicatif)
+- **updateUIConnState(on)** : active/désactive tous les `.needs-conn` à la connexion/déconnexion
+- **Couleurs graphiques** : voltage en rouge (#e05050 dark / #c03030 light) dans tous les graphiques (BATT, MPPT, Mesures, Contrôle live) ; `--color-volt` (jaune) conservé pour les valeurs textuelles hors graphiques
 - **smartStep()** : incréments logarithmiques sur les spinners numériques
 - **Off Delay** : champs Heures/Minutes/Secondes avec décompte en temps réel
 - Ouvrir directement dans le navigateur via `file://` ou serveur local
