@@ -288,6 +288,7 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
   <button data-tab="tab-qual">Qualification</button>
   <button data-tab="tab-sys">Systeme</button>
   <button data-tab="tab-term">Terminal</button>
+  <button data-tab="tab-mppt">MPPT</button>
 </nav>
 
 <!-- ========== CONNEXION ========== -->
@@ -1050,6 +1051,59 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
   </div>
 </div>
 
+<!-- ========== MPPT ========== -->
+<div id="tab-mppt" class="tab">
+  <div class="card">
+    <h3>Configuration MPPT</h3>
+    <div class="row">
+      <label>Courant depart (A)</label>
+      <input type="number" id="mppt-i-start" step="0.01" min="0" value="0.1" style="width:90px;">
+      <label>Courant max (A)</label>
+      <input type="number" id="mppt-i-max" step="0.1" min="0" value="10" style="width:90px;">
+      <label>Step (A)</label>
+      <input type="number" id="mppt-i-step" step="0.01" min="0.01" value="0.05" style="width:90px;">
+    </div>
+    <div class="row">
+      <label>Tension min (V)</label>
+      <input type="number" id="mppt-v-min" step="0.1" min="0" value="1.0" style="width:90px;">
+      <label>Delai entre steps (ms)</label>
+      <input type="number" id="mppt-delay" step="50" min="100" value="500" style="width:90px;">
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Controle MPPT</h3>
+    <div class="row">
+      <button class="btn-accent" id="mppt-start" onclick="mpptStart()">Start</button>
+      <button class="btn" id="mppt-stop" onclick="mpptStop()" disabled>Stop</button>
+      <button class="btn" id="mppt-reset" onclick="mpptReset()" style="display:none;">Reset</button>
+      <span id="mppt-status" style="margin-left:12px; font-weight:bold;"></span>
+    </div>
+    <div id="mppt-result" class="row" style="display:none; margin-top:10px; gap:24px; font-size:1.1em;">
+      <div><span style="color:var(--text2);">MPP Courant:</span> <span id="mppt-res-i" style="color:#4fc3f7; font-weight:bold;">--</span> A</div>
+      <div><span style="color:var(--text2);">MPP Tension:</span> <span id="mppt-res-v" style="color:#ffeb3b; font-weight:bold;">--</span> V</div>
+      <div><span style="color:var(--text2);">MPP Puissance:</span> <span id="mppt-res-p" style="color:#69f0ae; font-weight:bold;">--</span> W</div>
+      <div><span style="color:var(--text2);">MPP Resistance:</span> <span id="mppt-res-r" style="color:#ce93d8; font-weight:bold;">--</span> Ohm</div>
+    </div>
+  </div>
+
+  <div class="card" id="mppt-graph-card" style="display:none;">
+    <h3>Graphique MPPT</h3>
+    <div class="row" style="gap:20px; font-family:Consolas,monospace; font-size:0.9em;">
+      <span style="color:#ffeb3b;" id="mppt-stat-v">-- V</span>
+      <span style="color:#4fc3f7;" id="mppt-stat-i">-- A</span>
+      <span style="color:#ff9800;" id="mppt-stat-p">-- W</span>
+      <span style="color:var(--text2);" id="mppt-stat-step">Step: --</span>
+    </div>
+    <canvas id="mppt-canvas" width="1100" height="320" style="width:100%; background:#000; border-radius:4px; margin-top:6px;"></canvas>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn" onclick="mpptExportCSV()">Export CSV</button>
+      <button class="btn" onclick="mpptExportPNG()">Export PNG</button>
+      <button class="btn" onclick="mpptToggleTheme()">Theme</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // Classe ET5410 — Communication Web Serial
@@ -1132,7 +1186,7 @@ class ET5410 {
     const data = new TextEncoder().encode(fullCmd + '\n');
     await this.writer.write(data);
     termLog('TX: ' + fullCmd, 'tx');
-    if (!pcSession && !battTimer && !ctrlLiveTimer && !cmd.startsWith('SYST:LOCA')) {
+    if (!pcSession && !battTimer && !ctrlLiveTimer && !mpptTimer && !cmd.startsWith('SYST:LOCA')) {
       await sendLocalReturn();
     }
   }
@@ -1161,7 +1215,7 @@ class ET5410 {
     termLog('TX: ' + fullCmd, 'tx');
     const result = await promise;
     if (result !== null) termLog('RX: ' + result, 'rx');
-    if (!pcSession && !battTimer && !ctrlLiveTimer && !cmd.startsWith('SYST:LOCA')) {
+    if (!pcSession && !battTimer && !ctrlLiveTimer && !mpptTimer && !cmd.startsWith('SYST:LOCA')) {
       await sendLocalReturn();
     }
     return result;
@@ -1191,6 +1245,17 @@ let battElapsedAtPause = 0; // secondes accumulées avant la pause
 let battCursorX = -1; // position X du curseur dans le canvas (-1 = pas de curseur)
 let battZoomMinutes = 10;
 const BATT_ZOOM_LEVELS = [1, 2, 5, 10, 20, 30, 60, 120, 240, 480];
+
+let mpptTimer = null;
+let mpptPollId = 0;
+let mpptData = { i: [], v: [], p: [] };
+let mpptBest = { i: 0, v: 0, p: 0, r: 0 };
+let mpptCurrentI = 0;
+let mpptTheme = 'dark';
+const MPPT_THEMES = {
+  dark:  { bg:'#000000', grid:'#333333', text:'#888888', voltLine:'#ffeb3b', powLine:'#ff9800', currText:'#4fc3f7', voltText:'#ffeb3b', powText:'#ff9800', mppColor:'#69f0ae' },
+  light: { bg:'#ffffff', grid:'#cccccc', text:'#555555', voltLine:'#f9a825', powLine:'#e65100', currText:'#0277bd', voltText:'#f9a825', powText:'#e65100', mppColor:'#2e7d32' }
+};
 
 // ============================================================
 // Helpers
@@ -1329,6 +1394,7 @@ async function doDisconnect() {
   ctrlLiveStop();
   battStop(false);
   measStop();
+  mpptStop(false);
   if (dev.connected) await dev.send('SYST:LOCA');
   await dev.disconnect();
   $('device-detail').textContent = 'Non connecte';
@@ -1479,7 +1545,7 @@ function ctrlLiveStop() {
   ctrlLiveTimer = null;
   ctrlLivePollId++;
   $('ctrl-live-meas').classList.add('hidden');
-  if (!battTimer && !measTimer) {
+  if (!battTimer && !measTimer && !mpptTimer) {
     pcSession = false;
     updateLocalPCBar();
   }
@@ -1743,7 +1809,7 @@ function measStop() {
   if (measTimer) { clearInterval(measTimer); measTimer = null; }
   $('meas-start').disabled = false;
   $('meas-stop').disabled = true;
-  if (!battTimer && !ctrlLiveTimer) {
+  if (!battTimer && !ctrlLiveTimer && !mpptTimer) {
     pcSession = false;
     updateLocalPCBar();
     sendLocalReturn();
@@ -2090,7 +2156,7 @@ async function battStop(sendOff) {
   $('batt-paused-label').style.display = 'none';
   // Afficher Reset si des données existent
   if (battGraphData.t.length > 0) $('batt-reset').style.display = '';
-  if (!measTimer && !ctrlLiveTimer) {
+  if (!measTimer && !ctrlLiveTimer && !mpptTimer) {
     pcSession = false;
     updateLocalPCBar();
   }
@@ -2630,6 +2696,350 @@ async function sysFileCheck() {
 async function sysFileRecall() { await dev.send('FILE:RECAll ' + g('sys-filenum')); $('sys-file-status').textContent = 'Rappele'; }
 async function sysFileStore() { await dev.send('FILE:STORe ' + g('sys-filenum')); $('sys-file-status').textContent = 'Sauvegarde'; }
 async function sysFileDelete() { await dev.send('FILE:DELEte ' + g('sys-filenum')); $('sys-file-status').textContent = 'Supprime'; }
+
+// ============================================================
+// MPPT
+// ============================================================
+async function mpptStart() {
+  if (!dev.connected) {
+    $('mppt-status').textContent = 'Non connecte!';
+    $('mppt-status').style.color = 'var(--red)';
+    termLog('MPPT: Non connecte!', 'err');
+    return;
+  }
+  if (mpptTimer) return;
+
+  const iStart = parseFloat(g('mppt-i-start'));
+  const iMax = parseFloat(g('mppt-i-max'));
+  const iStep = parseFloat(g('mppt-i-step'));
+  const vMin = parseFloat(g('mppt-v-min'));
+  const delay = parseInt(g('mppt-delay'));
+
+  if (isNaN(iStart) || isNaN(iMax) || isNaN(iStep) || isNaN(vMin) || isNaN(delay)) {
+    $('mppt-status').textContent = 'Parametres invalides!';
+    $('mppt-status').style.color = 'var(--red)';
+    termLog('MPPT: parametres invalides', 'err');
+    return;
+  }
+  if (iStart >= iMax) {
+    $('mppt-status').textContent = 'Courant depart >= courant max!';
+    $('mppt-status').style.color = 'var(--red)';
+    termLog('MPPT: courant depart doit etre < courant max', 'err');
+    return;
+  }
+  if (iStep <= 0) {
+    $('mppt-status').textContent = 'Step doit etre > 0!';
+    $('mppt-status').style.color = 'var(--red)';
+    termLog('MPPT: step doit etre > 0', 'err');
+    return;
+  }
+
+  // Reset data
+  mpptData = { i: [], v: [], p: [] };
+  mpptBest = { i: 0, v: 0, p: 0, r: 0 };
+  mpptCurrentI = iStart;
+
+  // UI
+  $('mppt-start').disabled = true;
+  $('mppt-stop').disabled = false;
+  $('mppt-reset').style.display = 'none';
+  $('mppt-result').style.display = 'none';
+  $('mppt-graph-card').style.display = '';
+  $('mppt-status').textContent = 'Scan en cours...';
+  $('mppt-status').style.color = 'var(--orange)';
+
+  // Activer pcSession et passer en CC
+  pcSession = true;
+  updateLocalPCBar();
+  mpptTimer = true;
+
+  await dev.query('CH:MODE CC');
+  await dev.query('CURR:CC ' + mpptCurrentI.toFixed(3));
+  await new Promise(r => setTimeout(r, 300));
+  await dev.query('CH:SW ON');
+  await new Promise(r => setTimeout(r, 500));
+
+  termLog('MPPT: scan demarre — I=' + iStart + ' -> ' + iMax + ' A, step=' + iStep + ' A', 'info');
+  mpptPollLoop(++mpptPollId);
+}
+
+async function mpptStop(sendOff) {
+  if (!mpptTimer) return;
+  mpptTimer = null;
+  mpptPollId++;
+
+  $('mppt-start').disabled = false;
+  $('mppt-stop').disabled = true;
+  if (mpptData.i.length > 0) $('mppt-reset').style.display = '';
+
+  if (!measTimer && !ctrlLiveTimer && !battTimer) {
+    pcSession = false;
+    updateLocalPCBar();
+  }
+
+  if (sendOff !== false && dev.connected) {
+    await dev.query('CH:SW OFF');
+  }
+
+  // Afficher résultat MPP
+  if (mpptBest.p > 0) {
+    $('mppt-res-i').textContent = mpptBest.i.toFixed(3);
+    $('mppt-res-v').textContent = mpptBest.v.toFixed(3);
+    $('mppt-res-p').textContent = mpptBest.p.toFixed(3);
+    $('mppt-res-r').textContent = mpptBest.r.toFixed(3);
+    $('mppt-result').style.display = '';
+    $('mppt-status').textContent = 'Scan termine — MPP trouve';
+    $('mppt-status').style.color = 'var(--green)';
+    termLog('MPPT: MPP trouve — I=' + mpptBest.i.toFixed(3) + ' A, V=' + mpptBest.v.toFixed(3) + ' V, P=' + mpptBest.p.toFixed(3) + ' W, R=' + mpptBest.r.toFixed(3) + ' Ohm', 'info');
+  } else {
+    $('mppt-status').textContent = 'Scan arrete';
+    $('mppt-status').style.color = 'var(--text2)';
+  }
+}
+
+function mpptReset() {
+  mpptData = { i: [], v: [], p: [] };
+  mpptBest = { i: 0, v: 0, p: 0, r: 0 };
+  mpptCurrentI = 0;
+  $('mppt-graph-card').style.display = 'none';
+  $('mppt-reset').style.display = 'none';
+  $('mppt-result').style.display = 'none';
+  $('mppt-status').textContent = '';
+  $('mppt-res-i').textContent = '--';
+  $('mppt-res-v').textContent = '--';
+  $('mppt-res-p').textContent = '--';
+  $('mppt-res-r').textContent = '--';
+}
+
+async function mpptPollLoop(myId) {
+  while (mpptTimer && mpptPollId === myId) {
+    const t0 = Date.now();
+    const shouldContinue = await mpptPoll();
+    if (!shouldContinue) { await mpptStop(); return; }
+    const elapsed = Date.now() - t0;
+    const delay = parseInt(g('mppt-delay')) || 500;
+    if (mpptTimer && mpptPollId === myId) {
+      await new Promise(r => setTimeout(r, Math.max(0, delay - elapsed)));
+    }
+  }
+}
+
+async function mpptPoll() {
+  const r = await dev.query('MEAS:ALL?');
+  if (!r) return false;
+
+  const cleaned = r.replace(/^[A-Za-z]\s+/, '');
+  const parts = cleaned.trim().split(/\s+/).map(s => parseFloat(s));
+  if (parts.length < 3) return false;
+
+  const [ci, v, p] = parts;
+
+  // Enregistrer le point
+  mpptData.i.push(mpptCurrentI);
+  mpptData.v.push(v);
+  mpptData.p.push(p);
+
+  // Mettre à jour le meilleur point
+  if (p > mpptBest.p) {
+    mpptBest = { i: mpptCurrentI, v: v, p: p, r: mpptCurrentI > 0 ? v / mpptCurrentI : 0 };
+  }
+
+  // Stats live
+  $('mppt-stat-v').textContent = v.toFixed(3) + ' V';
+  $('mppt-stat-i').textContent = mpptCurrentI.toFixed(3) + ' A';
+  $('mppt-stat-p').textContent = p.toFixed(3) + ' W';
+  $('mppt-stat-step').textContent = 'Step: ' + mpptData.i.length;
+
+  mpptDrawGraph();
+
+  // Vérifier conditions d'arrêt
+  const vMin = parseFloat(g('mppt-v-min'));
+  const iMax = parseFloat(g('mppt-i-max'));
+  const iStep = parseFloat(g('mppt-i-step'));
+
+  if (v < vMin) {
+    termLog('MPPT: arret — tension ' + v.toFixed(3) + ' V < Vmin ' + vMin + ' V', 'info');
+    return false;
+  }
+
+  mpptCurrentI += iStep;
+  if (mpptCurrentI > iMax) {
+    termLog('MPPT: arret — courant max ' + iMax + ' A atteint', 'info');
+    return false;
+  }
+
+  // Appliquer le nouveau courant
+  await dev.query('CURR:CC ' + mpptCurrentI.toFixed(3));
+  return true;
+}
+
+function mpptDrawGraph() {
+  const canvas = $('mppt-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const d = mpptData;
+  const th = MPPT_THEMES[mpptTheme];
+
+  ctx.fillStyle = th.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (d.i.length < 2) return;
+
+  const padL = 100, padR = 100, padT = 40, padB = 45;
+  const w = canvas.width - padL - padR;
+  const h = canvas.height - padT - padB;
+
+  // Calcul des plages
+  const iMin = Math.min(...d.i);
+  const iMax = Math.max(...d.i);
+  const iRange = iMax - iMin || 1;
+
+  let vMin = Math.floor(Math.min(...d.v) * 10) / 10;
+  let vMax = Math.ceil(Math.max(...d.v) * 10) / 10;
+  if (vMax - vMin < 0.5) { vMin -= 0.25; vMax += 0.25; }
+  const vRange = vMax - vMin;
+
+  let pMin = 0;
+  let pMax = Math.ceil(Math.max(...d.p) * 10) / 10;
+  if (pMax < 0.1) pMax = 0.1;
+  const pRange = pMax - pMin;
+
+  ctx.font = '20px Consolas';
+
+  // Grille horizontale
+  ctx.strokeStyle = th.grid;
+  ctx.lineWidth = 0.5;
+  for (let n = 0; n <= 5; n++) {
+    const y = padT + (h / 5) * n;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + w, y); ctx.stroke();
+    // Labels tension à gauche
+    const vVal = vMax - (vRange / 5) * n;
+    ctx.fillStyle = th.voltText;
+    ctx.textAlign = 'right';
+    ctx.fillText(vVal.toFixed(2) + ' V', padL - 8, y + 7);
+    // Labels puissance à droite
+    const pVal = pMax - (pRange / 5) * n;
+    ctx.fillStyle = th.powText;
+    ctx.textAlign = 'left';
+    ctx.fillText(pVal.toFixed(2) + ' W', padL + w + 8, y + 7);
+  }
+
+  // Grille verticale + labels courant
+  ctx.strokeStyle = th.grid;
+  ctx.fillStyle = th.currText;
+  ctx.textAlign = 'center';
+  const iStepGrid = iRange / 5;
+  for (let n = 0; n <= 5; n++) {
+    const iVal = iMin + iStepGrid * n;
+    const x = padL + (n / 5) * w;
+    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + h); ctx.stroke();
+    ctx.fillText(iVal.toFixed(2) + ' A', x, padT + h + 28);
+  }
+
+  // Courbe tension
+  ctx.strokeStyle = th.voltLine;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let j = 0; j < d.i.length; j++) {
+    const x = padL + ((d.i[j] - iMin) / iRange) * w;
+    const y = padT + h - ((d.v[j] - vMin) / vRange) * h;
+    if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Courbe puissance
+  ctx.strokeStyle = th.powLine;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let j = 0; j < d.i.length; j++) {
+    const x = padL + ((d.i[j] - iMin) / iRange) * w;
+    const y = padT + h - ((d.p[j] - pMin) / pRange) * h;
+    if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Point MPP
+  if (mpptBest.p > 0) {
+    const bx = padL + ((mpptBest.i - iMin) / iRange) * w;
+    const byP = padT + h - ((mpptBest.p - pMin) / pRange) * h;
+
+    // Ligne verticale pointillée
+    ctx.strokeStyle = th.mppColor;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(bx, padT);
+    ctx.lineTo(bx, padT + h);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Cercle sur la courbe puissance
+    ctx.fillStyle = th.mppColor;
+    ctx.beginPath();
+    ctx.arc(bx, byP, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Label MPP
+    ctx.fillStyle = th.mppColor;
+    ctx.font = 'bold 22px Consolas';
+    ctx.textAlign = 'center';
+    const labelY = (byP - 18 < padT) ? byP + 28 : byP - 18;
+    ctx.fillText('MPP ' + mpptBest.p.toFixed(2) + ' W', bx, labelY);
+    ctx.font = '20px Consolas';
+  }
+}
+
+function mpptToggleTheme() {
+  mpptTheme = (mpptTheme === 'dark') ? 'light' : 'dark';
+  mpptDrawGraph();
+}
+
+function mpptExportCSV() {
+  if (mpptData.i.length === 0) return;
+  let csv = 'Courant(A);Tension(V);Puissance(W)\n';
+  for (let j = 0; j < mpptData.i.length; j++) {
+    csv += mpptData.i[j].toFixed(3) + ';' + mpptData.v[j].toFixed(3) + ';' + mpptData.p[j].toFixed(3) + '\n';
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'mppt_scan.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function mpptExportPNG() {
+  if (mpptData.i.length < 2) return;
+  const th = MPPT_THEMES[mpptTheme];
+  const srcCanvas = $('mppt-canvas');
+  const statsH = 50;
+  const tmp = document.createElement('canvas');
+  tmp.width = srcCanvas.width;
+  tmp.height = srcCanvas.height + statsH;
+  const ctx = tmp.getContext('2d');
+  ctx.fillStyle = th.bg;
+  ctx.fillRect(0, 0, tmp.width, tmp.height);
+  // Stats
+  ctx.font = '14px Consolas';
+  const stats = [
+    { label: $('mppt-stat-v').textContent, color: th.voltLine },
+    { label: $('mppt-stat-i').textContent, color: th.currText },
+    { label: $('mppt-stat-p').textContent, color: th.powLine },
+    { label: 'MPP: ' + mpptBest.p.toFixed(3) + ' W @ ' + mpptBest.i.toFixed(3) + ' A', color: th.mppColor }
+  ];
+  const gap = tmp.width / (stats.length + 1);
+  stats.forEach((s, i) => {
+    ctx.fillStyle = s.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(s.label, gap * (i + 1), 32);
+  });
+  // Graphique
+  ctx.drawImage(srcCanvas, 0, statsH);
+  tmp.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'mppt_scan.png'; a.click();
+    URL.revokeObjectURL(url);
+  });
+}
 
 // ============================================================
 // Terminal
