@@ -728,6 +728,13 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <span id="batt-zoom-label" style="font-size:0.75em;color:var(--text2);margin:0 8px;">10 min</span>
         <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battGraphZoom(1)">Zoom +</button>
         <button class="btn" style="padding:2px 8px;font-size:0.75em;margin-left:8px;" onclick="battGraphAutoZoom()">Auto</button>
+        <span style="margin-left:16px;border-left:1px solid var(--border);padding-left:16px;">
+          <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battToggleTheme()">Theme</button>
+          <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battExportTXT()">TXT</button>
+          <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battExportCSV()">Excel</button>
+          <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battExportSVG()">SVG</button>
+          <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battExportPNG()">Image</button>
+        </span>
       </div>
     </div>
   </div>
@@ -1120,6 +1127,11 @@ let battPollId = 0; // compteur anti-doublon de boucles poll
 const measHistory = [[], [], [], []]; // V, I, P, R
 let battGraphData = { t: [], v: [], i: [] };
 let battStartTime = 0;
+let battTheme = 'dark';
+const BATT_THEMES = {
+  dark: { bg:'#000000', grid:'#333333', text:'#888888', voltLine:'#ff5252', currLine:'#448aff', voltText:'#ff5252', currText:'#448aff', cursor:'rgba(255,255,255,0.4)', tooltipBg:'rgba(30,30,30,0.85)', tooltipBorder:'#555', tooltipText:'#eee' },
+  light: { bg:'#ffffff', grid:'#cccccc', text:'#555555', voltLine:'#d32f2f', currLine:'#1565c0', voltText:'#d32f2f', currText:'#1565c0', cursor:'rgba(0,0,0,0.3)', tooltipBg:'rgba(255,255,255,0.92)', tooltipBorder:'#999', tooltipText:'#222' }
+};
 let battPaused = false;
 let battElapsedAtPause = 0; // secondes accumulées avant la pause
 let battCursorX = -1; // position X du curseur dans le canvas (-1 = pas de curseur)
@@ -1797,28 +1809,27 @@ async function battPoll() {
 }
 
 function battDrawGraph() {
+  const th = BATT_THEMES[battTheme];
   const canvas = $('batt-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const data = battGraphData;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = th.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (data.t.length < 2) return;
 
   const padL = 55, padR = 55, padT = 15, padB = 30;
   const w = canvas.width - padL - padR;
   const h = canvas.height - padT - padB;
 
-  // Échelles temps
   const tMax = battZoomMinutes * 60;
   const tMin = Math.max(0, data.t[data.t.length - 1] - tMax);
 
-  // Index de début dans la fenêtre visible
   let startIdx = 0;
   for (let j = 0; j < data.t.length; j++) {
     if (data.t[j] >= tMin) { startIdx = Math.max(0, j - 1); break; }
   }
 
-  // Échelles tension (arrondi joli)
   const visV = data.v.slice(startIdx);
   const visI = data.i.slice(startIdx);
   let vMin = Math.floor(Math.min(...visV) * 10) / 10;
@@ -1830,26 +1841,26 @@ function battDrawGraph() {
 
   ctx.font = '11px Consolas';
 
-  // Grille horizontale (5 divisions)
-  ctx.strokeStyle = '#333';
+  // Grille horizontale
+  ctx.strokeStyle = th.grid;
   ctx.lineWidth = 0.5;
   for (let n = 0; n <= 5; n++) {
     const y = padT + (h / 5) * n;
     ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + w, y); ctx.stroke();
     const vVal = vMax - ((vMax - vMin) / 5) * n;
-    ctx.fillStyle = '#ff5252';
+    ctx.fillStyle = th.voltText;
     ctx.textAlign = 'right';
     ctx.fillText(vVal.toFixed(2) + ' V', padL - 4, y + 4);
     const iVal = iMax - ((iMax - iMin) / 5) * n;
-    ctx.fillStyle = '#448aff';
+    ctx.fillStyle = th.currText;
     ctx.textAlign = 'left';
     ctx.fillText(iVal.toFixed(3) + ' A', padL + w + 4, y + 4);
   }
 
-  // Grille verticale (temps)
+  // Grille verticale
   const stepSec = battTimeGridStep(tMax);
-  ctx.strokeStyle = '#333';
-  ctx.fillStyle = '#888';
+  ctx.strokeStyle = th.grid;
+  ctx.fillStyle = th.text;
   ctx.textAlign = 'center';
   const tStart = Math.ceil(tMin / stepSec) * stepSec;
   for (let t = tStart; t <= tMin + tMax; t += stepSec) {
@@ -1859,8 +1870,8 @@ function battDrawGraph() {
     ctx.fillText(fmtTimeSec(t), x, padT + h + 14);
   }
 
-  // Courbe tension (rouge)
-  ctx.strokeStyle = '#ff5252';
+  // Courbe tension
+  ctx.strokeStyle = th.voltLine;
   ctx.lineWidth = 2;
   ctx.beginPath();
   let first = true;
@@ -1871,8 +1882,8 @@ function battDrawGraph() {
   }
   ctx.stroke();
 
-  // Courbe courant (bleu)
-  ctx.strokeStyle = '#448aff';
+  // Courbe courant
+  ctx.strokeStyle = th.currLine;
   ctx.lineWidth = 2;
   ctx.beginPath();
   first = true;
@@ -1883,9 +1894,9 @@ function battDrawGraph() {
   }
   ctx.stroke();
 
-  // Trait vertical du curseur
+  // Curseur
   if (battCursorX >= padL && battCursorX <= padL + w) {
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.strokeStyle = th.cursor;
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 3]);
     ctx.beginPath();
@@ -1933,6 +1944,142 @@ function battGraphAutoZoom() {
   $('batt-zoom-label').textContent = battZoomMinutes >= 60
     ? (battZoomMinutes / 60) + ' h' : battZoomMinutes + ' min';
   battDrawGraph();
+}
+
+function battToggleTheme() {
+  battTheme = (battTheme === 'dark') ? 'light' : 'dark';
+  const th = BATT_THEMES[battTheme];
+  const tip = $('batt-tooltip');
+  tip.style.background = th.tooltipBg;
+  tip.style.color = th.tooltipText;
+  tip.style.borderColor = th.tooltipBorder;
+  battDrawGraph();
+}
+
+function battDownload(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function battExportTXT() {
+  const d = battGraphData;
+  if (d.t.length === 0) return;
+  let txt = 'Time(s)\tVoltage(V)\tCurrent(A)\n';
+  for (let i = 0; i < d.t.length; i++) {
+    txt += d.t[i].toFixed(1) + '\t' + d.v[i].toFixed(4) + '\t' + d.i[i].toFixed(4) + '\n';
+  }
+  battDownload(txt, 'battery_test.txt', 'text/plain');
+}
+
+function battExportCSV() {
+  const d = battGraphData;
+  if (d.t.length === 0) return;
+  let csv = 'Time(s);Voltage(V);Current(A)\n';
+  for (let i = 0; i < d.t.length; i++) {
+    csv += d.t[i].toFixed(1) + ';' + d.v[i].toFixed(4) + ';' + d.i[i].toFixed(4) + '\n';
+  }
+  battDownload(csv, 'battery_test.csv', 'text/csv');
+}
+
+function battExportSVG() {
+  const d = battGraphData;
+  if (d.t.length < 2) return;
+  const th = BATT_THEMES[battTheme];
+  const W = 1100, H = 320;
+  const padL = 55, padR = 55, padT = 15, padB = 30;
+  const w = W - padL - padR, h = H - padT - padB;
+  const tMax = battZoomMinutes * 60;
+  const tMin = Math.max(0, d.t[d.t.length - 1] - tMax);
+  let startIdx = 0;
+  for (let j = 0; j < d.t.length; j++) {
+    if (d.t[j] >= tMin) { startIdx = Math.max(0, j - 1); break; }
+  }
+  const visV = d.v.slice(startIdx), visI = d.i.slice(startIdx);
+  let vMin = Math.floor(Math.min(...visV) * 10) / 10;
+  let vMax = Math.ceil(Math.max(...visV) * 10) / 10;
+  if (vMax - vMin < 0.5) { vMin -= 0.25; vMax += 0.25; }
+  let iMin = 0, iMax = Math.ceil(Math.max(...visI) * 10) / 10;
+  if (iMax < 0.1) iMax = 1;
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" font-family="Consolas,monospace" font-size="11">`;
+  svg += `<rect width="${W}" height="${H}" fill="${th.bg}"/>`;
+  // Grille horizontale + labels
+  for (let n = 0; n <= 5; n++) {
+    const y = padT + (h / 5) * n;
+    svg += `<line x1="${padL}" y1="${y}" x2="${padL+w}" y2="${y}" stroke="${th.grid}" stroke-width="0.5"/>`;
+    const vVal = (vMax - ((vMax - vMin) / 5) * n).toFixed(2);
+    const iVal = (iMax - ((iMax - iMin) / 5) * n).toFixed(3);
+    svg += `<text x="${padL-4}" y="${y+4}" fill="${th.voltText}" text-anchor="end">${vVal} V</text>`;
+    svg += `<text x="${padL+w+4}" y="${y+4}" fill="${th.currText}" text-anchor="start">${iVal} A</text>`;
+  }
+  // Grille verticale + labels temps
+  const stepSec = battTimeGridStep(tMax);
+  const tStart = Math.ceil(tMin / stepSec) * stepSec;
+  for (let t = tStart; t <= tMin + tMax; t += stepSec) {
+    const x = padL + ((t - tMin) / tMax) * w;
+    if (x < padL || x > padL + w) continue;
+    svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT+h}" stroke="${th.grid}" stroke-width="0.5"/>`;
+    svg += `<text x="${x}" y="${padT+h+14}" fill="${th.text}" text-anchor="middle">${fmtTimeSec(t)}</text>`;
+  }
+  // Courbe tension
+  let pts = '';
+  for (let j = startIdx; j < d.t.length; j++) {
+    const x = padL + ((d.t[j] - tMin) / tMax) * w;
+    const y = padT + h - ((d.v[j] - vMin) / (vMax - vMin)) * h;
+    pts += (j === startIdx ? '' : ' ') + x.toFixed(1) + ',' + y.toFixed(1);
+  }
+  svg += `<polyline points="${pts}" fill="none" stroke="${th.voltLine}" stroke-width="2"/>`;
+  // Courbe courant
+  pts = '';
+  for (let j = startIdx; j < d.t.length; j++) {
+    const x = padL + ((d.t[j] - tMin) / tMax) * w;
+    const y = padT + h - ((d.i[j] - iMin) / (iMax - iMin)) * h;
+    pts += (j === startIdx ? '' : ' ') + x.toFixed(1) + ',' + y.toFixed(1);
+  }
+  svg += `<polyline points="${pts}" fill="none" stroke="${th.currLine}" stroke-width="2"/>`;
+  svg += '</svg>';
+  battDownload(svg, 'battery_test.svg', 'image/svg+xml');
+}
+
+function battExportPNG() {
+  const d = battGraphData;
+  if (d.t.length < 2) return;
+  const th = BATT_THEMES[battTheme];
+  const srcCanvas = $('batt-canvas');
+  const statsH = 50;
+  const tmp = document.createElement('canvas');
+  tmp.width = srcCanvas.width;
+  tmp.height = srcCanvas.height + statsH;
+  const ctx = tmp.getContext('2d');
+  ctx.fillStyle = th.bg;
+  ctx.fillRect(0, 0, tmp.width, tmp.height);
+  // Stats
+  ctx.font = '14px Consolas';
+  const stats = [
+    { label: $('batt-stat-v').textContent, color: th.voltLine },
+    { label: $('batt-stat-i').textContent, color: th.currLine },
+    { label: $('batt-stat-p').textContent, color: '#ff9800' },
+    { label: $('batt-stat-ah').textContent, color: '#69f0ae' },
+    { label: $('batt-stat-wh').textContent, color: '#ce93d8' },
+    { label: $('batt-stat-time').textContent, color: th.text }
+  ];
+  const gap = tmp.width / (stats.length + 1);
+  stats.forEach((s, i) => {
+    ctx.fillStyle = s.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(s.label, gap * (i + 1), 32);
+  });
+  // Graphique
+  ctx.drawImage(srcCanvas, 0, statsH);
+  tmp.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'battery_test.png'; a.click();
+    URL.revokeObjectURL(url);
+  });
 }
 
 // ============================================================
