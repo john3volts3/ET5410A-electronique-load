@@ -257,6 +257,7 @@ table td input, table td select {
 .meas-card .value.powe { color: #ff9800; }
 .meas-card .value.resi { color: #ce93d8; }
 canvas { background: #000; border-radius: var(--radius); border: 1px solid var(--border); }
+@keyframes blink { 50% { opacity: 0; } }
 .status-none { color: var(--green); }
 .status-warn { color: var(--orange); }
 .status-error { color: var(--red); }
@@ -631,7 +632,7 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="ener"> Energie</label>
         <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="time"> Temps</label>
       </div>
-      <small style="color:var(--text2);display:block;margin-top:4px;">Le type de coupure actif doit etre selectionne sur le panneau avant — aucune commande SCPI n'existe pour ce reglage.</small>
+      <small style="color:#ff5252;font-weight:bold;display:block;margin-top:4px;">Le type de coupure actif doit etre selectionne sur le panneau avant (bouton SET) — aucune commande SCPI n'existe pour ce reglage.</small>
       <div id="batt-cut-volt-cc" class="row" style="margin-top:8px;">
         <label>Tension de coupure (V)</label>
         <input type="number" id="batt-bcc1-v" step="0.001" value="3" data-cmd="VOLT:BCC1">
@@ -677,7 +678,10 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       <h3>Test Batterie</h3>
       <div class="row">
         <button class="btn-green" id="batt-start" onclick="battDoStart()">Start</button>
+        <button class="btn" id="batt-pause" onclick="battPauseResume()" disabled style="font-weight:bold;">Pause</button>
         <button class="btn-red" id="batt-stop" onclick="battStop()" disabled>Stop</button>
+        <button class="btn" id="batt-reset" onclick="battReset()" style="display:none;">Reset</button>
+        <span id="batt-paused-label" style="display:none;color:#ffeb3b;font-weight:bold;font-size:1.1em;margin-left:8px;animation:blink 1s step-end infinite;">PAUSE</span>
       </div>
       <div class="row" style="margin-top:8px;">
         <label>Capacite dechargee</label>
@@ -1115,6 +1119,8 @@ let battTimer = null;
 const measHistory = [[], [], [], []]; // V, I, P, R
 let battGraphData = { t: [], v: [], i: [] };
 let battStartTime = 0;
+let battPaused = false;
+let battElapsedAtPause = 0; // secondes accumulées avant la pause
 let battCursorX = -1; // position X du curseur dans le canvas (-1 = pas de curseur)
 let battZoomMinutes = 10;
 const BATT_ZOOM_LEVELS = [1, 2, 5, 10, 20, 30, 60, 120, 240, 480];
@@ -1656,11 +1662,19 @@ async function battReadEner() {
 
 async function battDoStart() {
   pcSession = true;
+  battPaused = false;
   $('batt-start').disabled = true;
+  $('batt-pause').disabled = false;
+  $('batt-pause').textContent = 'Pause';
+  $('batt-pause').style.background = '';
+  $('batt-pause').style.color = '';
   $('batt-stop').disabled = false;
+  $('batt-reset').style.display = 'none';
+  $('batt-paused-label').style.display = 'none';
   updateLocalPCBar();
   // Init graphique
   battGraphData = { t: [], v: [], i: [] };
+  battElapsedAtPause = 0;
   battStartTime = Date.now();
   battZoomMinutes = 10;
   $('batt-zoom-label').textContent = '10 min';
@@ -1676,15 +1690,56 @@ async function battDoStart() {
   battPoll();
 }
 
+async function battPauseResume() {
+  if (!battPaused) {
+    // Pause
+    battPaused = true;
+    battElapsedAtPause = (Date.now() - battStartTime) / 1000;
+    if (battTimer) { clearInterval(battTimer); battTimer = null; }
+    $('batt-pause').textContent = 'Reprendre';
+    $('batt-pause').style.background = '#ffeb3b';
+    $('batt-pause').style.color = '#000';
+    $('batt-paused-label').style.display = '';
+    if (dev.connected) await ctrlSW('OFF');
+  } else {
+    // Reprendre
+    battPaused = false;
+    battStartTime = Date.now() - battElapsedAtPause * 1000;
+    $('batt-pause').textContent = 'Pause';
+    $('batt-pause').style.background = '';
+    $('batt-pause').style.color = '';
+    $('batt-paused-label').style.display = 'none';
+    pcSession = true;
+    updateLocalPCBar();
+    await ctrlSW('ON');
+    battTimer = setInterval(battPoll, 1000);
+    battPoll();
+  }
+}
+
 async function battStop(sendOff) {
   if (battTimer) { clearInterval(battTimer); battTimer = null; }
+  battPaused = false;
   if ($('batt-start')) $('batt-start').disabled = false;
+  if ($('batt-pause')) { $('batt-pause').disabled = true; $('batt-pause').textContent = 'Pause'; $('batt-pause').style.background = ''; $('batt-pause').style.color = ''; }
   if ($('batt-stop')) $('batt-stop').disabled = true;
+  $('batt-paused-label').style.display = 'none';
+  // Afficher Reset si des données existent
+  if (battGraphData.t.length > 0) $('batt-reset').style.display = '';
   if (!measTimer) {
     pcSession = false;
     updateLocalPCBar();
   }
   if (sendOff !== false && dev.connected) await ctrlSW('OFF');
+}
+
+function battReset() {
+  battGraphData = { t: [], v: [], i: [] };
+  battElapsedAtPause = 0;
+  $('batt-graph-card').style.display = 'none';
+  $('batt-reset').style.display = 'none';
+  $('batt-capa').textContent = '--';
+  $('batt-ener').textContent = '--';
 }
 
 async function battPoll() {
