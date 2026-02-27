@@ -1,0 +1,701 @@
+
+============================================================
+Scan: 2026-02-25 14:07:27
+IDN: ET5410A+ 09702321027 V1.01.2302.019 V1.06.2247.016
+============================================================
+BATT:BTT?            -> Rcmd err
+BATT:BTV?            -> Rcmd err
+BATT:BTM?            -> Rcmd err
+BATT:STOP?           -> Rcmd err
+BATT:STOM?           -> Rcmd err
+BATT:CUTO?           -> Rcmd err
+BATT:CUTM?           -> Rcmd err
+BATT:BTF?            -> Rcmd err
+BATT:BTG?            -> Rcmd err
+BATT:BTH?            -> Rcmd err
+BATT:BTI?            -> Rcmd err
+BATT:BTJ?            -> Rcmd err
+BATT:BTK?            -> Rcmd err
+BATT:BTL?            -> Rcmd err
+BATT:BTN?            -> Rcmd err
+BATT:BTO?            -> Rcmd err
+BATT:BTP?            -> Rcmd err
+BATT:BTQ?            -> Rcmd err
+BATT:BTR?            -> Rcmd err
+BATT:BTS?            -> Rcmd err
+BATT:BTU?            -> Rcmd err
+BATT:BTW?            -> Rcmd err
+BATT:BTX?            -> Rcmd err
+BATT:BTY?            -> Rcmd err
+BATT:BTZ?            -> Rcmd err
+
+============================================================
+Scan Phase 2: 2026-02-25 14:09:26
+IDN: ET5410A+ 09702321027 V1.01.2302.019 V1.06.2247.016
+============================================================
+BATT:TIME?           -> Rcmd err
+BATT:TCUT?           -> Rcmd err
+BATT:TIMC?           -> Rcmd err
+BATT:TLIM?           -> Rcmd err
+BATT:VOLT?           -> Rcmd err
+BATT:VCUT?           -> Rcmd err
+BATT:VLIM?           -> Rcmd err
+BATT:CUTS?           -> Rcmd err
+BATT:COFF?           -> Rcmd err
+BATT:STMD?           -> Rcmd err
+BATT:SMOD?           -> Rcmd err
+BATT:TERM?           -> Rcmd err
+BATT:ENDL?           -> Rcmd err
+BATT:ENDC?           -> Rcmd err
+BATT:CLIM?           -> Rcmd err
+BATT:ELIM?           -> Rcmd err
+BATT:ECAP?           -> Rcmd err
+BATT:TYPE?           -> Rcmd err
+BATT:STAT?           -> Rcmd err
+BATT:HOUR?           -> Rcmd err
+BATT:MINU?           -> Rcmd err
+BATT:COND?           -> Rcmd err
+BATT:DISC?           -> Rcmd err
+BATT:DMOD?           -> Rcmd err
+
+============================================================
+Phase: verify — 2026-02-25 14:11:16
+IDN: ET5410A+ 09702321027 V1.01.2302.019 V1.06.2247.016
+============================================================
+
+--- verify: 14:11:16 ---
+  BATT:MODE?             -> CC  <<<< FOUND
+  BATT:CAPA?             -> R 3.132  <<<< FOUND
+  BATT:ENER?             -> R136.032  <<<< FOUND
+  BATT:BTC?              -> R0.00  <<<< FOUND
+  BATT:BTE?              -> R0.00  <<<< FOUND
+
+============================================================
+Phase: other_sub — 2026-02-25 14:11:28
+IDN: ET5410A+ 09702321027 V1.01.2302.019 V1.06.2247.016
+============================================================
+
+--- other_sub: 14:11:28 ---
+  TIME:BATT?             -> Rcmd err
+  TIME:BAT?              -> Rcmd err
+  TIME:CUT?              -> Rcmd err
+  TIME:CUTB?             -> Rcmd err
+  TIME:DISC?             -> Rcmd err
+  TIME:BCAP?             -> Rcmd err
+  TIME:BVOL?             -> Rcmd err
+  TIME:BENT?             -> Rcmd err
+  TIME:BTIM?             -> Rcmd err
+  TIME:BCC?              -> Rcmd err
+  TIME:BCR?              -> Rcmd err
+  TIME:BC?               -> Rcmd err
+  TIME:BD?               -> Rcmd err
+  TIME:BE?               -> Rcmd err
+  TIME:BT?               -> Rcmd err
+  LOAD:BATT?             -> Rcmd err
+  LOAD:BAT?              -> Rcmd err
+  LOAD:CUT?              -> Rcmd err
+  LOAD:CUTM?             -> Rcmd err
+  LOAD:STOP?             -> Rcmd err
+  LOAD:STOM?             -> Rcmd err
+  LOAD:TERM?             -> Rcmd err
+  LOAD:BTC?              -> Rcmd err
+  LOAD:BTE?              -> Rcmd err
+  LOAD:BTT?              -> Rcmd err
+  LOAD:BTV?              -> Rcmd err
+  LOAD:DISC?             -> Rcmd err
+  LOAD:DMOD?             -> Rcmd err
+  SYSSET:BATT?           -> Rcmd err
+  SYSSET:BAT?            -> Rcmd err
+  SYSSET:BTC?            -> Rcmd err
+  SYSSET:BTE?            -> Rcmd err
+  SYSSET:CUTM?           -> Rcmd err
+  VOLT:BAT?              -> Rcmd err
+  VOLT:BATT?             -> Rcmd err
+  VOLT:DISC?             -> Rcmd err
+  VOLT:CUT?              -> Rcmd err
+  VOLT:CUTB?             -> Rcmd err
+  VOLT:BC?               -> Rcmd err
+  VOLT:BD?               -> Rcmd err
+  VOLT:BT?               -> Rcmd err
+  CURR:BAT?              -> Rcmd err
+  CURR:BATT?             -> Rcmd err
+  CURR:CUT?              -> Rcmd err
+  CURR:DISC?             -> Rcmd err
+  CURR:BC?               -> Rcmd err
+  CURR:BD?               -> Rcmd err
+  BATT:BT:C?             -> Rcmd err
+  BATT:BT:E?             -> Rcmd err
+  BATT:BT:T?             -> Rcmd err
+  BATT:BT:V?             -> Rcmd err
+  BATT:BT:M?             -> Rcmd err
+  BATT:TIMER?            -> Rcmd err
+  BATT:ENERGY?           -> Rcmd err
+  BATT:CAPAC?            -> Rcmd err
+  BATT:VOLTA?            -> Rcmd err
+  BATT:CUTOFF?           -> Rcmd err
+  BATT:STOPM?            -> Rcmd err
+  BATT:ENDMOD?           -> Rcmd err
+  BATT:DISCHA?           -> Rcmd err
+
+============================================================
+Phase: batt4 — 2026-02-25 14:12:42
+IDN: ET5410A+ 09702321027 V1.01.2302.019 V1.06.2247.016
+============================================================
+
+--- batt4: 14:12:42 ---
+  BATT:TIME?             -> Rcmd err
+  BATT:TIMS?             -> Rcmd err
+  BATT:TIMV?             -> Rcmd err
+  BATT:TIML?             -> Rcmd err
+  BATT:TVAL?             -> Rcmd err
+  BATT:TOUT?             -> Rcmd err
+  BATT:VOLT?             -> Rcmd err
+  BATT:VCUT?             -> Rcmd err
+  BATT:VMIN?             -> Rcmd err
+  BATT:VMAX?             -> Rcmd err
+  BATT:VLIM?             -> Rcmd err
+  BATT:VBAT?             -> Rcmd err
+  BATT:VEND?             -> Rcmd err
+  BATT:CURR?             -> Rcmd err
+  BATT:IMAX?             -> Rcmd err
+  BATT:IMIN?             -> Rcmd err
+  BATT:ILIM?             -> Rcmd err
+  BATT:IVAL?             -> Rcmd err
+  BATT:ENER?             -> R136.032  <<<< FOUND
+  BATT:ECUT?             -> Rcmd err
+  BATT:ELIM?             -> Rcmd err
+  BATT:EVAL?             -> Rcmd err
+  BATT:EMAX?             -> Rcmd err
+  BATT:CAPA?             -> R 3.132  <<<< FOUND
+  BATT:CCUT?             -> Rcmd err
+  BATT:CLIM?             -> Rcmd err
+  BATT:CVAL?             -> Rcmd err
+  BATT:CMAX?             -> Rcmd err
+  BATT:STOP?             -> Rcmd err
+  BATT:CUTS?             -> Rcmd err
+  BATT:COFF?             -> Rcmd err
+  BATT:COFM?             -> Rcmd err
+  BATT:CUTM?             -> Rcmd err
+  BATT:CUTT?             -> Rcmd err
+  BATT:CUTE?             -> Rcmd err
+  BATT:CUTC?             -> Rcmd err
+  BATT:CUTV?             -> Rcmd err
+  BATT:ENDL?             -> Rcmd err
+  BATT:ENDM?             -> Rcmd err
+  BATT:ENDT?             -> Rcmd err
+  BATT:ENDV?             -> Rcmd err
+  BATT:ENDE?             -> Rcmd err
+  BATT:ENDC?             -> Rcmd err
+  BATT:TERM?             -> Rcmd err
+  BATT:TRMD?             -> Rcmd err
+  BATT:STMD?             -> Rcmd err
+  BATT:STPV?             -> Rcmd err
+  BATT:STPE?             -> Rcmd err
+  BATT:STPC?             -> Rcmd err
+  BATT:STPT?             -> Rcmd err
+  BATT:SHDN?             -> Rcmd err
+  BATT:MODE?             -> CC  <<<< FOUND
+  BATT:STAT?             -> Rcmd err
+  BATT:TYPE?             -> Rcmd err
+  BATT:DMOD?             -> Rcmd err
+  BATT:CMOD?             -> Rcmd err
+  BATT:SMOD?             -> Rcmd err
+  BATT:TMOD?             -> Rcmd err
+  BATT:BMOD?             -> Rcmd err
+  BATT:RMOD?             -> Rcmd err
+  BATT:DISC?             -> Rcmd err
+  BATT:DCHG?             -> Rcmd err
+  BATT:DCHR?             -> Rcmd err
+  BATT:DBAT?             -> Rcmd err
+  BATT:PROT?             -> Rcmd err
+  BATT:PLIM?             -> Rcmd err
+  BATT:PLEV?             -> Rcmd err
+  BATT:OVER?             -> Rcmd err
+  BATT:OLIM?             -> Rcmd err
+  BATT:RUNS?             -> Rcmd err
+  BATT:RUNT?             -> Rcmd err
+  BATT:AUTO?             -> Rcmd err
+  BATT:LOOP?             -> Rcmd err
+  BATT:CYCL?             -> Rcmd err
+  BATT:COUN?             -> Rcmd err
+
+============================================================
+Phase: batt3 — 2026-02-25 14:14:42
+IDN: ET5410A+ 09702321027 V1.01.2302.019 V1.06.2247.016
+============================================================
+
+--- batt3: 14:14:42 ---
+  BATT:BUA?              -> Rcmd err
+  BATT:BUB?              -> Rcmd err
+  BATT:BUC?              -> Rcmd err
+  BATT:BUD?              -> Rcmd err
+  BATT:BUE?              -> Rcmd err
+  BATT:BUF?              -> Rcmd err
+  BATT:BUG?              -> Rcmd err
+  BATT:BUH?              -> Rcmd err
+  BATT:BUI?              -> Rcmd err
+  BATT:BUJ?              -> Rcmd err
+  BATT:BUK?              -> Rcmd err
+  BATT:BUL?              -> Rcmd err
+  BATT:BUM?              -> Rcmd err
+  BATT:BUN?              -> Rcmd err
+  BATT:BUO?              -> Rcmd err
+  BATT:BUP?              -> Rcmd err
+  BATT:BUQ?              -> Rcmd err
+  BATT:BUR?              -> Rcmd err
+  BATT:BUS?              -> Rcmd err
+  BATT:BUT?              -> Rcmd err
+  BATT:BUU?              -> Rcmd err
+  BATT:BUV?              -> Rcmd err
+  BATT:BUW?              -> Rcmd err
+  BATT:BUX?              -> Rcmd err
+  BATT:BUY?              -> Rcmd err
+  BATT:BUZ?              -> Rcmd err
+  BATT:BVA?              -> Rcmd err
+  BATT:BVB?              -> Rcmd err
+  BATT:BVC?              -> Rcmd err
+  BATT:BVD?              -> Rcmd err
+  BATT:BVE?              -> Rcmd err
+  BATT:BVF?              -> Rcmd err
+  BATT:BVG?              -> Rcmd err
+  BATT:BVH?              -> Rcmd err
+  BATT:BVI?              -> Rcmd err
+  BATT:BVJ?              -> Rcmd err
+  BATT:BVK?              -> Rcmd err
+  BATT:BVL?              -> Rcmd err
+  BATT:BVM?              -> Rcmd err
+  BATT:BVN?              -> Rcmd err
+  BATT:BVO?              -> Rcmd err
+  BATT:BVP?              -> Rcmd err
+  BATT:BVQ?              -> Rcmd err
+  BATT:BVR?              -> Rcmd err
+  BATT:BVS?              -> Rcmd err
+  BATT:BVT?              -> Rcmd err
+  BATT:BVU?              -> Rcmd err
+  BATT:BVV?              -> Rcmd err
+  BATT:BVW?              -> Rcmd err
+  BATT:BVX?              -> Rcmd err
+  BATT:BVY?              -> Rcmd err
+  BATT:BVZ?              -> Rcmd err
+  BATT:BWA?              -> Rcmd err
+  BATT:BWB?              -> Rcmd err
+  BATT:BWC?              -> Rcmd err
+  BATT:BWD?              -> Rcmd err
+  BATT:BWE?              -> Rcmd err
+  BATT:BWF?              -> Rcmd err
+  BATT:BWG?              -> Rcmd err
+  BATT:BWH?              -> Rcmd err
+  BATT:BWI?              -> Rcmd err
+  BATT:BWJ?              -> Rcmd err
+  BATT:BWK?              -> Rcmd err
+  BATT:BWL?              -> Rcmd err
+  BATT:BWM?              -> Rcmd err
+  BATT:BWN?              -> Rcmd err
+  BATT:BWO?              -> Rcmd err
+  BATT:BWP?              -> Rcmd err
+  BATT:BWQ?              -> Rcmd err
+  BATT:BWR?              -> Rcmd err
+  BATT:BWS?              -> Rcmd err
+  BATT:BWT?              -> Rcmd err
+  BATT:BWU?              -> Rcmd err
+  BATT:BWV?              -> Rcmd err
+  BATT:BWW?              -> Rcmd err
+  BATT:BWX?              -> Rcmd err
+  BATT:BWY?              -> Rcmd err
+  BATT:BWZ?              -> Rcmd err
+  BATT:BXA?              -> Rcmd err
+  BATT:BXB?              -> Rcmd err
+  BATT:BXC?              -> Rcmd err
+  BATT:BXD?              -> Rcmd err
+  BATT:BXE?              -> Rcmd err
+  BATT:BXF?              -> Rcmd err
+  BATT:BXG?              -> Rcmd err
+  BATT:BXH?              -> Rcmd err
+  BATT:BXI?              -> Rcmd err
+  BATT:BXJ?              -> Rcmd err
+  BATT:BXK?              -> Rcmd err
+  BATT:BXL?              -> Rcmd err
+  BATT:BXM?              -> Rcmd err
+  BATT:BXN?              -> Rcmd err
+  BATT:BXO?              -> Rcmd err
+  BATT:BXP?              -> Rcmd err
+  BATT:BXQ?              -> Rcmd err
+  BATT:BXR?              -> Rcmd err
+  BATT:BXS?              -> Rcmd err
+  BATT:BXT?              -> Rcmd err
+  BATT:BXU?              -> Rcmd err
+  BATT:BXV?              -> Rcmd err
+  BATT:BXW?              -> Rcmd err
+  BATT:BXX?              -> Rcmd err
+  BATT:BXY?              -> Rcmd err
+  BATT:BXZ?              -> Rcmd err
+  BATT:BYA?              -> Rcmd err
+  BATT:BYB?              -> Rcmd err
+  BATT:BYC?              -> Rcmd err
+  BATT:BYD?              -> Rcmd err
+  BATT:BYE?              -> Rcmd err
+  BATT:BYF?              -> Rcmd err
+  BATT:BYG?              -> Rcmd err
+  BATT:BYH?              -> Rcmd err
+  BATT:BYI?              -> Rcmd err
+  BATT:BYJ?              -> Rcmd err
+  BATT:BYK?              -> Rcmd err
+  BATT:BYL?              -> Rcmd err
+  BATT:BYM?              -> Rcmd err
+  BATT:BYN?              -> Rcmd err
+  BATT:BYO?              -> Rcmd err
+  BATT:BYP?              -> Rcmd err
+  BATT:BYQ?              -> Rcmd err
+  BATT:BYR?              -> Rcmd err
+  BATT:BYS?              -> Rcmd err
+  BATT:BYT?              -> Rcmd err
+  BATT:BYU?              -> Rcmd err
+  BATT:BYV?              -> Rcmd err
+  BATT:BYW?              -> Rcmd err
+  BATT:BYX?              -> Rcmd err
+  BATT:BYY?              -> Rcmd err
+  BATT:BYZ?              -> Rcmd err
+  BATT:BZA?              -> Rcmd err
+  BATT:BZB?              -> Rcmd err
+  BATT:BZC?              -> Rcmd err
+  BATT:BZD?              -> Rcmd err
+  BATT:BZE?              -> Rcmd err
+  BATT:BZF?              -> Rcmd err
+  BATT:BZG?              -> Rcmd err
+  BATT:BZH?              -> Rcmd err
+  BATT:BZI?              -> Rcmd err
+  BATT:BZJ?              -> Rcmd err
+  BATT:BZK?              -> Rcmd err
+  BATT:BZL?              -> Rcmd err
+  BATT:BZM?              -> Rcmd err
+  BATT:BZN?              -> Rcmd err
+  BATT:BZO?              -> Rcmd err
+  BATT:BZP?              -> Rcmd err
+  BATT:BZQ?              -> Rcmd err
+  BATT:BZR?              -> Rcmd err
+  BATT:BZS?              -> Rcmd err
+  BATT:BZT?              -> Rcmd err
+  BATT:BZU?              -> Rcmd err
+  BATT:BZV?              -> Rcmd err
+  BATT:BZW?              -> Rcmd err
+  BATT:BZX?              -> Rcmd err
+  BATT:BZY?              -> Rcmd err
+  BATT:BZZ?              -> Rcmd err
+  BATT:CAA?              -> Rcmd err
+  BATT:CAB?              -> Rcmd err
+  BATT:CAC?              -> Rcmd err
+  BATT:CAD?              -> Rcmd err
+  BATT:CAE?              -> Rcmd err
+  BATT:CAF?              -> Rcmd err
+  BATT:CAG?              -> Rcmd err
+  BATT:CAH?              -> Rcmd err
+  BATT:CAI?              -> Rcmd err
+  BATT:CAJ?              -> Rcmd err
+  BATT:CAK?              -> Rcmd err
+  BATT:CAL?              -> Rcmd err
+  BATT:CAM?              -> Rcmd err
+  BATT:CAN?              -> Rcmd err
+  BATT:CAO?              -> Rcmd err
+  BATT:CAP?              -> Rcmd err
+  BATT:CAQ?              -> Rcmd err
+  BATT:CAR?              -> Rcmd err
+  BATT:CAS?              -> Rcmd err
+  BATT:CAT?              -> Rcmd err
+  BATT:CAU?              -> Rcmd err
+  BATT:CAV?              -> Rcmd err
+  BATT:CAW?              -> Rcmd err
+  BATT:CAX?              -> Rcmd err
+  BATT:CAY?              -> Rcmd err
+  BATT:CAZ?              -> Rcmd err
+  BATT:CBA?              -> Rcmd err
+  BATT:CBB?              -> Rcmd err
+  BATT:CBC?              -> Rcmd err
+  BATT:CBD?              -> Rcmd err
+  BATT:CBE?              -> Rcmd err
+  BATT:CBF?              -> Rcmd err
+  BATT:CBG?              -> Rcmd err
+  BATT:CBH?              -> Rcmd err
+  BATT:CBI?              -> Rcmd err
+  BATT:CBJ?              -> Rcmd err
+  BATT:CBK?              -> Rcmd err
+  BATT:CBL?              -> Rcmd err
+  BATT:CBM?              -> Rcmd err
+  BATT:CBN?              -> Rcmd err
+  BATT:CBO?              -> Rcmd err
+  BATT:CBP?              -> Rcmd err
+  BATT:CBQ?              -> Rcmd err
+  BATT:CBR?              -> Rcmd err
+  BATT:CBS?              -> Rcmd err
+  BATT:CBT?              -> Rcmd err
+  BATT:CBU?              -> Rcmd err
+  BATT:CBV?              -> Rcmd err
+  BATT:CBW?              -> Rcmd err
+  BATT:CBX?              -> Rcmd err
+  BATT:CBY?              -> Rcmd err
+  BATT:CBZ?              -> Rcmd err
+  BATT:CCA?              -> Rcmd err
+  BATT:CCB?              -> Rcmd err
+  BATT:CCC?              -> Rcmd err
+  BATT:CCD?              -> Rcmd err
+  BATT:CCE?              -> Rcmd err
+  BATT:CCF?              -> Rcmd err
+  BATT:CCG?              -> Rcmd err
+  BATT:CCH?              -> Rcmd err
+  BATT:CCI?              -> Rcmd err
+  BATT:CCJ?              -> Rcmd err
+  BATT:CCK?              -> Rcmd err
+  BATT:CCL?              -> Rcmd err
+  BATT:CCM?              -> Rcmd err
+  BATT:CCN?              -> Rcmd err
+  BATT:CCO?              -> Rcmd err
+  BATT:CCP?              -> Rcmd err
+  BATT:CCQ?              -> Rcmd err
+  BATT:CCR?              -> Rcmd err
+  BATT:CCS?              -> Rcmd err
+  BATT:CCT?              -> Rcmd err
+  BATT:CCU?              -> Rcmd err
+  BATT:CCV?              -> Rcmd err
+  BATT:CCW?              -> Rcmd err
+  BATT:CCX?              -> Rcmd err
+  BATT:CCY?              -> Rcmd err
+  BATT:CCZ?              -> Rcmd err
+  BATT:CDA?              -> Rcmd err
+  BATT:CDB?              -> Rcmd err
+  BATT:CDC?              -> Rcmd err
+  BATT:CDD?              -> Rcmd err
+  BATT:CDE?              -> Rcmd err
+  BATT:CDF?              -> Rcmd err
+  BATT:CDG?              -> Rcmd err
+  BATT:CDH?              -> Rcmd err
+  BATT:CDI?              -> Rcmd err
+  BATT:CDJ?              -> Rcmd err
+  BATT:CDK?              -> Rcmd err
+  BATT:CDL?              -> Rcmd err
+  BATT:CDM?              -> Rcmd err
+  BATT:CDN?              -> Rcmd err
+  BATT:CDO?              -> Rcmd err
+  BATT:CDP?              -> Rcmd err
+  BATT:CDQ?              -> Rcmd err
+  BATT:CDR?              -> Rcmd err
+  BATT:CDS?              -> Rcmd err
+  BATT:CDT?              -> Rcmd err
+  BATT:CDU?              -> Rcmd err
+  BATT:CDV?              -> Rcmd err
+  BATT:CDW?              -> Rcmd err
+  BATT:CDX?              -> Rcmd err
+  BATT:CDY?              -> Rcmd err
+  BATT:CDZ?              -> Rcmd err
+  BATT:CEA?              -> Rcmd err
+  BATT:CEB?              -> Rcmd err
+  BATT:CEC?              -> Rcmd err
+  BATT:CED?              -> Rcmd err
+  BATT:CEE?              -> Rcmd err
+  BATT:CEF?              -> Rcmd err
+  BATT:CEG?              -> Rcmd err
+  BATT:CEH?              -> Rcmd err
+  BATT:CEI?              -> Rcmd err
+  BATT:CEJ?              -> Rcmd err
+  BATT:CEK?              -> Rcmd err
+  BATT:CEL?              -> Rcmd err
+  BATT:CEM?              -> Rcmd err
+  BATT:CEN?              -> Rcmd err
+  BATT:CEO?              -> Rcmd err
+  BATT:CEP?              -> Rcmd err
+  BATT:CEQ?              -> Rcmd err
+  BATT:CER?              -> Rcmd err
+  BATT:CES?              -> Rcmd err
+  BATT:CET?              -> Rcmd err
+  BATT:CEU?              -> Rcmd err
+  BATT:CEV?              -> Rcmd err
+  BATT:CEW?              -> Rcmd err
+  BATT:CEX?              -> Rcmd err
+  BATT:CEY?              -> Rcmd err
+  BATT:CEZ?              -> Rcmd err
+  BATT:CFA?              -> Rcmd err
+  BATT:CFB?              -> Rcmd err
+  BATT:CFC?              -> Rcmd err
+  BATT:CFD?              -> Rcmd err
+  BATT:CFE?              -> Rcmd err
+  BATT:CFF?              -> Rcmd err
+  BATT:CFG?              -> Rcmd err
+  BATT:CFH?              -> Rcmd err
+  BATT:CFI?              -> Rcmd err
+  BATT:CFJ?              -> Rcmd err
+  BATT:CFK?              -> Rcmd err
+  BATT:CFL?              -> Rcmd err
+  BATT:CFM?              -> Rcmd err
+  BATT:CFN?              -> Rcmd err
+
+============================================================
+Phase: batt3 — 2026-02-25 14:20:58
+IDN: ET5410A+ 09702321027 V1.01.2302.019 V1.06.2247.016
+============================================================
+
+--- batt3: 14:20:58 ---
+  BATT:CFO?              -> Rcmd err
+  BATT:CFP?              -> Rcmd err
+  BATT:CFQ?              -> Rcmd err
+  BATT:CFR?              -> Rcmd err
+  BATT:CFS?              -> Rcmd err
+  BATT:CFT?              -> Rcmd err
+  BATT:CFU?              -> Rcmd err
+  BATT:CFV?              -> Rcmd err
+  BATT:CFW?              -> Rcmd err
+  BATT:CFX?              -> Rcmd err
+  BATT:CFY?              -> Rcmd err
+  BATT:CFZ?              -> Rcmd err
+  BATT:CGA?              -> Rcmd err
+  BATT:CGB?              -> Rcmd err
+  BATT:CGC?              -> Rcmd err
+  BATT:CGD?              -> Rcmd err
+  BATT:CGE?              -> Rcmd err
+  BATT:CGF?              -> Rcmd err
+  BATT:CGG?              -> Rcmd err
+  BATT:CGH?              -> Rcmd err
+  BATT:CGI?              -> Rcmd err
+  BATT:CGJ?              -> Rcmd err
+  BATT:CGK?              -> Rcmd err
+  BATT:CGL?              -> Rcmd err
+  BATT:CGM?              -> Rcmd err
+  BATT:CGN?              -> Rcmd err
+  BATT:CGO?              -> Rcmd err
+  BATT:CGP?              -> Rcmd err
+  BATT:CGQ?              -> Rcmd err
+  BATT:CGR?              -> Rcmd err
+  BATT:CGS?              -> Rcmd err
+  BATT:CGT?              -> Rcmd err
+  BATT:CGU?              -> Rcmd err
+  BATT:CGV?              -> Rcmd err
+  BATT:CGW?              -> Rcmd err
+  BATT:CGX?              -> Rcmd err
+  BATT:CGY?              -> Rcmd err
+  BATT:CGZ?              -> Rcmd err
+  BATT:CHA?              -> Rcmd err
+  BATT:CHB?              -> Rcmd err
+  BATT:CHC?              -> Rcmd err
+  BATT:CHD?              -> Rcmd err
+  BATT:CHE?              -> Rcmd err
+  BATT:CHF?              -> Rcmd err
+  BATT:CHG?              -> Rcmd err
+  BATT:CHH?              -> Rcmd err
+  BATT:CHI?              -> Rcmd err
+  BATT:CHJ?              -> Rcmd err
+  BATT:CHK?              -> Rcmd err
+  BATT:CHL?              -> Rcmd err
+  BATT:CHM?              -> Rcmd err
+  BATT:CHN?              -> Rcmd err
+  BATT:CHO?              -> Rcmd err
+  BATT:CHP?              -> Rcmd err
+  BATT:CHQ?              -> Rcmd err
+  BATT:CHR?              -> Rcmd err
+  BATT:CHS?              -> Rcmd err
+  BATT:CHT?              -> Rcmd err
+  BATT:CHU?              -> Rcmd err
+  BATT:CHV?              -> Rcmd err
+  BATT:CHW?              -> Rcmd err
+  BATT:CHX?              -> Rcmd err
+  BATT:CHY?              -> Rcmd err
+  BATT:CHZ?              -> Rcmd err
+  BATT:CIA?              -> Rcmd err
+  BATT:CIB?              -> Rcmd err
+  BATT:CIC?              -> Rcmd err
+  BATT:CID?              -> Rcmd err
+  BATT:CIE?              -> Rcmd err
+  BATT:CIF?              -> Rcmd err
+  BATT:CIG?              -> Rcmd err
+  BATT:CIH?              -> Rcmd err
+  BATT:CII?              -> Rcmd err
+  BATT:CIJ?              -> Rcmd err
+  BATT:CIK?              -> Rcmd err
+  BATT:CIL?              -> Rcmd err
+  BATT:CIM?              -> Rcmd err
+  BATT:CIN?              -> Rcmd err
+  BATT:CIO?              -> Rcmd err
+  BATT:CIP?              -> Rcmd err
+  BATT:CIQ?              -> Rcmd err
+  BATT:CIR?              -> Rcmd err
+  BATT:CIS?              -> Rcmd err
+  BATT:CIT?              -> Rcmd err
+  BATT:CIU?              -> Rcmd err
+  BATT:CIV?              -> Rcmd err
+  BATT:CIW?              -> Rcmd err
+  BATT:CIX?              -> Rcmd err
+  BATT:CIY?              -> Rcmd err
+  BATT:CIZ?              -> Rcmd err
+  BATT:CJA?              -> Rcmd err
+  BATT:CJB?              -> Rcmd err
+  BATT:CJC?              -> Rcmd err
+  BATT:CJD?              -> Rcmd err
+  BATT:CJE?              -> Rcmd err
+  BATT:CJF?              -> Rcmd err
+  BATT:CJG?              -> Rcmd err
+  BATT:CJH?              -> Rcmd err
+  BATT:CJI?              -> Rcmd err
+  BATT:CJJ?              -> Rcmd err
+  BATT:CJK?              -> Rcmd err
+  BATT:CJL?              -> Rcmd err
+  BATT:CJM?              -> Rcmd err
+  BATT:CJN?              -> Rcmd err
+  BATT:CJO?              -> Rcmd err
+  BATT:CJP?              -> Rcmd err
+  BATT:CJQ?              -> Rcmd err
+  BATT:CJR?              -> Rcmd err
+  BATT:CJS?              -> Rcmd err
+  BATT:CJT?              -> Rcmd err
+  BATT:CJU?              -> Rcmd err
+  BATT:CJV?              -> Rcmd err
+  BATT:CJW?              -> Rcmd err
+  BATT:CJX?              -> Rcmd err
+  BATT:CJY?              -> Rcmd err
+  BATT:CJZ?              -> Rcmd err
+  BATT:CKA?              -> Rcmd err
+  BATT:CKB?              -> Rcmd err
+  BATT:CKC?              -> Rcmd err
+  BATT:CKD?              -> Rcmd err
+  BATT:CKE?              -> Rcmd err
+  BATT:CKF?              -> Rcmd err
+  BATT:CKG?              -> Rcmd err
+  BATT:CKH?              -> Rcmd err
+  BATT:CKI?              -> Rcmd err
+  BATT:CKJ?              -> Rcmd err
+  BATT:CKK?              -> Rcmd err
+  BATT:CKL?              -> Rcmd err
+  BATT:CKM?              -> Rcmd err
+  BATT:CKN?              -> Rcmd err
+  BATT:CKO?              -> Rcmd err
+  BATT:CKP?              -> Rcmd err
+  BATT:CKQ?              -> Rcmd err
+  BATT:CKR?              -> Rcmd err
+  BATT:CKS?              -> Rcmd err
+  BATT:CKT?              -> Rcmd err
+  BATT:CKU?              -> Rcmd err
+  BATT:CKV?              -> Rcmd err
+  BATT:CKW?              -> Rcmd err
+  BATT:CKX?              -> Rcmd err
+  BATT:CKY?              -> Rcmd err
+  BATT:CKZ?              -> Rcmd err
+  BATT:CLA?              -> Rcmd err
+  BATT:CLB?              -> Rcmd err
+  BATT:CLC?              -> Rcmd err
+  BATT:CLD?              -> Rcmd err
+  BATT:CLE?              -> Rcmd err
+  BATT:CLF?              -> Rcmd err
+  BATT:CLG?              -> Rcmd err
+  BATT:CLH?              -> Rcmd err
+  BATT:CLI?              -> Rcmd err
+  BATT:CLJ?              -> Rcmd err
+  BATT:CLK?              -> Rcmd err
+  BATT:CLL?              -> Rcmd err
+  BATT:CLM?              -> Rcmd err
+  BATT:CLN?              -> Rcmd err
+  BATT:CLO?              -> Rcmd err
+  BATT:CLP?              -> Rcmd err
+  BATT:CLQ?              -> Rcmd err
+  BATT:CLR?              -> Rcmd err
+  BATT:CLS?              -> Rcmd err
+  BATT:CLT?              -> Rcmd err
+  BATT:CLU?              -> Rcmd err
+  BATT:CLV?              -> Rcmd err
+  BATT:CLW?              -> Rcmd err
+  BATT:CLX?              -> Rcmd err
+  BATT:CLY?              -> Rcmd err
