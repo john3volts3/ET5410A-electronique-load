@@ -688,6 +688,44 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <span id="batt-ener" class="info-box" style="min-width:150px;">--</span>
       </div>
     </div>
+    <div class="card" id="batt-graph-card" style="display:none;">
+      <div id="batt-stats" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;">
+        <div style="text-align:center;">
+          <div style="color:var(--text2);font-size:0.75em;">TENSION</div>
+          <div id="batt-stat-v" style="font-size:1.3em;color:#ff5252;font-family:Consolas,monospace;">--.--- V</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="color:var(--text2);font-size:0.75em;">COURANT</div>
+          <div id="batt-stat-i" style="font-size:1.3em;color:#448aff;font-family:Consolas,monospace;">--.--- A</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="color:var(--text2);font-size:0.75em;">PUISSANCE</div>
+          <div id="batt-stat-p" style="font-size:1.3em;color:#ff9800;font-family:Consolas,monospace;">--.-- W</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="color:var(--text2);font-size:0.75em;">CAPACITE</div>
+          <div id="batt-stat-ah" style="font-size:1.3em;color:#69f0ae;font-family:Consolas,monospace;">--.--- Ah</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="color:var(--text2);font-size:0.75em;">ENERGIE</div>
+          <div id="batt-stat-wh" style="font-size:1.3em;color:#ce93d8;font-family:Consolas,monospace;">--.-- Wh</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="color:var(--text2);font-size:0.75em;">DUREE</div>
+          <div id="batt-stat-time" style="font-size:1.3em;color:var(--text1);font-family:Consolas,monospace;">00:00:00</div>
+        </div>
+      </div>
+      <div style="position:relative;">
+        <canvas id="batt-canvas" width="1100" height="320" style="width:100%;"></canvas>
+        <div id="batt-tooltip" style="display:none;position:absolute;pointer-events:none;background:rgba(30,30,30,0.85);color:#eee;padding:6px 10px;border-radius:6px;font:11px Consolas,monospace;white-space:nowrap;z-index:10;border:1px solid #555;"></div>
+      </div>
+      <div style="text-align:center;margin-top:4px;">
+        <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battGraphZoom(-1)">Zoom -</button>
+        <span id="batt-zoom-label" style="font-size:0.75em;color:var(--text2);margin:0 8px;">10 min</span>
+        <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battGraphZoom(1)">Zoom +</button>
+        <button class="btn" style="padding:2px 8px;font-size:0.75em;margin-left:8px;" onclick="battGraphAutoZoom()">Auto</button>
+      </div>
+    </div>
   </div>
   <div class="card" id="ctrl-onoff-card">
     <h3>Canal ON/OFF</h3>
@@ -1075,6 +1113,11 @@ const dev = new ET5410();
 let measTimer = null;
 let battTimer = null;
 const measHistory = [[], [], [], []]; // V, I, P, R
+let battGraphData = { t: [], v: [], i: [] };
+let battStartTime = 0;
+let battCursorX = -1; // position X du curseur dans le canvas (-1 = pas de curseur)
+let battZoomMinutes = 10;
+const BATT_ZOOM_LEVELS = [1, 2, 5, 10, 20, 30, 60, 120, 240, 480];
 
 // ============================================================
 // Helpers
@@ -1530,6 +1573,51 @@ document.querySelectorAll('input[name="batt-cutoff-mode"]').forEach(r => {
   });
 });
 
+// Tooltip interactif sur le graphique batterie
+(function() {
+  const canvas = $('batt-canvas');
+  const tooltip = $('batt-tooltip');
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    battCursorX = (e.clientX - rect.left) * scaleX;
+    battDrawGraph();
+    // Trouver le point le plus proche
+    const data = battGraphData;
+    if (data.t.length < 2) { tooltip.style.display = 'none'; return; }
+    const padL = 55, padR = 55, padT = 15, padB = 30;
+    const w = canvas.width - padL - padR;
+    if (battCursorX < padL || battCursorX > padL + w) { tooltip.style.display = 'none'; return; }
+    const tMax = battZoomMinutes * 60;
+    const tMinW = Math.max(0, data.t[data.t.length - 1] - tMax);
+    const tAtCursor = tMinW + ((battCursorX - padL) / w) * tMax;
+    // Recherche du point le plus proche
+    let bestIdx = 0, bestDist = Infinity;
+    for (let j = 0; j < data.t.length; j++) {
+      const d = Math.abs(data.t[j] - tAtCursor);
+      if (d < bestDist) { bestDist = d; bestIdx = j; }
+    }
+    const v = data.v[bestIdx], i = data.i[bestIdx], t = data.t[bestIdx];
+    tooltip.innerHTML =
+      '<span style="color:#ff5252;">' + v.toFixed(3) + ' V</span><br>' +
+      '<span style="color:#448aff;">' + i.toFixed(3) + ' A</span><br>' +
+      '<span style="color:#888;">' + fmtTimeSec(t) + '</span>';
+    // Positionner le tooltip au-dessus du curseur dans le conteneur relatif
+    const tipX = (e.clientX - rect.left);
+    const tipY = (e.clientY - rect.top) - 60;
+    tooltip.style.left = tipX + 'px';
+    tooltip.style.top = Math.max(0, tipY) + 'px';
+    tooltip.style.transform = 'translateX(-50%)';
+    tooltip.style.display = '';
+  });
+  canvas.addEventListener('mouseleave', function() {
+    battCursorX = -1;
+    tooltip.style.display = 'none';
+    battDrawGraph();
+  });
+})();
+
 function battGetTimeSeconds() {
   return (parseInt($('batt-btt-h').value) || 0) * 3600
        + (parseInt($('batt-btt-m').value) || 0) * 60
@@ -1571,6 +1659,18 @@ async function battDoStart() {
   $('batt-start').disabled = true;
   $('batt-stop').disabled = false;
   updateLocalPCBar();
+  // Init graphique
+  battGraphData = { t: [], v: [], i: [] };
+  battStartTime = Date.now();
+  battZoomMinutes = 10;
+  $('batt-zoom-label').textContent = '10 min';
+  $('batt-graph-card').style.display = '';
+  $('batt-stat-v').textContent = '--.--- V';
+  $('batt-stat-i').textContent = '--.--- A';
+  $('batt-stat-p').textContent = '--.-- W';
+  $('batt-stat-ah').textContent = '--.--- Ah';
+  $('batt-stat-wh').textContent = '--.-- Wh';
+  $('batt-stat-time').textContent = '00:00:00';
   await ctrlSW('ON');
   battTimer = setInterval(battPoll, 1000);
   battPoll();
@@ -1588,8 +1688,182 @@ async function battStop(sendOff) {
 }
 
 async function battPoll() {
+  // Lire mesures instantanées
+  const r = await dev.query('MEAS:ALL?');
+  if (r) {
+    const cleaned = r.replace(/^[A-Za-z]\s+/, '');
+    const parts = cleaned.trim().split(/\s+/).map(s => parseFloat(s));
+    if (parts.length >= 4) {
+      const [i, v, p, res] = parts;
+      const elapsed = (Date.now() - battStartTime) / 1000;
+      battGraphData.t.push(elapsed);
+      battGraphData.v.push(v);
+      battGraphData.i.push(i);
+      // Stats instantanées
+      $('batt-stat-v').textContent = v.toFixed(3) + ' V';
+      $('batt-stat-i').textContent = i.toFixed(3) + ' A';
+      $('batt-stat-p').textContent = p.toFixed(2) + ' W';
+      // Durée
+      const hh = Math.floor(elapsed / 3600);
+      const mm = Math.floor((elapsed % 3600) / 60);
+      const ss = Math.floor(elapsed % 60);
+      $('batt-stat-time').textContent =
+        String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+    }
+  }
+  // Capacité et énergie
   await battReadCapa();
   await battReadEner();
+  // Mettre à jour stats Ah/Wh
+  const capaText = $('batt-capa').textContent;
+  const enerText = $('batt-ener').textContent;
+  $('batt-stat-ah').textContent = capaText !== '--' ? capaText : '--.--- Ah';
+  $('batt-stat-wh').textContent = enerText !== '--' ? enerText : '--.-- Wh';
+  // Auto-zoom
+  if (battGraphData.t.length > 0) {
+    const totalMin = battGraphData.t[battGraphData.t.length - 1] / 60;
+    if (totalMin > battZoomMinutes) battGraphAutoZoom();
+  }
+  battDrawGraph();
+}
+
+function battDrawGraph() {
+  const canvas = $('batt-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const data = battGraphData;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (data.t.length < 2) return;
+
+  const padL = 55, padR = 55, padT = 15, padB = 30;
+  const w = canvas.width - padL - padR;
+  const h = canvas.height - padT - padB;
+
+  // Échelles temps
+  const tMax = battZoomMinutes * 60;
+  const tMin = Math.max(0, data.t[data.t.length - 1] - tMax);
+
+  // Index de début dans la fenêtre visible
+  let startIdx = 0;
+  for (let j = 0; j < data.t.length; j++) {
+    if (data.t[j] >= tMin) { startIdx = Math.max(0, j - 1); break; }
+  }
+
+  // Échelles tension (arrondi joli)
+  const visV = data.v.slice(startIdx);
+  const visI = data.i.slice(startIdx);
+  let vMin = Math.floor(Math.min(...visV) * 10) / 10;
+  let vMax = Math.ceil(Math.max(...visV) * 10) / 10;
+  if (vMax - vMin < 0.5) { vMin -= 0.25; vMax += 0.25; }
+  let iMin = 0;
+  let iMax = Math.ceil(Math.max(...visI) * 10) / 10;
+  if (iMax < 0.1) iMax = 1;
+
+  ctx.font = '11px Consolas';
+
+  // Grille horizontale (5 divisions)
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 0.5;
+  for (let n = 0; n <= 5; n++) {
+    const y = padT + (h / 5) * n;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + w, y); ctx.stroke();
+    const vVal = vMax - ((vMax - vMin) / 5) * n;
+    ctx.fillStyle = '#ff5252';
+    ctx.textAlign = 'right';
+    ctx.fillText(vVal.toFixed(2) + ' V', padL - 4, y + 4);
+    const iVal = iMax - ((iMax - iMin) / 5) * n;
+    ctx.fillStyle = '#448aff';
+    ctx.textAlign = 'left';
+    ctx.fillText(iVal.toFixed(3) + ' A', padL + w + 4, y + 4);
+  }
+
+  // Grille verticale (temps)
+  const stepSec = battTimeGridStep(tMax);
+  ctx.strokeStyle = '#333';
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'center';
+  const tStart = Math.ceil(tMin / stepSec) * stepSec;
+  for (let t = tStart; t <= tMin + tMax; t += stepSec) {
+    const x = padL + ((t - tMin) / tMax) * w;
+    if (x < padL || x > padL + w) continue;
+    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + h); ctx.stroke();
+    ctx.fillText(fmtTimeSec(t), x, padT + h + 14);
+  }
+
+  // Courbe tension (rouge)
+  ctx.strokeStyle = '#ff5252';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  let first = true;
+  for (let j = startIdx; j < data.t.length; j++) {
+    const x = padL + ((data.t[j] - tMin) / tMax) * w;
+    const y = padT + h - ((data.v[j] - vMin) / (vMax - vMin)) * h;
+    if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Courbe courant (bleu)
+  ctx.strokeStyle = '#448aff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  first = true;
+  for (let j = startIdx; j < data.t.length; j++) {
+    const x = padL + ((data.t[j] - tMin) / tMax) * w;
+    const y = padT + h - ((data.i[j] - iMin) / (iMax - iMin)) * h;
+    if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Trait vertical du curseur
+  if (battCursorX >= padL && battCursorX <= padL + w) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(battCursorX, padT);
+    ctx.lineTo(battCursorX, padT + h);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+function battTimeGridStep(totalSec) {
+  if (totalSec <= 120) return 10;
+  if (totalSec <= 600) return 60;
+  if (totalSec <= 1800) return 300;
+  if (totalSec <= 7200) return 600;
+  return 1800;
+}
+
+function fmtTimeSec(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = Math.floor(sec % 60);
+  if (h > 0) return h + ':' + String(m).padStart(2,'0');
+  return m + ':' + String(s).padStart(2,'0');
+}
+
+function battGraphZoom(dir) {
+  const idx = BATT_ZOOM_LEVELS.indexOf(battZoomMinutes);
+  const ni = Math.max(0, Math.min(BATT_ZOOM_LEVELS.length - 1, idx + dir));
+  battZoomMinutes = BATT_ZOOM_LEVELS[ni];
+  $('batt-zoom-label').textContent = battZoomMinutes >= 60
+    ? (battZoomMinutes / 60) + ' h' : battZoomMinutes + ' min';
+  battDrawGraph();
+}
+
+function battGraphAutoZoom() {
+  if (battGraphData.t.length === 0) return;
+  const totalMin = battGraphData.t[battGraphData.t.length - 1] / 60;
+  for (const lvl of BATT_ZOOM_LEVELS) {
+    if (lvl >= totalMin) { battZoomMinutes = lvl; break; }
+  }
+  if (totalMin > BATT_ZOOM_LEVELS[BATT_ZOOM_LEVELS.length - 1]) {
+    battZoomMinutes = BATT_ZOOM_LEVELS[BATT_ZOOM_LEVELS.length - 1];
+  }
+  $('batt-zoom-label').textContent = battZoomMinutes >= 60
+    ? (battZoomMinutes / 60) + ' h' : battZoomMinutes + ' min';
+  battDrawGraph();
 }
 
 // ============================================================
