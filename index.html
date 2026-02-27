@@ -328,8 +328,14 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
 <!-- ========== CONTROLE ========== -->
 <div id="tab-ctrl" class="tab">
   <div class="card">
-    <h3>Mode de charge</h3>
-    <div class="radio-grid">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;">Mode de charge</h3>
+      <span>
+        <button class="btn" style="padding:4px 12px;font-size:0.85em;" onclick="configSave()">Sauver config</button>
+        <button class="btn" style="padding:4px 12px;font-size:0.85em;" onclick="configLoad()">Charger config</button>
+      </span>
+    </div>
+    <div class="radio-grid" style="margin-top:8px;">
       <label class="radio-label"><input type="radio" name="ctrl-mode" value="CC" checked> CC</label>
       <label class="radio-label"><input type="radio" name="ctrl-mode" value="CV"> CV</label>
       <label class="radio-label"><input type="radio" name="ctrl-mode" value="CP"> CP</label>
@@ -789,6 +795,8 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
             <option value="2">Puissance (W)</option>
             <option value="3">Resistance (Ohm)</option>
           </select>
+          <label>Intervalle (ms)</label>
+          <input type="number" id="ctrl-live-interval" value="1000" min="100" max="10000" step="100">
           <label>Points max</label>
           <input type="number" id="ctrl-live-graph-pts" value="200" min="50" max="2000">
           <button class="btn" onclick="ctrlLiveClearGraph()">Effacer</button>
@@ -1482,8 +1490,10 @@ async function ctrlLivePollLoop(myId) {
     const t0 = Date.now();
     await ctrlLivePoll();
     const elapsed = Date.now() - t0;
-    if (ctrlLiveTimer && ctrlLivePollId === myId)
-      await new Promise(r => setTimeout(r, Math.max(0, 1000 - elapsed)));
+    if (ctrlLiveTimer && ctrlLivePollId === myId) {
+      const interval = parseInt(g('ctrl-live-interval')) || 1000;
+      await new Promise(r => setTimeout(r, Math.max(0, interval - elapsed)));
+    }
   }
 }
 
@@ -1559,6 +1569,161 @@ function ctrlLiveClearGraph() {
   ctrlLiveHistory.forEach(h => h.length = 0);
   const canvas = $('ctrl-live-canvas');
   canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// ============================================================
+// Save / Load configuration
+// ============================================================
+// Parametres systeme (communs a tous les modes)
+const CONFIG_SYSTEM = [
+  'ctrl-vmax', 'ctrl-imax', 'ctrl-pmax', 'ctrl-offdelay',
+  'ctrl-vrange', 'ctrl-crange', 'ctrl-trig'
+];
+// Parametres specifiques par mode
+const CONFIG_MODE = {
+  CC:   { inputs: ['ctrl-cc-val'] },
+  CV:   { inputs: ['ctrl-cv-val'] },
+  CP:   { inputs: ['ctrl-cp-val'] },
+  CR:   { inputs: ['ctrl-cr-val'] },
+  CCCV: { inputs: ['ctrl-cccv-i', 'ctrl-cccv-v'] },
+  CRCV: { inputs: ['ctrl-crcv-r', 'ctrl-crcv-v'] },
+  SHOR: { inputs: [] },
+  LED:  { inputs: ['ctrl-led-i', 'ctrl-led-v', 'ctrl-led-c'] },
+  TRAN: { inputs: ['tran-state', 'tran-mode', 'tran-curr-ta', 'tran-curr-tb', 'tran-volt-ta', 'tran-volt-tb', 'tran-wa', 'tran-wb'] },
+  SCAN: { inputs: [
+    'scan-type', 'scan-thtype', 'scan-compare', 'scan-time-step',
+    'scan-curr-start', 'scan-curr-end', 'scan-curr-step', 'scan-curr-low', 'scan-curr-high',
+    'scan-volt-start', 'scan-volt-end', 'scan-volt-step', 'scan-volt-vth', 'scan-volt-vmin', 'scan-volt-low', 'scan-volt-high',
+    'scan-powe-start', 'scan-powe-end', 'scan-powe-step', 'scan-powe-low', 'scan-powe-high'
+  ]},
+  LIST: { inputs: ['list-num', 'list-loop', 'list-mode'], list: true },
+  BATT: { inputs: [
+    'batt-bcc1-v', 'batt-bcc1-i', 'batt-bcr-v', 'batt-bcr-r',
+    'batt-bcc-i', 'batt-btc', 'batt-bte', 'batt-btt-h', 'batt-btt-m', 'batt-btt-s'
+  ], radios: ['batt-dmode', 'batt-cutoff-mode'] }
+};
+
+function configCollect(ids) {
+  const lines = [];
+  for (const id of ids) {
+    const el = $(id);
+    if (el) lines.push(id + '=' + el.value);
+  }
+  return lines;
+}
+
+async function configSave() {
+  const mode = getCtrlMode();
+  const now = new Date();
+  const d = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  const suggestedName = '-ET5410-' + d + '-' + mode + '.ET5410';
+  const mc = CONFIG_MODE[mode] || { inputs: [] };
+
+  let lines = [];
+  lines.push('# ET5410 Configuration');
+  lines.push('# Date: ' + d + ' ' + now.toLocaleTimeString('fr-FR'));
+  lines.push('# Mode: ' + mode);
+  lines.push('');
+
+  // Mode
+  lines.push('ctrl-mode=' + mode);
+  // Radios specifiques au mode
+  if (mc.radios) {
+    for (const name of mc.radios) {
+      const checked = document.querySelector('input[name="' + name + '"]:checked');
+      lines.push(name + '=' + (checked ? checked.value : ''));
+    }
+  }
+  // Parametres systeme
+  lines.push('');
+  lines.push('# Systeme');
+  lines = lines.concat(configCollect(CONFIG_SYSTEM));
+  // Parametres du mode
+  lines.push('');
+  lines.push('# ' + mode);
+  lines = lines.concat(configCollect(mc.inputs));
+  // List steps
+  if (mc.list) {
+    const listNum = parseInt(g('list-num')) || 0;
+    for (let i = 0; i < listNum; i++) {
+      for (const f of ['type', 'val', 'delay', 'comp', 'max', 'min']) {
+        const el = $('list-' + f + '-' + i);
+        if (el) lines.push('list-' + f + '-' + i + '=' + el.value);
+      }
+    }
+  }
+
+  const content = lines.join('\n');
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: suggestedName,
+      types: [{ description: 'ET5410 Configuration', accept: { 'text/plain': ['.ET5410'] } }]
+    });
+    const writable = await handle.createWritable();
+    await writable.write(content);
+    await writable.close();
+  } catch (e) {
+    if (e.name !== 'AbortError') alert('Erreur sauvegarde: ' + e.message);
+  }
+}
+
+async function configLoad() {
+  let text;
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'ET5410 Configuration', accept: { 'text/plain': ['.ET5410'] } }]
+    });
+    const file = await handle.getFile();
+    text = await file.text();
+  } catch (e) {
+    if (e.name !== 'AbortError') alert('Erreur chargement: ' + e.message);
+    return;
+  }
+
+  const map = {};
+  for (const line of text.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq < 0) continue;
+    map[trimmed.substring(0, eq)] = trimmed.substring(eq + 1);
+  }
+
+  // Mode
+  if (map['ctrl-mode']) {
+    setCtrlMode(map['ctrl-mode']);
+  }
+  const mode = getCtrlMode();
+  const mc = CONFIG_MODE[mode] || { inputs: [] };
+
+  // Radios specifiques au mode
+  if (mc.radios) {
+    for (const name of mc.radios) {
+      if (map[name] !== undefined) {
+        const r = document.querySelector('input[name="' + name + '"][value="' + map[name] + '"]');
+        if (r) r.checked = true;
+      }
+    }
+  }
+
+  // Parametres systeme + parametres du mode
+  const allIds = CONFIG_SYSTEM.concat(mc.inputs);
+  for (const id of allIds) {
+    if (map[id] !== undefined) {
+      const el = $(id);
+      if (el) el.value = map[id];
+    }
+  }
+
+  // List steps
+  if (mc.list) {
+    for (const key in map) {
+      if (key.match(/^list-(type|val|delay|comp|max|min)-\d+$/)) {
+        const el = $(key);
+        if (el) el.value = map[key];
+      }
+    }
+  }
 }
 
 // ============================================================
