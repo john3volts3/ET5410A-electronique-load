@@ -1,0 +1,28 @@
+# ET5410 Configuration
+# Date: 2026-02-27 10:41:10
+# Mode: BATT
+
+ctrl-mode=BATT
+batt-dmode=CC
+batt-cutoff-mode=volt
+
+# Systeme
+ctrl-vmax=155.00
+ctrl-imax=42.00
+ctrl-pmax=410.00
+ctrl-offdelay=0
+ctrl-vrange=HIGH
+ctrl-crange=HIGH
+ctrl-trig=MAN
+
+# BATT
+batt-bcc1-v=2.50
+batt-bcc1-i=0.50
+batt-bcr-v=15.00
+batt-bcr-r=100.00
+batt-bcc-i=0.70
+batt-btc=0.20
+batt-bte=0.03
+batt-btt-h=0
+batt-btt-m=0
+batt-btt-s=0

@@ -1,0 +1,18 @@
+# ET5410 Configuration
+# Date: 2026-02-27 10:41:52
+# Mode: CRCV
+
+ctrl-mode=CRCV
+
+# Systeme
+ctrl-vmax=155.00
+ctrl-imax=42.00
+ctrl-pmax=410.00
+ctrl-offdelay=0
+ctrl-vrange=HIGH
+ctrl-crange=HIGH
+ctrl-trig=MAN
+
+# CRCV
+ctrl-crcv-r=100.00
+ctrl-crcv-v=15.00
