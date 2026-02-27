@@ -753,9 +753,48 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       </select>
     </div>
     <div class="row" style="margin-top:12px;">
-      <button class="btn-green" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlSW('ON')">ON</button>
-      <button class="btn-red" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlSW('OFF')">OFF</button>
+      <button class="btn-green" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlON()">ON</button>
+      <button class="btn-red" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlOFF()">OFF</button>
       <span id="ctrl-sw-status" style="font-size:1.1em;margin-left:10px;">--</span>
+    </div>
+    <div id="ctrl-live-meas" class="hidden" style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+      <div class="grid4">
+        <div class="card meas-card">
+          <div class="label">TENSION</div>
+          <div class="value volt" id="ctrl-live-v">--.---</div>
+          <div class="label">V</div>
+        </div>
+        <div class="card meas-card">
+          <div class="label">COURANT</div>
+          <div class="value curr" id="ctrl-live-i">--.---</div>
+          <div class="label">A</div>
+        </div>
+        <div class="card meas-card">
+          <div class="label">PUISSANCE</div>
+          <div class="value powe" id="ctrl-live-p">--.---</div>
+          <div class="label">W</div>
+        </div>
+        <div class="card meas-card" id="ctrl-live-r-box">
+          <div class="label">RESISTANCE</div>
+          <div class="value resi" id="ctrl-live-r">--.---</div>
+          <div class="label">Ohm</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="row">
+          <label>Afficher</label>
+          <select id="ctrl-live-graph-ch">
+            <option value="0">Tension (V)</option>
+            <option value="1">Courant (A)</option>
+            <option value="2">Puissance (W)</option>
+            <option value="3">Resistance (Ohm)</option>
+          </select>
+          <label>Points max</label>
+          <input type="number" id="ctrl-live-graph-pts" value="200" min="50" max="2000">
+          <button class="btn" onclick="ctrlLiveClearGraph()">Effacer</button>
+        </div>
+        <canvas id="ctrl-live-canvas" width="1100" height="250" style="width:100%;margin-top:8px;"></canvas>
+      </div>
     </div>
   </div>
 </div>
@@ -1085,7 +1124,7 @@ class ET5410 {
     const data = new TextEncoder().encode(fullCmd + '\n');
     await this.writer.write(data);
     termLog('TX: ' + fullCmd, 'tx');
-    if (!pcSession && !battTimer && !cmd.startsWith('SYST:LOCA')) {
+    if (!pcSession && !battTimer && !ctrlLiveTimer && !cmd.startsWith('SYST:LOCA')) {
       await sendLocalReturn();
     }
   }
@@ -1114,7 +1153,7 @@ class ET5410 {
     termLog('TX: ' + fullCmd, 'tx');
     const result = await promise;
     if (result !== null) termLog('RX: ' + result, 'rx');
-    if (!pcSession && !battTimer && !cmd.startsWith('SYST:LOCA')) {
+    if (!pcSession && !battTimer && !ctrlLiveTimer && !cmd.startsWith('SYST:LOCA')) {
       await sendLocalReturn();
     }
     return result;
@@ -1128,6 +1167,9 @@ const dev = new ET5410();
 let measTimer = null;
 let battTimer = null;
 let battPollId = 0; // compteur anti-doublon de boucles poll
+let ctrlLiveTimer = null;
+let ctrlLivePollId = 0;
+const ctrlLiveHistory = [[], [], [], []]; // V, I, P, R
 const measHistory = [[], [], [], []]; // V, I, P, R
 let battGraphData = { t: [], v: [] };
 let battStartTime = 0;
@@ -1276,6 +1318,7 @@ async function refreshAll() {
 }
 
 async function doDisconnect() {
+  ctrlLiveStop();
   battStop(false);
   measStop();
   if (dev.connected) await dev.send('SYST:LOCA');
@@ -1341,7 +1384,12 @@ function updateCtrlModeRows() {
 }
 
 document.querySelectorAll('input[name="ctrl-mode"]').forEach(r => {
-  r.addEventListener('change', () => { updateCtrlModeRows(); ctrlSetMode(); });
+  r.addEventListener('change', () => {
+    updateCtrlModeRows(); ctrlSetMode();
+    // Le changement de mode force la charge en OFF côté appareil
+    ctrlLiveStop();
+    $('ctrl-sw-status').textContent = 'OFF';
+  });
 });
 
 async function ctrlSetMode() { await dev.send('CH:MODE ' + getCtrlMode()); }
@@ -1392,6 +1440,127 @@ async function ctrlSW(state) {
   });
 }
 
+async function ctrlON() {
+  await ctrlSW('ON');
+  if ($('ctrl-sw-status').textContent === 'ON') ctrlLiveStart();
+}
+async function ctrlOFF() {
+  ctrlLiveStop();
+  await ctrlSW('OFF');
+}
+
+function ctrlLiveStart() {
+  if (ctrlLiveTimer) return;
+  ctrlLiveTimer = true;
+  pcSession = true;
+  updateLocalPCBar();
+  ctrlLiveUpdateR();
+  $('ctrl-live-v').textContent = '--.---';
+  $('ctrl-live-i').textContent = '--.---';
+  $('ctrl-live-p').textContent = '--.---';
+  $('ctrl-live-r').textContent = '--.---';
+  ctrlLiveHistory.forEach(h => h.length = 0);
+  const c = $('ctrl-live-canvas');
+  c.getContext('2d').clearRect(0, 0, c.width, c.height);
+  $('ctrl-live-meas').classList.remove('hidden');
+  ctrlLivePollLoop(++ctrlLivePollId);
+}
+
+function ctrlLiveStop() {
+  if (!ctrlLiveTimer) return;
+  ctrlLiveTimer = null;
+  ctrlLivePollId++;
+  $('ctrl-live-meas').classList.add('hidden');
+  if (!battTimer && !measTimer) {
+    pcSession = false;
+    updateLocalPCBar();
+  }
+}
+
+async function ctrlLivePollLoop(myId) {
+  while (ctrlLiveTimer && ctrlLivePollId === myId) {
+    const t0 = Date.now();
+    await ctrlLivePoll();
+    const elapsed = Date.now() - t0;
+    if (ctrlLiveTimer && ctrlLivePollId === myId)
+      await new Promise(r => setTimeout(r, Math.max(0, 1000 - elapsed)));
+  }
+}
+
+async function ctrlLivePoll() {
+  const r = await dev.query('MEAS:ALL?');
+  if (!r) return;
+  const cleaned = r.replace(/^[A-Za-z]\s+/, '');
+  const parts = cleaned.trim().split(/\s+/).map(s => parseFloat(s));
+  if (parts.length >= 4) {
+    const [i, v, p, res] = parts;
+    $('ctrl-live-v').textContent = v.toFixed(3);
+    $('ctrl-live-i').textContent = i.toFixed(3);
+    $('ctrl-live-p').textContent = p.toFixed(2);
+    $('ctrl-live-r').textContent = res.toFixed(2);
+    ctrlLiveHistory[0].push(v);
+    ctrlLiveHistory[1].push(i);
+    ctrlLiveHistory[2].push(p);
+    ctrlLiveHistory[3].push(res);
+    const maxPts = parseInt(g('ctrl-live-graph-pts')) || 200;
+    for (const h of ctrlLiveHistory) { while (h.length > maxPts) h.shift(); }
+    ctrlLiveDrawGraph();
+  }
+}
+
+function ctrlLiveUpdateR() {
+  const mode = getCtrlMode();
+  const showR = ['CR', 'CRCV', 'LIST', 'LED'].includes(mode);
+  $('ctrl-live-r-box').style.display = showR ? '' : 'none';
+}
+
+function ctrlLiveDrawGraph() {
+  const canvas = $('ctrl-live-canvas');
+  const ctx = canvas.getContext('2d');
+  const ch = parseInt(g('ctrl-live-graph-ch'));
+  const data = ctrlLiveHistory[ch];
+  const colors = ['#ffeb3b', '#4fc3f7', '#ff9800', '#ce93d8'];
+  const labels = ['V', 'A', 'W', 'Ohm'];
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (data.length < 2) return;
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const pad = 40;
+  const w = canvas.width - pad * 2;
+  const h = canvas.height - pad * 2;
+
+  // Grid
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad + (h / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(pad + w, y); ctx.stroke();
+    ctx.fillStyle = '#888';
+    ctx.font = '11px Consolas';
+    ctx.fillText((max - (range / 4) * i).toFixed(2) + ' ' + labels[ch], 2, y + 4);
+  }
+
+  // Data
+  ctx.strokeStyle = colors[ch];
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i < data.length; i++) {
+    const x = pad + (i / (data.length - 1)) * w;
+    const y = pad + h - ((data[i] - min) / range) * h;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+function ctrlLiveClearGraph() {
+  ctrlLiveHistory.forEach(h => h.length = 0);
+  const canvas = $('ctrl-live-canvas');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
 // ============================================================
 // Mesures
 // ============================================================
@@ -1409,7 +1578,7 @@ function measStop() {
   if (measTimer) { clearInterval(measTimer); measTimer = null; }
   $('meas-start').disabled = false;
   $('meas-stop').disabled = true;
-  if (!battTimer) {
+  if (!battTimer && !ctrlLiveTimer) {
     pcSession = false;
     updateLocalPCBar();
     sendLocalReturn();
@@ -1756,7 +1925,7 @@ async function battStop(sendOff) {
   $('batt-paused-label').style.display = 'none';
   // Afficher Reset si des données existent
   if (battGraphData.t.length > 0) $('batt-reset').style.display = '';
-  if (!measTimer) {
+  if (!measTimer && !ctrlLiveTimer) {
     pcSession = false;
     updateLocalPCBar();
   }
