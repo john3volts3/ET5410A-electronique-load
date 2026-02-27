@@ -323,14 +323,21 @@ CURR:LED <numeric>              CURR:LED?
 
 --- Battery test ---
 
+CURR:BCC <numeric>              CURR:BCC?
+  Battery CC mode discharge current for Time/Energy/Capacity cutoff (A).
+  Single current shared by all non-Voltage cutoff modes.
+  Different register from CURR:BCC1 — the device uses BCC or BCC1/2/3
+  depending on the cutoff type selected on the front panel.
+  *UNDOCUMENTED*
+
 CURR:BCC1 <numeric>             CURR:BCC1?
-  Battery CC mode discharge current — stage 1 (A).
+  Battery CC mode discharge current — stage 1 (A). Used with Voltage cutoff.
 
 CURR:BCC2 <numeric>             CURR:BCC2?
-  Battery CC mode discharge current — stage 2 (A).
+  Battery CC mode discharge current — stage 2 (A). Used with Voltage cutoff.
 
 CURR:BCC3 <numeric>             CURR:BCC3?
-  Battery CC mode discharge current — stage 3 (A).
+  Battery CC mode discharge current — stage 3 (A). Used with Voltage cutoff.
 
 --- Scan test ---
 
@@ -719,9 +726,10 @@ CURR:CCCV <n>                     /?    CC+CV current
 CURR:TA <n>                       /?    Dynamic A current
 CURR:TB <n>                       /?    Dynamic B current
 CURR:LED <n>                      /?    LED mode Io
-CURR:BCC1 <n>                     /?    Battery CC current 1
-CURR:BCC2 <n>                     /?    Battery CC current 2
-CURR:BCC3 <n>                     /?    Battery CC current 3
+CURR:BCC <n>                      /?    Battery CC current (non-Voltage cutoff)  *UNDOC*
+CURR:BCC1 <n>                     /?    Battery CC current 1 (Voltage cutoff)
+CURR:BCC2 <n>                     /?    Battery CC current 2 (Voltage cutoff)
+CURR:BCC3 <n>                     /?    Battery CC current 3 (Voltage cutoff)
 CURR:STARt <n>                    /?    Scan start current
 CURR:END <n>                      /?    Scan end current
 CURR:STEP <n>                     /?    Scan step current
