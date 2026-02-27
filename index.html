@@ -693,7 +693,7 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
       </div>
     </div>
     <div class="card" id="batt-graph-card" style="display:none;">
-      <div id="batt-stats" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;">
+      <div id="batt-stats" style="display:flex;gap:32px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;">
         <div style="text-align:center;">
           <div style="color:var(--text2);font-size:0.75em;">TENSION</div>
           <div id="batt-stat-v" style="font-size:1.3em;color:#ff5252;font-family:Consolas,monospace;">--.--- V</div>
@@ -1074,7 +1074,7 @@ class ET5410 {
     const data = new TextEncoder().encode(fullCmd + '\n');
     await this.writer.write(data);
     termLog('TX: ' + fullCmd, 'tx');
-    if (!pcSession && !cmd.startsWith('SYST:LOCA')) {
+    if (!pcSession && !battTimer && !cmd.startsWith('SYST:LOCA')) {
       await sendLocalReturn();
     }
   }
@@ -1103,7 +1103,7 @@ class ET5410 {
     termLog('TX: ' + fullCmd, 'tx');
     const result = await promise;
     if (result !== null) termLog('RX: ' + result, 'rx');
-    if (!pcSession && !cmd.startsWith('SYST:LOCA')) {
+    if (!pcSession && !battTimer && !cmd.startsWith('SYST:LOCA')) {
       await sendLocalReturn();
     }
     return result;
@@ -1116,6 +1116,7 @@ class ET5410 {
 const dev = new ET5410();
 let measTimer = null;
 let battTimer = null;
+let battPollId = 0; // compteur anti-doublon de boucles poll
 const measHistory = [[], [], [], []]; // V, I, P, R
 let battGraphData = { t: [], v: [], i: [] };
 let battStartTime = 0;
@@ -1686,8 +1687,9 @@ async function battDoStart() {
   $('batt-stat-wh').textContent = '--.-- Wh';
   $('batt-stat-time').textContent = '00:00:00';
   await ctrlSW('ON');
-  battTimer = setInterval(battPoll, 1000);
-  battPoll();
+  await new Promise(r => setTimeout(r, 300));
+  battTimer = true;
+  battPollLoop(++battPollId);
 }
 
 async function battPauseResume() {
@@ -1695,7 +1697,8 @@ async function battPauseResume() {
     // Pause
     battPaused = true;
     battElapsedAtPause = (Date.now() - battStartTime) / 1000;
-    if (battTimer) { clearInterval(battTimer); battTimer = null; }
+    battTimer = null;
+    battPollId++;
     $('batt-pause').textContent = 'Reprendre';
     $('batt-pause').style.background = '#ffeb3b';
     $('batt-pause').style.color = '#000';
@@ -1712,13 +1715,15 @@ async function battPauseResume() {
     pcSession = true;
     updateLocalPCBar();
     await ctrlSW('ON');
-    battTimer = setInterval(battPoll, 1000);
-    battPoll();
+    await new Promise(r => setTimeout(r, 300));
+    battTimer = true;
+    battPollLoop(++battPollId);
   }
 }
 
 async function battStop(sendOff) {
-  if (battTimer) { clearInterval(battTimer); battTimer = null; }
+  battTimer = null;
+  battPollId++;
   battPaused = false;
   if ($('batt-start')) $('batt-start').disabled = false;
   if ($('batt-pause')) { $('batt-pause').disabled = true; $('batt-pause').textContent = 'Pause'; $('batt-pause').style.background = ''; $('batt-pause').style.color = ''; }
@@ -1740,6 +1745,15 @@ function battReset() {
   $('batt-reset').style.display = 'none';
   $('batt-capa').textContent = '--';
   $('batt-ener').textContent = '--';
+}
+
+async function battPollLoop(myId) {
+  while (battTimer && battPollId === myId) {
+    const t0 = Date.now();
+    await battPoll();
+    const elapsed = Date.now() - t0;
+    if (battTimer && battPollId === myId) await new Promise(r => setTimeout(r, Math.max(0, 1000 - elapsed)));
+  }
 }
 
 async function battPoll() {
