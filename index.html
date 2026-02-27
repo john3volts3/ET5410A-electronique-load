@@ -270,7 +270,10 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
   <div>
     <span id="device-info" style="font-size:0.8em;color:var(--text2);margin-right:12px;"></span>
     <span id="conn-status" class="off">Deconnecte</span>
-    <button id="btn-localpc" class="btn" style="margin-left:8px;padding:4px 10px;font-size:0.8em;display:none;" onclick="toggleLocalPC()">PC</button>
+    <span id="localpc-bar" style="margin-left:8px;display:none;">
+      <button id="btn-pc-forced" class="btn" style="padding:4px 8px;font-size:0.8em;" onclick="setLocalPCMode('pc')">PC</button>
+      <button id="btn-auto" class="btn" style="padding:4px 8px;font-size:0.8em;" onclick="setLocalPCMode('auto')">Auto</button>
+    </span>
   </div>
 </header>
 
@@ -620,20 +623,6 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <label class="radio-label"><input type="radio" name="batt-dmode" value="CR"> CR (Resistance constante)</label>
       </div>
     </div>
-    <div class="card" id="ctrl-batt-cc-card">
-      <h3>Parametres CC</h3>
-      <div class="row">
-        <label>Courant de decharge (A)</label>
-        <input type="number" id="batt-bcc1-i" step="0.001" value="1" data-cmd="CURR:BCC1">
-      </div>
-    </div>
-    <div class="card hidden" id="ctrl-batt-cr-card">
-      <h3>Parametres CR</h3>
-      <div class="row">
-        <label>Resistance (Ohm)</label>
-        <input type="number" id="batt-bcr-r" step="0.01" value="10" data-cmd="RESI:BCR">
-      </div>
-    </div>
     <div class="card">
       <h3>Conditions de coupure (Cutoff)</h3>
       <div class="radio-grid">
@@ -666,10 +655,28 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
         <input type="number" id="batt-btt-s" min="0" max="59" value="0" style="width:60px"> s
       </div>
     </div>
+    <div class="card" id="ctrl-batt-cc-card">
+      <h3>Parametres CC</h3>
+      <div class="row" id="batt-cc-i-volt">
+        <label>Courant de decharge I1 (A)</label>
+        <input type="number" id="batt-bcc1-i" step="0.001" value="1" data-cmd="CURR:BCC1">
+      </div>
+      <div class="row hidden" id="batt-cc-i-other">
+        <label>Courant de decharge (A)</label>
+        <input type="number" id="batt-bcc-i" step="0.001" value="1" data-cmd="CURR:BCC">
+      </div>
+    </div>
+    <div class="card hidden" id="ctrl-batt-cr-card">
+      <h3>Parametres CR</h3>
+      <div class="row">
+        <label>Resistance (Ohm)</label>
+        <input type="number" id="batt-bcr-r" step="0.01" value="10" data-cmd="RESI:BCR">
+      </div>
+    </div>
     <div class="card">
       <h3>Test Batterie</h3>
       <div class="row">
-        <button class="btn-green" id="batt-start" onclick="battStart()">Start</button>
+        <button class="btn-green" id="batt-start" onclick="battDoStart()">Start</button>
         <button class="btn-red" id="batt-stop" onclick="battStop()" disabled>Stop</button>
       </div>
       <div class="row" style="margin-top:8px;">
@@ -1025,6 +1032,9 @@ class ET5410 {
     const data = new TextEncoder().encode(fullCmd + '\n');
     await this.writer.write(data);
     termLog('TX: ' + fullCmd, 'tx');
+    if (!pcSession && !cmd.startsWith('SYST:LOCA')) {
+      await sendLocalReturn();
+    }
   }
 
   async query(cmd, timeout = 2000) {
@@ -1051,6 +1061,9 @@ class ET5410 {
     termLog('TX: ' + fullCmd, 'tx');
     const result = await promise;
     if (result !== null) termLog('RX: ' + result, 'rx');
+    if (!pcSession && !cmd.startsWith('SYST:LOCA')) {
+      await sendLocalReturn();
+    }
     return result;
   }
 }
@@ -1095,25 +1108,49 @@ function updateConnStatus(on) {
   else { el.className = 'off'; el.textContent = 'Deconnecte'; }
   $('btn-connect').disabled = on;
   $('btn-disconnect').disabled = !on;
-  const lp = $('btn-localpc');
+  const lp = $('localpc-bar');
   lp.style.display = on ? '' : 'none';
-  if (on) { lp.textContent = 'PC'; lp.style.background = 'var(--accent)'; }
+  if (on) { pcSession = false; updateLocalPCBar(); }
 }
 
-let localMode = false;
-async function toggleLocalPC() {
+let pcSession = false;  // true = rester en PC, false = retour LOCAL après chaque commande
+
+async function setLocalPCMode(mode) {
+  pcSession = (mode === 'pc');
+  updateLocalPCBar();
   if (!dev.connected) return;
-  const btn = $('btn-localpc');
-  if (!localMode) {
+  if (mode === 'auto') {
     await dev.send('SYST:LOCA');
-    localMode = true;
-    btn.textContent = 'LOCAL';
-    btn.style.background = 'var(--orange)';
   } else {
     await dev.query('*IDN?');
-    localMode = false;
-    btn.textContent = 'PC';
-    btn.style.background = 'var(--accent)';
+  }
+}
+
+function updateLocalPCBar() {
+  const btnPC = $('btn-pc-forced');
+  const btnAuto = $('btn-auto');
+  btnPC.style.background = pcSession ? 'var(--accent)' : '';
+  btnPC.style.color = pcSession ? '#000' : '';
+  btnAuto.style.background = !pcSession ? 'var(--accent)' : '';
+  btnAuto.style.color = !pcSession ? '#000' : '';
+}
+
+async function sendLocalReturn() {
+  if (dev.connected && dev.writer) {
+    await new Promise(r => setTimeout(r, 200));
+    await dev.query('SYST:LOCA', 500);
+  }
+}
+
+async function pcSessionRun(fn) {
+  const wasPcSession = pcSession;
+  pcSession = true;
+  try { await fn(); }
+  finally {
+    pcSession = wasPcSession;
+    if (!pcSession) {
+      await sendLocalReturn();
+    }
   }
 }
 
@@ -1133,7 +1170,7 @@ async function doConnect() {
   try {
     const baud = parseInt(g('baud-rate'));
     await dev.connect(baud);
-    await refreshAll();
+    await pcSessionRun(() => refreshAll());
   } catch (e) {
     termLog('Erreur connexion: ' + e.message, 'err');
   }
@@ -1279,12 +1316,14 @@ async function ctrlReadTrig() {
 }
 
 async function ctrlSW(state) {
-  await dev.query('CH:SW ' + state);
-  const r = await dev.query('CH:SW?');
-  if (r) {
-    const v = stripPrefix(r).toUpperCase();
-    $('ctrl-sw-status').textContent = (v === 'ON' || v === 'OFF') ? v : state;
-  }
+  await pcSessionRun(async () => {
+    await dev.query('CH:SW ' + state);
+    const r = await dev.query('CH:SW?');
+    if (r) {
+      const v = stripPrefix(r).toUpperCase();
+      $('ctrl-sw-status').textContent = (v === 'ON' || v === 'OFF') ? v : state;
+    }
+  });
 }
 
 // ============================================================
@@ -1294,6 +1333,8 @@ function measStart() {
   const interval = parseInt(g('meas-interval')) || 500;
   $('meas-start').disabled = true;
   $('meas-stop').disabled = false;
+  pcSession = true;
+  updateLocalPCBar();
   measTimer = setInterval(measPoll, interval);
   measPoll();
 }
@@ -1302,6 +1343,11 @@ function measStop() {
   if (measTimer) { clearInterval(measTimer); measTimer = null; }
   $('meas-start').disabled = false;
   $('meas-stop').disabled = true;
+  if (!battTimer) {
+    pcSession = false;
+    updateLocalPCBar();
+    sendLocalReturn();
+  }
 }
 
 async function measPoll() {
@@ -1444,6 +1490,9 @@ function updateBattCutoffRows() {
   $('batt-cut-capa').classList.toggle('hidden', cut !== 'capa');
   $('batt-cut-ener').classList.toggle('hidden', cut !== 'ener');
   $('batt-cut-time').classList.toggle('hidden', cut !== 'time');
+  // Courant CC : CURR:BCC1 pour cutoff Voltage, CURR:BCC pour les autres
+  $('batt-cc-i-volt').classList.toggle('hidden', cut !== 'volt');
+  $('batt-cc-i-other').classList.toggle('hidden', cut === 'volt');
 }
 
 async function battSendCutoffValue() {
@@ -1464,7 +1513,21 @@ async function battSendCutoffValue() {
 }
 
 document.querySelectorAll('input[name="batt-cutoff-mode"]').forEach(r => {
-  r.addEventListener('change', () => { updateBattCutoffRows(); battSendCutoffValue(); });
+  r.addEventListener('change', async () => {
+    updateBattCutoffRows();
+    await battSendCutoffValue();
+    // Relire le courant correspondant au mode cutoff
+    if (dev.connected && getBattDMode() === 'CC') {
+      const cut = document.querySelector('input[name="batt-cutoff-mode"]:checked').value;
+      if (cut === 'volt') {
+        const rv = await dev.query('CURR:BCC1?');
+        if (rv) $('batt-bcc1-i').value = stripPrefix(rv);
+      } else {
+        const rv = await dev.query('CURR:BCC?');
+        if (rv) $('batt-bcc-i').value = stripPrefix(rv);
+      }
+    }
+  });
 });
 
 function battGetTimeSeconds() {
@@ -1503,19 +1566,25 @@ async function battReadEner() {
   if (r) $('batt-ener').textContent = stripPrefix(r) + ' Wh';
 }
 
-function battStart() {
+async function battDoStart() {
+  pcSession = true;
   $('batt-start').disabled = true;
   $('batt-stop').disabled = false;
-  ctrlSW('ON');
+  updateLocalPCBar();
+  await ctrlSW('ON');
   battTimer = setInterval(battPoll, 1000);
   battPoll();
 }
 
-function battStop(sendOff) {
+async function battStop(sendOff) {
   if (battTimer) { clearInterval(battTimer); battTimer = null; }
   if ($('batt-start')) $('batt-start').disabled = false;
   if ($('batt-stop')) $('batt-stop').disabled = true;
-  if (sendOff !== false && dev.connected) ctrlSW('OFF');
+  if (!measTimer) {
+    pcSession = false;
+    updateLocalPCBar();
+  }
+  if (sendOff !== false && dev.connected) await ctrlSW('OFF');
 }
 
 async function battPoll() {
