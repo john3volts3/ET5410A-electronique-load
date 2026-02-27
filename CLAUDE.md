@@ -29,7 +29,7 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 - **Fichier unique** `index.html` — HTML + CSS + JS embarqués, zéro dépendance
 - **Web Serial API** (Chrome 89+ / Edge 89+) pour communication USB série
 - **Classe `ET5410`** : `connect()`, `disconnect()`, `send(cmd)`, `query(cmd)` avec terminaison `\n` (0x0A)
-- **10 onglets** : Connexion, Contrôle, Mesures, Dynamique, Batterie, Scan, List, Qualification, Système, Terminal
+- **11 onglets** : Connexion, Contrôle, MPPT, Mesures, Dynamique, Batterie, Scan, List, Qualification, Système, Terminal
 - **Thème sombre** adapté instruments de mesure
 - Ouvrir directement dans le navigateur via `file://` ou serveur local
 

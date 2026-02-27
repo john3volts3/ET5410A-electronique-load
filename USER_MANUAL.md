@@ -198,6 +198,84 @@ Cet onglet permet un suivi independant des mesures, sans lien avec le mode de ch
 
 ---
 
+## Onglet MPPT
+
+L'onglet MPPT permet de rechercher le **point de puissance maximale** (Maximum Power Point) d'une source DC (panneau solaire, generateur) en balayant le courant de charge.
+
+### Choix du mode
+
+Deux modes de recherche sont disponibles via les boutons radio en haut de la configuration :
+
+| Mode | Description |
+|---|---|
+| **Scan lineaire** | Balayage du courant de depart au courant max par increments fixes (step). Trace les courbes tension et puissance. Exhaustif mais plus lent. |
+| **Dichotomie** | Recherche ternaire qui divise l'intervalle en 3, compare la puissance aux deux tiers, et elimine le tiers le moins performant. Converge en ~10-15 mesures. Affiche les points en nuage. |
+
+### Configuration
+
+Les champs affiches dependent du mode selectionne :
+
+**Mode Scan lineaire :**
+
+| Parametre | Description |
+|---|---|
+| **Courant depart (A)** | Courant initial du balayage |
+| **Courant max (A)** | Courant de fin du balayage |
+| **Step (A)** | Increment entre chaque mesure |
+| **Tension min (V)** | Seuil d'arret si la tension tombe en dessous |
+| **Delai entre steps (ms)** | Temps d'attente entre chaque mesure |
+
+**Mode Dichotomie :**
+
+| Parametre | Description |
+|---|---|
+| **Courant depart (A)** | Borne inferieure de l'intervalle de recherche |
+| **Courant max (A)** | Borne superieure de l'intervalle de recherche |
+| **Delai (ms)** | Temps d'attente entre chaque mesure (500 ms recommande) |
+
+> **Note** : En mode dichotomie, le champ **Step** (masque) sert de tolerance de convergence. Le champ **Tension min** (masque) reste actif comme seuil de securite.
+
+### Deroulement
+
+| Bouton | Action |
+|---|---|
+| **Start** | Lance la recherche : passe en mode CC, active la charge, commence les mesures |
+| **Stop** | Arrete la recherche en cours et desactive la charge |
+| **Reset** | Efface les donnees et le graphique |
+
+### Resultat MPP
+
+A la fin de la recherche, le point de puissance maximale est affiche :
+
+- **MPP Courant** (bleu) — courant optimal en Amperes
+- **MPP Tension** (jaune) — tension au point optimal en Volts
+- **MPP Puissance** (vert) — puissance maximale en Watts
+- **MPP Resistance** (violet) — resistance equivalente en Ohms
+
+### Graphique
+
+Le graphique affiche les mesures en temps reel pendant la recherche :
+
+- **Mode scan** : courbes continues (jaune = tension, orange = puissance)
+- **Mode dichotomie** : nuage de points (cercles jaunes = tension, cercles orange = puissance)
+- **Point MPP** : cercle vert avec label de puissance et ligne verticale pointillee
+- **Theme** : basculer entre fond sombre et fond clair
+
+### Exports
+
+| Bouton | Format | Contenu |
+|---|---|---|
+| **Export CSV** | CSV point-virgule | Courant (A), Tension (V), Puissance (W) |
+| **Export PNG** | Image PNG | Statistiques + graphique |
+
+### Sauvegarder / Charger la configuration MPPT
+
+Les boutons **Sauver config** / **Charger config** en haut de la carte sauvegardent tous les parametres MPPT (mode, courants, delais) ainsi que les parametres systeme dans un fichier `.ET5410`.
+
+> **Conseil** : Pour un panneau solaire, commencer avec un delai de 500 ms. Des delais plus courts (100-200 ms) peuvent donner des mesures imprecises si la source a une capacite parasite.
+
+---
+
 ## Onglet Qualification
 
 Permet de tester si les mesures sont dans les limites definies.

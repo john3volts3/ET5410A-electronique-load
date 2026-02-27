@@ -7,6 +7,7 @@ Web-based controller for the **ET5410 / ET5411 / ET5420** programmable DC electr
 - **12 load modes** — CC, CV, CP, CR, CC+CV, CR+CV, Dynamic, List (50 steps), Scan, Short, Battery, LED
 - **Real-time measurements** — Voltage, Current, Power, Resistance with live graph
 - **Battery discharge test** — Full test with voltage curve, statistics (min/max/avg), pause/resume, and multiple export formats (TXT, CSV, SVG, PNG, PDF report)
+- **MPPT scanning** — Solar panel maximum power point tracking with two modes: linear scan (step-by-step) and dichotomy (ternary search, ~10-15 measurements). Real-time graph with MPP marker, CSV/PNG export.
 - **Save/Load configurations** — Export and import settings to `.ET5410` files
 - **Qualification testing** — Pass/fail limit checking for V, I, P
 - **SCPI terminal** — Direct command console for advanced use

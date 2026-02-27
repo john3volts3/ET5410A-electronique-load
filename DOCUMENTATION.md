@@ -13,6 +13,7 @@ Interface web de controle pour la charge electronique programmable DC **ET5410**
 - 12 modes de charge (CC, CV, CP, CR, CC+CV, CR+CV, Tran, List, Scan, Short, Battery, LED)
 - Mesures temps reel avec graphique (V, A, W, R)
 - Test de decharge batterie avec graphique, statistiques et exports
+- Recherche MPPT (scan lineaire + dichotomie) avec graphique et exports
 - Sauvegarde/chargement de configurations (.ET5410)
 - Console SCPI directe (Terminal)
 - Qualification, protections, gestion fichiers appareil
@@ -155,6 +156,7 @@ Trois systemes de polling independants coexistent :
 | Controle (live) | `ctrlLiveTimer` / `ctrlLivePollId` | `ctrlLivePollLoop()` | Mesures live quand charge ON |
 | Batterie | `battTimer` / `battPollId` | `battPollLoop()` | Test de decharge batterie |
 | Mesures | `measTimer` | `setInterval(measPoll)` | Onglet Mesures independant |
+| MPPT | `mpptTimer` / `mpptPollId` | `mpptPollLoop()` / `mpptDichoLoop()` | Recherche point de puissance max |
 
 **Pattern anti-doublon** (controle et batterie) :
 ```javascript
@@ -182,6 +184,60 @@ if (!pcSession && !battTimer && !ctrlLiveTimer && !cmd.startsWith('SYST:LOCA')) 
 ```
 
 **Coordination** : chaque systeme de polling met `pcSession = true` au demarrage et ne le remet a `false` que si les deux autres sont inactifs.
+
+## MPPT (Maximum Power Point Tracking)
+
+### Architecture
+
+Le systeme MPPT utilise un helper commun `mpptMeasureAt(current)` reutilise par les deux modes :
+
+```javascript
+async function mpptMeasureAt(current) {
+  // 1. Envoie CURR:CC <current>
+  // 2. Attend le delai configure (mppt-delay ou mppt-dicho-delay)
+  // 3. Lit MEAS:ALL? → [ci, v, p, r]
+  // 4. Enregistre le point dans mpptData (avec ci mesure)
+  // 5. Met a jour mpptBest si p > meilleure puissance
+  // 6. Redessine le graphique
+  // 7. Retourne { v, p } ou { v, p, lowV: true } si v < Vmin, ou null si erreur
+}
+```
+
+### Mode Scan lineaire
+
+`mpptPollLoop(myId)` → `mpptPoll()` → `mpptMeasureAt(mpptCurrentI)`
+
+Boucle simple : mesure au courant actuel, incremente `mpptCurrentI` de `iStep`, arret quand `mpptCurrentI > iMax` ou `v < vMin`.
+
+### Mode Dichotomie (recherche ternaire)
+
+`mpptDichoLoop(myId)` → `mpptMeasureAt(m1)`, `mpptMeasureAt(m2)`
+
+```
+Algorithme :
+  lo = iStart, hi = iMax
+  Tant que (hi - lo) > tolerance :
+    m1 = lo + (hi - lo) / 3
+    m2 = hi - (hi - lo) / 3
+    Mesurer P a m1 et m2
+    Si V < Vmin a m1 → hi = m1 (courant trop eleve)
+    Si V < Vmin a m2 → hi = m2 (courant trop eleve)
+    Si P(m1) < P(m2) → lo = m1
+    Sinon → hi = m2
+  Mesure finale a (lo + hi) / 2
+```
+
+Convergence typique : ~10-15 mesures (au lieu de centaines pour le scan).
+
+### Graphique
+
+- **Mode scan** : courbes lineaires reliant les points (tension jaune, puissance orange)
+- **Mode dichotomie** : nuage de points (cercles r=4), axe X fixe [iStart, iMax]
+- **Point MPP** : cercle vert (r=6) + label + ligne verticale pointillee (commun aux 2 modes)
+
+### Gestion V < Vmin en dichotomie
+
+Quand `mpptMeasureAt` detecte `v < vMin`, elle retourne `{ v, p, lowV: true }` au lieu de `null`. La boucle dichotomie reduit alors `hi` (borne superieure) au lieu de s'arreter, ce qui recentre la recherche vers les courants plus bas.
 
 ## Fichiers de configuration (.ET5410)
 
@@ -213,6 +269,7 @@ ctrl-cc-val=1.500
 
 - **Toujours** : mode, parametres systeme (limites, ranges, trigger, off delay)
 - **Selon le mode** : uniquement les parametres specifiques au mode selectionne
+- **MPPT** : parametres MPPT + mode (scan/dicho) + parametres systeme
 - **Nom propose** : `-ET5410-AAAA-MM-JJ-MODE.ET5410` (le tiret initial permet a l'utilisateur de prefixer son nom)
 
 ## Exports
