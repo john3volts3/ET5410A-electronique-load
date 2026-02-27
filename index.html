@@ -1054,7 +1054,13 @@ canvas { background: #000; border-radius: var(--radius); border: 1px solid var(-
 <!-- ========== MPPT ========== -->
 <div id="tab-mppt" class="tab">
   <div class="card">
-    <h3>Configuration MPPT</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;">Configuration MPPT</h3>
+      <span>
+        <button class="btn" style="padding:4px 12px;font-size:0.85em;" onclick="mpptConfigSave()">Sauver config</button>
+        <button class="btn" style="padding:4px 12px;font-size:0.85em;" onclick="mpptConfigLoad()">Charger config</button>
+      </span>
+    </div>
     <div class="row">
       <label>Courant depart (A)</label>
       <input type="number" id="mppt-i-start" step="0.01" min="0" value="0.1" style="width:90px;">
@@ -3039,6 +3045,59 @@ function mpptExportPNG() {
     a.href = url; a.download = 'mppt_scan.png'; a.click();
     URL.revokeObjectURL(url);
   });
+}
+
+const MPPT_CONFIG_IDS = ['mppt-i-start', 'mppt-i-max', 'mppt-i-step', 'mppt-v-min', 'mppt-delay'];
+
+async function mpptConfigSave() {
+  const now = new Date();
+  const d = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  let lines = [];
+  lines.push('# ET5410 MPPT Configuration');
+  lines.push('# Date: ' + d + ' ' + now.toLocaleTimeString('fr-FR'));
+  lines.push('# Systeme');
+  lines = lines.concat(configCollect(CONFIG_SYSTEM));
+  lines.push('');
+  lines.push('# MPPT');
+  lines = lines.concat(configCollect(MPPT_CONFIG_IDS));
+  const content = lines.join('\n');
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: '-ET5410-' + d + '-MPPT.ET5410',
+      types: [{ description: 'ET5410 Configuration', accept: { 'text/plain': ['.ET5410'] } }]
+    });
+    const writable = await handle.createWritable();
+    await writable.write(content);
+    await writable.close();
+  } catch (e) {
+    if (e.name !== 'AbortError') alert('Erreur sauvegarde: ' + e.message);
+  }
+}
+
+async function mpptConfigLoad() {
+  let text;
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'ET5410 Configuration', accept: { 'text/plain': ['.ET5410'] } }]
+    });
+    const file = await handle.getFile();
+    text = await file.text();
+  } catch (e) {
+    if (e.name !== 'AbortError') alert('Erreur chargement: ' + e.message);
+    return;
+  }
+  for (const line of text.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq < 0) continue;
+    const id = trimmed.substring(0, eq);
+    const val = trimmed.substring(eq + 1);
+    if (MPPT_CONFIG_IDS.includes(id) || CONFIG_SYSTEM.includes(id)) {
+      const el = $(id);
+      if (el) el.value = val;
+    }
+  }
 }
 
 // ============================================================
