@@ -131,6 +131,7 @@ button {
   transition: all 0.2s;
 }
 .btn:hover { background: var(--accent2); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .btn-accent {
   background: var(--accent);
   color: #fff;
@@ -149,6 +150,7 @@ button {
   font-weight: bold;
 }
 .btn-green:hover { opacity: 0.85; }
+.btn-green:disabled { opacity: 0.35; cursor: not-allowed; }
 .btn-red {
   background: var(--red);
   color: #fff;
@@ -158,6 +160,7 @@ button {
   font-weight: bold;
 }
 .btn-red:hover { opacity: 0.85; }
+.btn-red:disabled { opacity: 0.35; cursor: not-allowed; }
 .btn-orange {
   background: var(--orange);
   color: #000;
@@ -1720,6 +1723,7 @@ async function battPauseResume() {
     battElapsedAtPause = (Date.now() - battStartTime) / 1000;
     battTimer = null;
     battPollId++;
+    $('batt-start').disabled = true;
     $('batt-pause').textContent = 'Reprendre';
     $('batt-pause').style.background = '#ffeb3b';
     $('batt-pause').style.color = '#000';
