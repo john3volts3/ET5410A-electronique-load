@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -277,33 +277,33 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
 <header>
   <div style="display:flex;align-items:center;gap:12px;">
     <h1><span>ET5410</span> Controller</h1>
-    <button class="btn-accent" id="btn-connect" style="padding:4px 14px;" onclick="doConnect()">Connecter</button>
-    <button class="btn" id="btn-disconnect" style="padding:4px 14px;" onclick="doDisconnect()" disabled>Deconnecter</button>
+    <button class="btn-accent" id="btn-connect" style="padding:4px 14px;" onclick="doConnect()">Connect</button>
+    <button class="btn" id="btn-disconnect" style="padding:4px 14px;" onclick="doDisconnect()" disabled>Disconnect</button>
     <span id="localpc-bar" style="display:none;font-size:0.85em;">
       <label class="radio-label"><input type="radio" name="localpc-mode" value="auto" checked onchange="setLocalPCMode('auto')"> Auto</label>
       <label class="radio-label" style="margin-left:8px;"><input type="radio" name="localpc-mode" value="pc" onchange="setLocalPCMode('pc')"> PC</label>
     </span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;">
-    <button id="theme-toggle" class="btn" style="padding:4px 10px;font-size:1em;" onclick="toggleAppTheme()" title="Changer de theme">&#9684;</button>
-    <span id="conn-status" class="off">Deconnecte</span>
+    <button id="theme-toggle" class="btn" style="padding:4px 10px;font-size:1em;" onclick="toggleAppTheme()" title="Toggle theme">&#9684;</button>
+    <span id="conn-status" class="off">Disconnected</span>
   </div>
 </header>
 
 <nav id="tabs-nav">
-  <button class="active" data-tab="tab-conn">Connexion</button>
-  <button data-tab="tab-ctrl">Controle</button>
+  <button class="active" data-tab="tab-conn">Connection</button>
+  <button data-tab="tab-ctrl">Control</button>
   <button data-tab="tab-mppt">MPPT</button>
-  <button data-tab="tab-meas">Mesures</button>
+  <button data-tab="tab-meas">Measurements</button>
   <button data-tab="tab-qual">Qualification</button>
-  <button data-tab="tab-sys">Systeme</button>
+  <button data-tab="tab-sys">System</button>
   <button data-tab="tab-term">Terminal</button>
 </nav>
 
 <!-- ========== CONNEXION ========== -->
 <div id="tab-conn" class="tab active">
   <div class="card">
-    <h3>Connexion Serie (Web Serial API)</h3>
+    <h3>Serial Connection (Web Serial API)</h3>
     <div class="row">
       <label>Baud Rate</label>
       <select id="baud-rate">
@@ -311,24 +311,24 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
         <option value="9600">9600</option>
         <option value="14400" selected>14400</option>
       </select>
-      <label>Canal</label>
+      <label>Channel</label>
       <select id="channel-select">
-        <option value="1">Canal 1</option>
-        <option value="2">Canal 2</option>
+        <option value="1">Channel 1</option>
+        <option value="2">Channel 2</option>
       </select>
     </div>
     <div class="row" style="margin-top:8px;">
-      <button class="btn needs-conn" onclick="doIdentify()">Identifier (*IDN?)</button>
-      <button class="btn needs-conn" onclick="refreshAll()">Lire tout</button>
+      <button class="btn needs-conn" onclick="doIdentify()">Identify (*IDN?)</button>
+      <button class="btn needs-conn" onclick="refreshAll()">Read all</button>
       <button class="btn needs-conn" onclick="doBeep()">Beep</button>
     </div>
   </div>
   <div class="card">
-    <h3>Information Appareil</h3>
-    <div id="device-detail" class="info-box">Non connecte</div>
+    <h3>Device Information</h3>
+    <div id="device-detail" class="info-box">Not connected</div>
   </div>
   <div class="card">
-    <h3>Navigateur requis</h3>
+    <h3>Browser Required</h3>
     <div class="info-box" id="browser-check"></div>
   </div>
 </div>
@@ -336,10 +336,10 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
 <!-- ========== CONTROLE ========== -->
 <div id="tab-ctrl" class="tab">
   <div class="card">
-    <h3>Mode de charge</h3>
+    <h3>Load Mode</h3>
     <div style="text-align:right;margin-bottom:4px;">
-      <button class="btn needs-conn" onclick="configSave()">Sauver config</button>
-      <button class="btn needs-conn" onclick="configLoad()">Charger config</button>
+      <button class="btn needs-conn" onclick="configSave()">Save config</button>
+      <button class="btn needs-conn" onclick="configLoad()">Load config</button>
     </div>
     <div class="radio-grid">
       <label class="radio-label"><input type="radio" name="ctrl-mode" value="CC" checked> CC</label>
@@ -357,40 +357,40 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
     </div>
   </div>
   <div class="card" id="ctrl-value-card">
-    <h3>Type de charge</h3>
+    <h3>Load Type</h3>
     <div id="ctrl-value-section">
       <div class="row" id="ctrl-cc-row">
-        <label>Courant CC (A)</label>
+        <label>CC Current (A)</label>
         <input type="number" id="ctrl-cc-val" step="0.1" min="0" max="40" value="1" data-cmd="CURR:CC">
       </div>
       <div class="row hidden" id="ctrl-cv-row">
-        <label>Tension CV (V)</label>
+        <label>CV Voltage (V)</label>
         <input type="number" id="ctrl-cv-val" step="0.1" min="0" max="150" value="12" data-cmd="VOLT:CV">
       </div>
       <div class="row hidden" id="ctrl-cp-row">
-        <label>Puissance CP (W)</label>
+        <label>CP Power (W)</label>
         <input type="number" id="ctrl-cp-val" step="0.01" min="0" max="400" value="50" data-cmd="POWE:CP">
       </div>
       <div class="row hidden" id="ctrl-cr-row">
-        <label>Resistance CR (Ohm)</label>
+        <label>CR Resistance (Ohm)</label>
         <input type="number" id="ctrl-cr-val" step="0.01" min="0.03" max="7500" value="100" data-cmd="RESI:CR">
       </div>
       <div class="row hidden" id="ctrl-cccv-row">
-        <label>Courant CCCV (A)</label>
+        <label>CCCV Current (A)</label>
         <input type="number" id="ctrl-cccv-i" step="0.1" min="0" max="40" value="1" data-cmd="CURR:CCCV">
-        <label>Tension CCCV (V)</label>
+        <label>CCCV Voltage (V)</label>
         <input type="number" id="ctrl-cccv-v" step="0.1" min="0" max="150" value="12" data-cmd="VOLT:CCCV">
       </div>
       <div class="row hidden" id="ctrl-crcv-row">
-        <label>Resistance CRCV (Ohm)</label>
+        <label>CRCV Resistance (Ohm)</label>
         <input type="number" id="ctrl-crcv-r" step="0.01" min="0.03" max="7500" value="100" data-cmd="RESI:CRCV">
-        <label>Tension CRCV (V)</label>
+        <label>CRCV Voltage (V)</label>
         <input type="number" id="ctrl-crcv-v" step="0.1" min="0" max="150" value="12" data-cmd="VOLT:CRCV">
       </div>
       <div class="row hidden" id="ctrl-led-row">
-        <label>Courant LED Io (A)</label>
+        <label>LED Current Io (A)</label>
         <input type="number" id="ctrl-led-i" step="0.1" min="0" max="40" value="0.5" data-cmd="CURR:LED">
-        <label>Tension LED Vo (V)</label>
+        <label>LED Voltage Vo (V)</label>
         <input type="number" id="ctrl-led-v" step="0.1" min="0" max="150" value="12" data-cmd="VOLT:LED">
         <label>Coeff</label>
         <input type="number" id="ctrl-led-c" step="0.1" min="0.001" max="1" value="1" data-cmd="LED:COEFf">
@@ -398,7 +398,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
     </div>
   </div>
   <div class="card hidden" id="ctrl-limits-card">
-    <h3>Limites et temporisation</h3>
+    <h3>Limits and Timing</h3>
     <div class="row hidden" id="ctrl-offdelay-row">
       <label>Off Delay</label>
       <input type="number" id="ctrl-offdelay-h" step="1" min="0" max="16" value="0" style="width:60px"> h
@@ -406,20 +406,20 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <input type="number" id="ctrl-offdelay-s" step="1" min="0" max="59" value="0" style="width:60px"> s
     </div>
     <div class="row">
-      <label>Limite V (V)</label>
+      <label>V Limit (V)</label>
       <input type="number" id="ctrl-vmax" step="0.01" data-cmd="VOLT:VMAX">
-      <label>Limite A (A)</label>
+      <label>I Limit (A)</label>
       <input type="number" id="ctrl-imax" step="0.1" data-cmd="CURR:IMAX">
-      <label>Limite W (W)</label>
+      <label>P Limit (W)</label>
       <input type="number" id="ctrl-pmax" step="0.01" data-cmd="POWE:PMAX">
     </div>
   </div>
   <!-- Tran sub-section (visible only when mode=TRAN) -->
   <div id="ctrl-tran-section" class="hidden">
     <div class="card">
-      <h3>Test Dynamique (TRAN)</h3>
+      <h3>Dynamic Test (TRAN)</h3>
       <div class="row">
-        <label>Etat</label>
+        <label>State</label>
         <select id="tran-state" data-cmd="TRAN:STATe">
           <option value="CC">CC</option>
           <option value="CV">CV</option>
@@ -428,7 +428,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <div class="row">
         <label>Mode</label>
         <select id="tran-mode" data-cmd="TRAN:MODE">
-          <option value="COUT">Continu</option>
+          <option value="COUT">Continuous</option>
           <option value="TRIG">Trigger</option>
           <option value="PULS">Pulse</option>
         </select>
@@ -436,30 +436,30 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
     </div>
     <div class="grid2">
       <div class="card">
-        <h3>Valeurs CC</h3>
+        <h3>CC Values</h3>
         <div class="row">
-          <label>Courant A (A)</label>
+          <label>Current A (A)</label>
           <input type="number" id="tran-curr-ta" step="0.1" value="1" data-cmd="CURR:TA">
         </div>
         <div class="row">
-          <label>Courant B (A)</label>
+          <label>Current B (A)</label>
           <input type="number" id="tran-curr-tb" step="0.1" value="0.5" data-cmd="CURR:TB">
         </div>
       </div>
       <div class="card">
-        <h3>Valeurs CV</h3>
+        <h3>CV Values</h3>
         <div class="row">
-          <label>Tension A (V)</label>
+          <label>Voltage A (V)</label>
           <input type="number" id="tran-volt-ta" step="0.1" value="12" data-cmd="VOLT:TA">
         </div>
         <div class="row">
-          <label>Tension B (V)</label>
+          <label>Voltage B (V)</label>
           <input type="number" id="tran-volt-tb" step="0.1" value="6" data-cmd="VOLT:TB">
         </div>
       </div>
     </div>
     <div class="card">
-      <h3>Largeur d'impulsion</h3>
+      <h3>Pulse Width</h3>
       <div class="row">
         <label>Pulse A (s)</label>
         <input type="number" id="tran-wa" step="1" min="0" max="60" value="1" data-cmd="TIME:WA">
@@ -471,9 +471,9 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <!-- Scan sub-section (visible only when mode=SCAN) -->
   <div id="ctrl-scan-section" class="hidden">
     <div class="card">
-      <h3>Test Scan</h3>
+      <h3>Scan Test</h3>
       <div class="row">
-        <label>Type scan</label>
+        <label>Scan type</label>
         <select id="scan-type" data-cmd="SCAN:TYPE">
           <option value="CC">CC</option>
           <option value="CV">CV</option>
@@ -481,25 +481,25 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
         </select>
       </div>
       <div class="row">
-        <label>Type seuil</label>
+        <label>Threshold type</label>
         <select id="scan-thtype" data-cmd="SCAN:THTYpe">
           <option value="VTH">VTH (Transition)</option>
-          <option value="DROP">DROP (Chute)</option>
-          <option value="VMIN">VMIN (Tension min)</option>
+          <option value="DROP">DROP (Drop)</option>
+          <option value="VMIN">VMIN (Min voltage)</option>
         </select>
       </div>
       <div class="row">
-        <label>Comparaison</label>
+        <label>Comparison</label>
         <select id="scan-compare" data-cmd="SCAN:COMPare">
-          <option value="INCURR">Par courant</option>
-          <option value="INVOLT">Par tension</option>
-          <option value="INPOW">Par puissance</option>
+          <option value="INCURR">By current</option>
+          <option value="INVOLT">By voltage</option>
+          <option value="INPOW">By power</option>
         </select>
       </div>
     </div>
     <div class="grid2">
       <div class="card">
-        <h3>Parametres CC Scan</h3>
+        <h3>CC Scan Parameters</h3>
         <div class="row">
           <label>Start (A)</label>
           <input type="number" id="scan-curr-start" step="0.1" data-cmd="CURR:STARt">
@@ -522,7 +522,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
         </div>
       </div>
       <div class="card">
-        <h3>Parametres Tension Scan</h3>
+        <h3>Voltage Scan Parameters</h3>
         <div class="row">
           <label>Start (V)</label>
           <input type="number" id="scan-volt-start" step="0.1" data-cmd="VOLT:STARt">
@@ -554,14 +554,14 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       </div>
     </div>
     <div class="card">
-      <h3>Temps par pas</h3>
+      <h3>Time per Step</h3>
       <div class="row">
-        <label>Delay step (s)</label>
+        <label>Step delay (s)</label>
         <input type="number" id="scan-time-step" step="1" min="0" max="9999" value="1" data-cmd="TIME:STEP">
       </div>
     </div>
     <div class="card">
-      <h3>Parametres Puissance Scan</h3>
+      <h3>Power Scan Parameters</h3>
       <div class="row">
         <label>Start (W)</label>
         <input type="number" id="scan-powe-start" step="0.01" data-cmd="POWE:STARt">
@@ -587,9 +587,9 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <!-- List sub-section (visible only when mode=LIST) -->
   <div id="ctrl-list-section" class="hidden">
     <div class="card">
-      <h3>Test List</h3>
+      <h3>List Test</h3>
       <div class="row">
-        <label>Nb etapes</label>
+        <label>Nb steps</label>
         <input type="number" id="list-num" min="1" max="50" value="5" data-cmd="LIST:NUM">
         <label>Loop</label>
         <select id="list-loop" data-cmd="LIST:LOOP">
@@ -600,18 +600,18 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <div class="row">
         <label>Mode</label>
         <select id="list-mode" data-cmd="LIST:MODE">
-          <option value="AUTO">Auto (continu)</option>
+          <option value="AUTO">Auto (continuous)</option>
           <option value="TRIGGER">Trigger</option>
         </select>
       </div>
     </div>
     <div class="card">
-      <h3>Parametres des etapes</h3>
+      <h3>Step Parameters</h3>
       <div class="row">
-        <button class="btn-accent" onclick="listGenTable()">Generer tableau</button>
-        <button class="btn-accent needs-conn" onclick="listSendAll()">Envoyer tout</button>
-        <button class="btn needs-conn" onclick="listReadAll()">Lire tout</button>
-        <button class="btn needs-conn" onclick="listReadResults()">Lire resultats</button>
+        <button class="btn-accent" onclick="listGenTable()">Generate table</button>
+        <button class="btn-accent needs-conn" onclick="listSendAll()">Send all</button>
+        <button class="btn needs-conn" onclick="listReadAll()">Read all</button>
+        <button class="btn needs-conn" onclick="listReadResults()">Read results</button>
       </div>
       <div style="overflow-x:auto;margin-top:8px;">
         <table id="list-table">
@@ -619,12 +619,12 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
             <tr>
               <th>#</th>
               <th>Mode</th>
-              <th>Valeur</th>
+              <th>Value</th>
               <th>Delay (s)</th>
               <th>Compare</th>
               <th>Max</th>
               <th>Min</th>
-              <th>Resultat</th>
+              <th>Result</th>
             </tr>
           </thead>
           <tbody id="list-tbody"></tbody>
@@ -635,64 +635,64 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <!-- Battery sub-section (visible only when mode=BATT) -->
   <div id="ctrl-batt-section" class="hidden">
     <div class="card">
-      <h3>Mode de decharge</h3>
+      <h3>Discharge Mode</h3>
       <div class="radio-grid">
-        <label class="radio-label"><input type="radio" name="batt-dmode" value="CC" checked> CC (Courant constant)</label>
-        <label class="radio-label"><input type="radio" name="batt-dmode" value="CR"> CR (Resistance constante)</label>
+        <label class="radio-label"><input type="radio" name="batt-dmode" value="CC" checked> CC (Constant current)</label>
+        <label class="radio-label"><input type="radio" name="batt-dmode" value="CR"> CR (Constant resistance)</label>
       </div>
     </div>
     <div class="card">
-      <h3>Conditions de coupure (Cutoff)</h3>
+      <h3>Cutoff Conditions</h3>
       <div class="radio-grid">
         <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="volt" checked> Voltage</label>
-        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="capa"> Capacite</label>
-        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="ener"> Energie</label>
-        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="time"> Temps</label>
+        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="capa"> Capacity</label>
+        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="ener"> Energy</label>
+        <label class="radio-label"><input type="radio" name="batt-cutoff-mode" value="time"> Time</label>
       </div>
-      <small style="color:var(--orange);font-weight:bold;display:block;margin-top:4px;">Le type de coupure actif doit etre selectionne sur le panneau avant (bouton SET) — aucune commande SCPI n'existe pour ce reglage.</small>
+      <small style="color:var(--orange);font-weight:bold;display:block;margin-top:4px;">The active cutoff type must be selected on the front panel (SET button) — no SCPI command exists for this setting.</small>
       <div id="batt-cut-volt-cc" class="row" style="margin-top:8px;">
-        <label>Tension de coupure (V)</label>
+        <label>Cutoff Voltage (V)</label>
         <input type="number" id="batt-bcc1-v" step="0.1" value="3" data-cmd="VOLT:BCC1">
       </div>
       <div id="batt-cut-volt-cr" class="row hidden" style="margin-top:8px;">
-        <label>Tension de coupure (V)</label>
+        <label>Cutoff Voltage (V)</label>
         <input type="number" id="batt-bcr-v" step="0.1" value="3" data-cmd="VOLT:BCR">
       </div>
       <div id="batt-cut-capa" class="row hidden" style="margin-top:8px;">
-        <label>Cutoff Capacite (Ah)</label>
+        <label>Cutoff Capacity (Ah)</label>
         <input type="number" id="batt-btc" step="0.01" min="0" value="0" data-cmd="BATT:BTC">
       </div>
       <div id="batt-cut-ener" class="row hidden" style="margin-top:8px;">
-        <label>Cutoff Energie (Wh)</label>
+        <label>Cutoff Energy (Wh)</label>
         <input type="number" id="batt-bte" step="0.01" min="0" value="0" data-cmd="BATT:BTE">
       </div>
       <div id="batt-cut-time" class="row hidden" style="margin-top:8px;">
-        <label>Cutoff Temps</label>
+        <label>Cutoff Time</label>
         <input type="number" id="batt-btt-h" step="1" min="0" max="999" value="0" style="width:60px"> h
         <input type="number" id="batt-btt-m" step="1" min="0" max="59" value="0" style="width:60px"> min
         <input type="number" id="batt-btt-s" step="1" min="0" max="59" value="0" style="width:60px"> s
       </div>
     </div>
     <div class="card" id="ctrl-batt-cc-card">
-      <h3>Parametres CC</h3>
+      <h3>CC Parameters</h3>
       <div class="row" id="batt-cc-i-volt">
-        <label>Courant de decharge I1 (A)</label>
+        <label>Discharge Current I1 (A)</label>
         <input type="number" id="batt-bcc1-i" step="0.1" value="1" data-cmd="CURR:BCC1">
       </div>
       <div class="row hidden" id="batt-cc-i-other">
-        <label>Courant de decharge (A)</label>
+        <label>Discharge Current (A)</label>
         <input type="number" id="batt-bcc-i" step="0.1" value="1" data-cmd="CURR:BCC">
       </div>
     </div>
     <div class="card hidden" id="ctrl-batt-cr-card">
-      <h3>Parametres CR</h3>
+      <h3>CR Parameters</h3>
       <div class="row">
         <label>Resistance (Ohm)</label>
         <input type="number" id="batt-bcr-r" step="0.01" value="10" data-cmd="RESI:BCR">
       </div>
     </div>
     <div class="card">
-      <h3>Test Batterie</h3>
+      <h3>Battery Test</h3>
       <div class="row">
         <button class="btn-accent needs-conn" id="batt-start" onclick="battDoStart()">Start</button>
         <button class="btn needs-conn" id="batt-pause" onclick="battPauseResume()" disabled style="font-weight:bold;">Pause</button>
@@ -701,38 +701,38 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
         <span id="batt-paused-label" style="display:none;color:var(--accent);font-weight:bold;font-size:1.1em;margin-left:8px;animation:blink 1s step-end infinite;">PAUSE</span>
       </div>
       <div class="row" style="margin-top:8px;">
-        <label>Capacite dechargee</label>
+        <label>Discharged Capacity</label>
         <span id="batt-capa" class="info-box" style="min-width:150px;">--</span>
       </div>
       <div class="row">
-        <label>Energie dechargee</label>
+        <label>Discharged Energy</label>
         <span id="batt-ener" class="info-box" style="min-width:150px;">--</span>
       </div>
     </div>
     <div class="card" id="batt-graph-card" style="display:none;">
       <div id="batt-stats" style="display:flex;gap:32px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;">
         <div style="text-align:center;">
-          <div style="color:var(--text2);font-size:0.75em;">TENSION</div>
+          <div style="color:var(--text2);font-size:0.75em;">VOLTAGE</div>
           <div id="batt-stat-v" class="graph-volt" style="font-size:1.3em;font-family:Consolas,monospace;">--.--- V</div>
         </div>
         <div style="text-align:center;">
-          <div style="color:var(--text2);font-size:0.75em;" id="batt-stat-consigne-label">CONSIGNE</div>
+          <div style="color:var(--text2);font-size:0.75em;" id="batt-stat-consigne-label">SETPOINT</div>
           <div id="batt-stat-consigne" style="font-size:1.3em;color:var(--color-curr);font-family:Consolas,monospace;">--</div>
         </div>
         <div style="text-align:center;">
-          <div style="color:var(--text2);font-size:0.75em;">PUISSANCE</div>
+          <div style="color:var(--text2);font-size:0.75em;">POWER</div>
           <div id="batt-stat-p" style="font-size:1.3em;color:var(--color-powe);font-family:Consolas,monospace;">--.-- W</div>
         </div>
         <div style="text-align:center;">
-          <div style="color:var(--text2);font-size:0.75em;">CAPACITE</div>
+          <div style="color:var(--text2);font-size:0.75em;">CAPACITY</div>
           <div id="batt-stat-ah" style="font-size:1.3em;color:var(--green);font-family:Consolas,monospace;">--.--- Ah</div>
         </div>
         <div style="text-align:center;">
-          <div style="color:var(--text2);font-size:0.75em;">ENERGIE</div>
+          <div style="color:var(--text2);font-size:0.75em;">ENERGY</div>
           <div id="batt-stat-wh" style="font-size:1.3em;color:var(--color-resi);font-family:Consolas,monospace;">--.-- Wh</div>
         </div>
         <div style="text-align:center;">
-          <div style="color:var(--text2);font-size:0.75em;">DUREE</div>
+          <div style="color:var(--text2);font-size:0.75em;">DURATION</div>
           <div id="batt-stat-time" style="font-size:1.3em;color:var(--text1);font-family:Consolas,monospace;">00:00:00</div>
         </div>
       </div>
@@ -757,12 +757,12 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
     </div>
   </div>
   <div class="card" id="ctrl-onoff-card">
-    <h3>Canal ON/OFF</h3>
+    <h3>Channel ON/OFF</h3>
     <div class="row">
       <label>Trigger</label>
       <select id="ctrl-trig" data-cmd="LOAD:TRIGger">
-        <option value="MAN">Manuel</option>
-        <option value="EXT">Externe</option>
+        <option value="MAN">Manual</option>
+        <option value="EXT">External</option>
         <option value="TRG">Software</option>
       </select>
     </div>
@@ -770,22 +770,22 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <button class="btn-accent needs-conn" id="ctrl-btn-on" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlON()">ON</button>
       <button class="btn needs-conn" id="ctrl-btn-off" style="font-size:1.1em;padding:12px 30px;" onclick="ctrlOFF()">OFF</button>
       <span id="ctrl-sw-status" style="font-size:1.1em;margin-left:10px;">--</span>
-      <span id="ctrl-offdelay-countdown" style="display:none;margin-left:16px;font-family:Consolas,monospace;font-size:1.1em;color:var(--accent);">OFF dans --:--:--</span>
+      <span id="ctrl-offdelay-countdown" style="display:none;margin-left:16px;font-family:Consolas,monospace;font-size:1.1em;color:var(--accent);">OFF in --:--:--</span>
     </div>
     <div id="ctrl-live-meas" class="hidden" style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
       <div class="grid4">
         <div class="card meas-card">
-          <div class="label">TENSION</div>
+          <div class="label">VOLTAGE</div>
           <div class="value volt" id="ctrl-live-v">--.---</div>
           <div class="label">V</div>
         </div>
         <div class="card meas-card">
-          <div class="label">COURANT</div>
+          <div class="label">CURRENT</div>
           <div class="value curr" id="ctrl-live-i">--.---</div>
           <div class="label">A</div>
         </div>
         <div class="card meas-card">
-          <div class="label">PUISSANCE</div>
+          <div class="label">POWER</div>
           <div class="value powe" id="ctrl-live-p">--.---</div>
           <div class="label">W</div>
         </div>
@@ -797,18 +797,18 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       </div>
       <div style="margin-top:12px;">
         <div class="row">
-          <label>Afficher</label>
+          <label>Display</label>
           <select id="ctrl-live-graph-ch">
-            <option value="0">Tension (V)</option>
-            <option value="1">Courant (A)</option>
-            <option value="2">Puissance (W)</option>
+            <option value="0">Voltage (V)</option>
+            <option value="1">Current (A)</option>
+            <option value="2">Power (W)</option>
             <option value="3">Resistance (Ohm)</option>
           </select>
-          <label>Intervalle (ms)</label>
+          <label>Interval (ms)</label>
           <input type="number" id="ctrl-live-interval" value="1000" min="100" max="10000" step="100">
-          <label>Points max</label>
+          <label>Max points</label>
           <input type="number" id="ctrl-live-graph-pts" value="200" min="50" max="2000">
-          <button class="btn" onclick="ctrlLiveClearGraph()">Effacer</button>
+          <button class="btn" onclick="ctrlLiveClearGraph()">Clear</button>
         </div>
         <canvas id="ctrl-live-canvas" width="1100" height="250" style="width:100%;margin-top:8px;"></canvas>
       </div>
@@ -819,11 +819,11 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
 <!-- ========== MESURES ========== -->
 <div id="tab-meas" class="tab">
   <div class="card">
-    <h3>Mesures temps reel</h3>
+    <h3>Real-time Measurements</h3>
     <div class="row">
-      <button class="btn-accent needs-conn" id="meas-start" onclick="measStart()">Demarrer</button>
-      <button class="btn needs-conn" id="meas-stop" onclick="measStop()" disabled>Arreter</button>
-      <label>Intervalle (ms)</label>
+      <button class="btn-accent needs-conn" id="meas-start" onclick="measStart()">Start</button>
+      <button class="btn needs-conn" id="meas-stop" onclick="measStop()" disabled>Stop</button>
+      <label>Interval (ms)</label>
       <input type="number" id="meas-interval" value="500" min="100" max="10000" step="100">
       <label>Status</label>
       <span id="meas-abno" class="status-none">--</span>
@@ -831,17 +831,17 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   </div>
   <div class="grid4">
     <div class="card meas-card">
-      <div class="label">TENSION</div>
+      <div class="label">VOLTAGE</div>
       <div class="value volt" id="meas-v">--.---</div>
       <div class="label">V</div>
     </div>
     <div class="card meas-card">
-      <div class="label">COURANT</div>
+      <div class="label">CURRENT</div>
       <div class="value curr" id="meas-i">--.---</div>
       <div class="label">A</div>
     </div>
     <div class="card meas-card">
-      <div class="label">PUISSANCE</div>
+      <div class="label">POWER</div>
       <div class="value powe" id="meas-p">--.---</div>
       <div class="label">W</div>
     </div>
@@ -852,18 +852,18 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
     </div>
   </div>
   <div class="card">
-    <h3>Graphique</h3>
+    <h3>Graph</h3>
     <div class="row">
-      <label>Afficher</label>
+      <label>Display</label>
       <select id="meas-graph-ch">
-        <option value="0">Tension (V)</option>
-        <option value="1">Courant (A)</option>
-        <option value="2">Puissance (W)</option>
+        <option value="0">Voltage (V)</option>
+        <option value="1">Current (A)</option>
+        <option value="2">Power (W)</option>
         <option value="3">Resistance (Ohm)</option>
       </select>
-      <label>Points max</label>
+      <label>Max points</label>
       <input type="number" id="meas-graph-pts" value="200" min="50" max="2000">
-      <button class="btn" onclick="measClearGraph()">Effacer</button>
+      <button class="btn" onclick="measClearGraph()">Clear</button>
     </div>
     <canvas id="meas-canvas" width="1100" height="250" style="width:100%;margin-top:8px;"></canvas>
   </div>
@@ -872,29 +872,29 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
 <!-- ========== QUALIFICATION ========== -->
 <div id="tab-qual" class="tab">
   <div class="card">
-    <h3>Test de Qualification</h3>
+    <h3>Qualification Test</h3>
     <div class="row">
       <label>Test</label>
       <select id="qual-test" data-cmd="QUAL:TEST">
         <option value="ON">ON</option>
         <option value="OFF">OFF</option>
       </select>
-      <label>Resultat</label>
+      <label>Result</label>
       <span id="qual-result" class="info-box" style="min-width:100px;">--</span>
-      <button class="btn needs-conn" onclick="qualReadResult()">Lire</button>
+      <button class="btn needs-conn" onclick="qualReadResult()">Read</button>
     </div>
   </div>
   <div class="card">
     <h3>Ranges</h3>
     <div class="row">
-      <label>Tension</label>
+      <label>Voltage</label>
       <select id="ctrl-vrange" data-cmd="LOAD:VRANge">
         <option value="HIGH">HIGH (0.1 - 150V)</option>
         <option value="LOW">LOW (0.1 - 20V)</option>
       </select>
     </div>
     <div class="row">
-      <label>Courant</label>
+      <label>Current</label>
       <select id="ctrl-crange" data-cmd="LOAD:CRANge">
         <option value="HIGH">HIGH (0 - 40A)</option>
         <option value="LOW">LOW (0 - 3A)</option>
@@ -903,7 +903,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   </div>
   <div class="grid3">
     <div class="card">
-      <h3>Limites Tension (V)</h3>
+      <h3>Voltage Limits (V)</h3>
       <div class="row">
         <label>V High</label>
         <input type="number" id="qual-vhigh" step="0.1" data-cmd="QUAL:VHIGh">
@@ -914,7 +914,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       </div>
     </div>
     <div class="card">
-      <h3>Limites Courant (A)</h3>
+      <h3>Current Limits (A)</h3>
       <div class="row">
         <label>I High</label>
         <input type="number" id="qual-chigh" step="0.1" data-cmd="QUAL:CHIGh">
@@ -925,7 +925,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       </div>
     </div>
     <div class="card">
-      <h3>Limites Puissance (W)</h3>
+      <h3>Power Limits (W)</h3>
       <div class="row">
         <label>P High</label>
         <input type="number" id="qual-phigh" step="0.01" data-cmd="QUAL:PHIGh">
@@ -958,11 +958,11 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <div class="row">
         <label>Status</label>
         <span id="sys-abno" class="info-box" style="min-width:100px;">--</span>
-        <button class="btn needs-conn" onclick="sysReadAbno()">Lire</button>
+        <button class="btn needs-conn" onclick="sysReadAbno()">Read</button>
       </div>
     </div>
     <div class="card">
-      <h3>Tensions ON/OFF</h3>
+      <h3>ON/OFF Voltages</h3>
       <div class="row">
         <label>V Start (V)</label>
         <input type="number" id="sys-von" step="0.1" data-cmd="VOLT:ON">
@@ -972,7 +972,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
         <input type="number" id="sys-voff" step="0.1" data-cmd="VOLT:OFF">
       </div>
       <div class="row">
-        <label>Delay OFF</label>
+        <label>OFF Delay</label>
         <input type="number" id="sys-offdelay-h" step="1" min="0" max="16" value="0" style="width:60px"> h
         <input type="number" id="sys-offdelay-m" step="1" min="0" max="59" value="0" style="width:60px"> min
         <input type="number" id="sys-offdelay-s" step="1" min="0" max="59" value="0" style="width:60px"> s
@@ -981,19 +981,19 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   </div>
   <div class="grid2">
     <div class="card">
-      <h3>Parametres systeme</h3>
+      <h3>System Parameters</h3>
       <div class="row">
-        <label>Demarrage</label>
+        <label>Startup</label>
         <select id="sys-start" data-cmd="SYSSet:STARt">
           <option value="DEFAULT">Default</option>
           <option value="LAST">Last</option>
         </select>
       </div>
       <div class="row">
-        <label>Langue</label>
+        <label>Language</label>
         <select id="sys-lang" data-cmd="SYSSet:LANGuage">
-          <option value="CHINESE">Chinois</option>
-          <option value="ENGLISH">Anglais</option>
+          <option value="CHINESE">Chinese</option>
+          <option value="ENGLISH">English</option>
         </select>
       </div>
       <div class="row">
@@ -1003,35 +1003,35 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
           <option value="2">9600</option>
           <option value="3" selected>14400</option>
         </select>
-        <button class="btn needs-conn" onclick="scpiRead('COMM:BAUDrate?','sys-baud-disp')">Lire</button>
+        <button class="btn needs-conn" onclick="scpiRead('COMM:BAUDrate?','sys-baud-disp')">Read</button>
         <span id="sys-baud-disp" style="font-size:0.85em;">--</span>
       </div>
       <div class="row">
-        <label>Ventilateur</label>
+        <label>Fan</label>
         <span id="sys-fan" class="info-box" style="min-width:80px;">--</span>
-        <button class="btn needs-conn" onclick="sysReadFan()">Lire</button>
+        <button class="btn needs-conn" onclick="sysReadFan()">Read</button>
       </div>
       <div class="row">
         <label>SCPI version</label>
         <span id="sys-ver" class="info-box" style="min-width:80px;">--</span>
-        <button class="btn needs-conn" onclick="sysReadVer()">Lire</button>
+        <button class="btn needs-conn" onclick="sysReadVer()">Read</button>
       </div>
       <div class="row">
         <button class="btn needs-conn" onclick="dev.send('SYST:BEEP')">Beep</button>
-        <button class="btn needs-conn" onclick="dev.send('SYST:LOCA')">Mode Local</button>
+        <button class="btn needs-conn" onclick="dev.send('SYST:LOCA')">Local Mode</button>
       </div>
     </div>
     <div class="card">
-      <h3>Fichiers (List test)</h3>
+      <h3>Files (List test)</h3>
       <div class="row">
-        <label>Numero</label>
+        <label>Number</label>
         <input type="number" id="sys-filenum" min="1" max="400" value="1">
       </div>
       <div class="row">
-        <button class="btn needs-conn" onclick="sysFileCheck()">Verifier</button>
-        <button class="btn needs-conn" onclick="sysFileRecall()">Rappeler</button>
-        <button class="btn needs-conn" onclick="sysFileStore()">Sauver</button>
-        <button class="btn needs-conn" onclick="sysFileDelete()">Supprimer</button>
+        <button class="btn needs-conn" onclick="sysFileCheck()">Check</button>
+        <button class="btn needs-conn" onclick="sysFileRecall()">Recall</button>
+        <button class="btn needs-conn" onclick="sysFileStore()">Save</button>
+        <button class="btn needs-conn" onclick="sysFileDelete()">Delete</button>
         <span id="sys-file-status" style="font-size:0.85em;">--</span>
       </div>
     </div>
@@ -1044,12 +1044,12 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
     <h3>Console SCPI</h3>
     <div id="terminal-log"></div>
     <div class="terminal-input">
-      <input type="text" id="term-input" placeholder="Entrer commande SCPI (ex: *IDN? , CH:MODE CC , MEAS:ALL?)" onkeydown="if(event.key==='Enter')termSend()">
-      <button class="btn-accent" onclick="termSend()">Envoyer</button>
-      <button class="btn" onclick="termClear()">Effacer</button>
+      <input type="text" id="term-input" placeholder="Enter SCPI command (e.g. *IDN? , CH:MODE CC , MEAS:ALL?)" onkeydown="if(event.key==='Enter')termSend()">
+      <button class="btn-accent" onclick="termSend()">Send</button>
+      <button class="btn" onclick="termClear()">Clear</button>
     </div>
     <div class="row" style="margin-top:8px;">
-      <label>Commandes rapides :</label>
+      <label>Quick commands:</label>
       <button class="btn" onclick="termQuick('*IDN?')">*IDN?</button>
       <button class="btn" onclick="termQuick('MEAS:ALL?')">MEAS:ALL?</button>
       <button class="btn" onclick="termQuick('CH:MODE?')">CH:MODE?</button>
@@ -1066,33 +1066,33 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <div class="card">
     <h3>Configuration MPPT</h3>
     <div style="text-align:right;margin-bottom:4px;">
-      <button class="btn needs-conn" onclick="mpptConfigSave()">Sauver config</button>
-      <button class="btn needs-conn" onclick="mpptConfigLoad()">Charger config</button>
+      <button class="btn needs-conn" onclick="mpptConfigSave()">Save config</button>
+      <button class="btn needs-conn" onclick="mpptConfigLoad()">Load config</button>
     </div>
     <div class="row" style="margin-bottom:4px;gap:40px;">
-      <label class="radio-label"><input type="radio" name="mppt-mode" value="scan" checked onchange="mpptModeChanged()"> Scan lineaire</label>
-      <label class="radio-label"><input type="radio" name="mppt-mode" value="dicho" onchange="mpptModeChanged()"> Dichotomie</label>
+      <label class="radio-label"><input type="radio" name="mppt-mode" value="scan" checked onchange="mpptModeChanged()"> Linear scan</label>
+      <label class="radio-label"><input type="radio" name="mppt-mode" value="dicho" onchange="mpptModeChanged()"> Dichotomy</label>
     </div>
     <div class="row">
-      <label>Courant depart (A)</label>
+      <label>Start current (A)</label>
       <input type="number" id="mppt-i-start" step="0.01" min="0" value="0.1" style="width:90px;">
-      <label>Courant max (A)</label>
+      <label>Max current (A)</label>
       <input type="number" id="mppt-i-max" step="0.1" min="0" value="10" style="width:90px;">
       <span id="mppt-step-wrap"><label>Step (A)</label>
       <input type="number" id="mppt-i-step" step="0.01" min="0.01" value="0.05" style="width:90px;"></span>
-      <span id="mppt-dicho-delay-wrap" style="display:none;"><label>Delai (ms)</label>
+      <span id="mppt-dicho-delay-wrap" style="display:none;"><label>Delay (ms)</label>
       <input type="number" id="mppt-dicho-delay" step="50" min="100" value="500" style="width:90px;"></span>
     </div>
     <div class="row" id="mppt-row-extra">
-      <label>Tension min (V)</label>
+      <label>Min voltage (V)</label>
       <input type="number" id="mppt-v-min" step="0.1" min="0" value="1.0" style="width:90px;">
-      <label>Delai entre steps (ms)</label>
+      <label>Delay between steps (ms)</label>
       <input type="number" id="mppt-delay" step="50" min="100" value="500" style="width:90px;">
     </div>
   </div>
 
   <div class="card">
-    <h3>Controle MPPT</h3>
+    <h3>MPPT Control</h3>
     <div class="row">
       <button class="btn-accent needs-conn" id="mppt-start" onclick="mpptStart()">Start</button>
       <button class="btn needs-conn" id="mppt-stop" onclick="mpptStop()" disabled>Stop</button>
@@ -1100,15 +1100,15 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <span id="mppt-status" style="margin-left:12px; font-weight:bold;"></span>
     </div>
     <div id="mppt-result" class="row" style="display:none; margin-top:10px; gap:24px; font-size:1.1em;">
-      <div><span style="color:var(--text2);">MPP Courant:</span> <span id="mppt-res-i" style="color:var(--color-curr); font-weight:bold;">--</span> A</div>
-      <div><span style="color:var(--text2);">MPP Tension:</span> <span id="mppt-res-v" class="graph-volt" style="font-weight:bold;">--</span> V</div>
-      <div><span style="color:var(--text2);">MPP Puissance:</span> <span id="mppt-res-p" style="color:var(--green); font-weight:bold;">--</span> W</div>
+      <div><span style="color:var(--text2);">MPP Current:</span> <span id="mppt-res-i" style="color:var(--color-curr); font-weight:bold;">--</span> A</div>
+      <div><span style="color:var(--text2);">MPP Voltage:</span> <span id="mppt-res-v" class="graph-volt" style="font-weight:bold;">--</span> V</div>
+      <div><span style="color:var(--text2);">MPP Power:</span> <span id="mppt-res-p" style="color:var(--green); font-weight:bold;">--</span> W</div>
       <div><span style="color:var(--text2);">MPP Resistance:</span> <span id="mppt-res-r" style="color:var(--color-resi); font-weight:bold;">--</span> Ohm</div>
     </div>
   </div>
 
   <div class="card" id="mppt-graph-card" style="display:none;">
-    <h3>Graphique MPPT</h3>
+    <h3>MPPT Graph</h3>
     <div class="row" style="gap:20px; font-family:Consolas,monospace; font-size:0.9em;">
       <span class="graph-volt" id="mppt-stat-v">-- V</span>
       <span style="color:var(--color-curr);" id="mppt-stat-i">-- A</span>
@@ -1147,7 +1147,7 @@ class ET5410 {
     this.connected = true;
     this._startReader();
     updateConnStatus(true);
-    termLog('Connecte a ' + baudRate + ' bps', 'info');
+    termLog('Connected at ' + baudRate + ' bps', 'info');
   }
 
   async disconnect() {
@@ -1164,7 +1164,7 @@ class ET5410 {
       this.port = null;
     }
     updateConnStatus(false);
-    termLog('Deconnecte', 'info');
+    termLog('Disconnected', 'info');
   }
 
   async _startReader() {
@@ -1191,7 +1191,7 @@ class ET5410 {
         }
       }
     } catch (e) {
-      if (this._reading) termLog('Erreur lecture: ' + e.message, 'err');
+      if (this._reading) termLog('Read error: ' + e.message, 'err');
     } finally {
       try { this.reader.releaseLock(); } catch(e) {}
       this.reader = null;
@@ -1200,7 +1200,7 @@ class ET5410 {
   }
 
   async send(cmd) {
-    if (!this.connected || !this.writer) { termLog('Non connecte!', 'err'); return; }
+    if (!this.connected || !this.writer) { termLog('Not connected!', 'err'); return; }
     const chPrefix = getChannelPrefix(cmd);
     const fullCmd = chPrefix + cmd;
     const data = new TextEncoder().encode(fullCmd + '\n');
@@ -1212,7 +1212,7 @@ class ET5410 {
   }
 
   async query(cmd, timeout = 2000) {
-    if (!this.connected || !this.writer) { termLog('Non connecte!', 'err'); return null; }
+    if (!this.connected || !this.writer) { termLog('Not connected!', 'err'); return null; }
     // Clear any pending data
     this._readBuffer = '';
     if (this._resolveRead) {
@@ -1227,7 +1227,7 @@ class ET5410 {
       this._resolveRead = resolve;
       this._readTimeout = setTimeout(() => {
         this._resolveRead = null;
-        termLog('Timeout: pas de reponse', 'err');
+        termLog('Timeout: no response', 'err');
         resolve(null);
       }, timeout);
     });
@@ -1312,8 +1312,8 @@ function getChannelPrefix(cmd) {
 
 function updateConnStatus(on) {
   const el = $('conn-status');
-  if (on) { el.className = 'on'; el.textContent = 'Connecte'; }
-  else { el.className = 'off'; el.textContent = 'Deconnecte'; }
+  if (on) { el.className = 'on'; el.textContent = 'Connected'; }
+  else { el.className = 'off'; el.textContent = 'Disconnected'; }
   $('btn-connect').disabled = on;
   $('btn-disconnect').disabled = !on;
   const lp = $('localpc-bar');
@@ -1325,7 +1325,7 @@ function updateConnStatus(on) {
 function updateUIConnState(on) {
   document.querySelectorAll('.needs-conn').forEach(el => {
     el.disabled = !on;
-    el.title = on ? '' : 'Connecter la charge d\'abord';
+    el.title = on ? '' : 'Connect the load first';
   });
 }
 
@@ -1384,7 +1384,7 @@ async function doConnect() {
     await dev.connect(baud);
     await pcSessionRun(() => refreshAll());
   } catch (e) {
-    termLog('Erreur connexion: ' + e.message, 'err');
+    termLog('Connection error: ' + e.message, 'err');
   }
 }
 
@@ -1435,7 +1435,7 @@ async function doDisconnect() {
   mpptStop(false);
   if (dev.connected) await dev.send('SYST:LOCA');
   await dev.disconnect();
-  $('device-detail').textContent = 'Non connecte';
+  $('device-detail').textContent = 'Not connected';
 }
 
 async function doIdentify() {
@@ -1565,7 +1565,7 @@ function offDelayCountdownStart() {
     const hh = String(Math.floor(remain / 3600)).padStart(2, '0');
     const mm = String(Math.floor((remain % 3600) / 60)).padStart(2, '0');
     const ss = String(remain % 60).padStart(2, '0');
-    el.textContent = 'OFF dans ' + hh + ':' + mm + ':' + ss;
+    el.textContent = 'OFF in ' + hh + ':' + mm + ':' + ss;
     if (remain <= 0) offDelayCountdownStop();
   }, 500);
 }
@@ -1805,7 +1805,7 @@ async function configSave() {
     await writable.write(content);
     await writable.close();
   } catch (e) {
-    if (e.name !== 'AbortError') alert('Erreur sauvegarde: ' + e.message);
+    if (e.name !== 'AbortError') alert('Save error: ' + e.message);
   }
 }
 
@@ -1818,7 +1818,7 @@ async function configLoad() {
     const file = await handle.getFile();
     text = await file.text();
   } catch (e) {
-    if (e.name !== 'AbortError') alert('Erreur chargement: ' + e.message);
+    if (e.name !== 'AbortError') alert('Load error: ' + e.message);
     return;
   }
 
@@ -2218,10 +2218,10 @@ async function battDoStart() {
   const dmode = getBattDMode();
   const cutType = (document.querySelector('input[name="batt-cutoff-mode"]:checked') || {}).value || 'volt';
   if (dmode === 'CC') {
-    $('batt-stat-consigne-label').textContent = 'CONSIGNE I';
+    $('batt-stat-consigne-label').textContent = 'SETPOINT I';
     $('batt-stat-consigne').textContent = (cutType === 'volt' ? g('batt-bcc1-i') : g('batt-bcc-i')) + ' A';
   } else {
-    $('batt-stat-consigne-label').textContent = 'CONSIGNE R';
+    $('batt-stat-consigne-label').textContent = 'SETPOINT R';
     $('batt-stat-consigne').textContent = g('batt-bcr-r') + ' Ohm';
   }
   $('batt-stat-p').textContent = '--.-- W';
@@ -2242,7 +2242,7 @@ async function battPauseResume() {
     battTimer = null;
     battPollId++;
     $('batt-start').disabled = true;
-    $('batt-pause').textContent = 'Reprendre';
+    $('batt-pause').textContent = 'Resume';
     $('batt-pause').style.background = 'var(--accent)';
     $('batt-pause').style.color = '#fff';
     $('batt-paused-label').style.display = '';
@@ -2594,7 +2594,7 @@ function battExportPDF() {
   const dmode = getBattDMode();
   const cutMode = document.querySelector('input[name="batt-cutoff-mode"]:checked');
   const cutType = cutMode ? cutMode.value : 'volt';
-  const cutLabels = { volt:'Voltage', capa:'Capacite', ener:'Energie', time:'Temps' };
+  const cutLabels = { volt:'Voltage', capa:'Capacity', ener:'Energy', time:'Time' };
   let cutValue = '';
   if (cutType === 'volt') {
     cutValue = (dmode === 'CC' ? g('batt-bcc1-v') : g('batt-bcr-v')) + ' V';
@@ -2636,7 +2636,7 @@ function battExportPDF() {
   const now = new Date();
   const dateStr = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');
   // Construire le HTML du rapport
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Rapport Test Batterie</title>
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Battery Test Report</title>
 <style>
   body { font-family: Arial, sans-serif; color: #222; max-width: 900px; margin: 0 auto; padding: 20px; }
   h1 { text-align: center; color: #333; border-bottom: 2px solid #333; padding-bottom: 8px; }
@@ -2662,41 +2662,41 @@ function battExportPDF() {
   .footer { text-align: center; color: #aaa; font-size: 0.8em; margin-top: 24px; border-top: 1px solid #ddd; padding-top: 8px; }
   @media print { body { padding: 0; } }
 </style></head><body>
-<h1>Rapport de Test Batterie — ET5410</h1>
+<h1>Battery Test Report — ET5410</h1>
 <p style="text-align:center;color:#888;">${dateStr}</p>
 
-<h2>Parametres du test</h2>
+<h2>Test Parameters</h2>
 <div class="info">
-  <div><span class="label">Mode de decharge</span><br><span class="value">${dmode === 'CC' ? 'CC (Courant constant)' : 'CR (Resistance constante)'}</span></div>
-  <div><span class="label">Type de coupure</span><br><span class="value">${cutLabels[cutType]}</span></div>
-  <div><span class="label">Valeur de coupure</span><br><span class="value">${cutValue}</span></div>
-  <div><span class="label">${dmode === 'CC' ? 'Courant de decharge' : 'Resistance'}</span><br><span class="value">${currentVal}</span></div>
+  <div><span class="label">Discharge mode</span><br><span class="value">${dmode === 'CC' ? 'CC (Constant current)' : 'CR (Constant resistance)'}</span></div>
+  <div><span class="label">Cutoff type</span><br><span class="value">${cutLabels[cutType]}</span></div>
+  <div><span class="label">Cutoff value</span><br><span class="value">${cutValue}</span></div>
+  <div><span class="label">${dmode === 'CC' ? 'Discharge current' : 'Resistance'}</span><br><span class="value">${currentVal}</span></div>
 </div>
 
-<h2>Resultats</h2>
+<h2>Results</h2>
 <div class="stats-grid">
-  <div class="stat stat-ah"><div class="val">${statAh}</div><div class="lbl">Capacite</div></div>
-  <div class="stat stat-wh"><div class="val">${statWh}</div><div class="lbl">Energie</div></div>
-  <div class="stat"><div class="val">${statTime}</div><div class="lbl">Duree</div></div>
-  <div class="stat stat-v"><div class="val">${statV}</div><div class="lbl">Tension finale</div></div>
-  <div class="stat stat-c"><div class="val">${statConsigne}</div><div class="lbl">Consigne</div></div>
-  <div class="stat stat-p"><div class="val">${statP}</div><div class="lbl">Puissance finale</div></div>
+  <div class="stat stat-ah"><div class="val">${statAh}</div><div class="lbl">Capacity</div></div>
+  <div class="stat stat-wh"><div class="val">${statWh}</div><div class="lbl">Energy</div></div>
+  <div class="stat"><div class="val">${statTime}</div><div class="lbl">Duration</div></div>
+  <div class="stat stat-v"><div class="val">${statV}</div><div class="lbl">Final voltage</div></div>
+  <div class="stat stat-c"><div class="val">${statConsigne}</div><div class="lbl">Setpoint</div></div>
+  <div class="stat stat-p"><div class="val">${statP}</div><div class="lbl">Final power</div></div>
 </div>
 
-<h2>Statistiques</h2>
+<h2>Statistics</h2>
 <div class="info">
-  <div><span class="label">Tension min / max / moy</span><br><span class="value">${vMinD.toFixed(3)} / ${vMaxD.toFixed(3)} / ${(vSum/n).toFixed(3)} V</span></div>
-  <div><span class="label">Points de mesure</span><br><span class="value">${n}</span></div>
+  <div><span class="label">Voltage min / max / avg</span><br><span class="value">${vMinD.toFixed(3)} / ${vMaxD.toFixed(3)} / ${(vSum/n).toFixed(3)} V</span></div>
+  <div><span class="label">Measurement points</span><br><span class="value">${n}</span></div>
 </div>
 
-<h2>Courbe de decharge</h2>
-<img src="${graphDataUrl}" alt="Courbe de decharge">
+<h2>Discharge Curve</h2>
+<img src="${graphDataUrl}" alt="Discharge curve">
 
-<h2>Donnees${step > 1 ? ' (echantillon 1/' + step + ')' : ''}</h2>
-<table><thead><tr><th>Temps</th><th>Tension (V)</th></tr></thead>
+<h2>Data${step > 1 ? ' (sample 1/' + step + ')' : ''}</h2>
+<table><thead><tr><th>Time</th><th>Voltage (V)</th></tr></thead>
 <tbody>${tableRows}</tbody></table>
 
-<div class="footer">Rapport genere par ET5410 Web Controller</div>
+<div class="footer">Report generated by ET5410 Web Controller</div>
 </body></html>`;
   const w = window.open('', '_blank');
   w.document.write(html);
@@ -2748,7 +2748,7 @@ async function listSendAll() {
     await dev.send('LIST:PARA ' + [i, type, val, delay, comp, max, min].join(','));
     await new Promise(r => setTimeout(r, 100));
   }
-  termLog('List: toutes les etapes envoyees', 'info');
+  termLog('List: all steps sent', 'info');
 }
 
 async function listReadAll() {
@@ -2811,18 +2811,18 @@ async function sysFileCheck() {
   if (r) $('sys-file-status').textContent = r.trim();
 }
 
-async function sysFileRecall() { await dev.send('FILE:RECAll ' + g('sys-filenum')); $('sys-file-status').textContent = 'Rappele'; }
-async function sysFileStore() { await dev.send('FILE:STORe ' + g('sys-filenum')); $('sys-file-status').textContent = 'Sauvegarde'; }
-async function sysFileDelete() { await dev.send('FILE:DELEte ' + g('sys-filenum')); $('sys-file-status').textContent = 'Supprime'; }
+async function sysFileRecall() { await dev.send('FILE:RECAll ' + g('sys-filenum')); $('sys-file-status').textContent = 'Recalled'; }
+async function sysFileStore() { await dev.send('FILE:STORe ' + g('sys-filenum')); $('sys-file-status').textContent = 'Saved'; }
+async function sysFileDelete() { await dev.send('FILE:DELEte ' + g('sys-filenum')); $('sys-file-status').textContent = 'Deleted'; }
 
 // ============================================================
 // MPPT
 // ============================================================
 async function mpptStart() {
   if (!dev.connected) {
-    $('mppt-status').textContent = 'Non connecte!';
+    $('mppt-status').textContent = 'Not connected!';
     $('mppt-status').style.color = 'var(--orange)';
-    termLog('MPPT: Non connecte!', 'err');
+    termLog('MPPT: Not connected!', 'err');
     return;
   }
   if (mpptTimer) return;
@@ -2834,21 +2834,21 @@ async function mpptStart() {
   const delay = parseInt(g('mppt-delay'));
 
   if (isNaN(iStart) || isNaN(iMax) || isNaN(iStep) || isNaN(vMin) || isNaN(delay)) {
-    $('mppt-status').textContent = 'Parametres invalides!';
+    $('mppt-status').textContent = 'Invalid parameters!';
     $('mppt-status').style.color = 'var(--orange)';
-    termLog('MPPT: parametres invalides', 'err');
+    termLog('MPPT: invalid parameters', 'err');
     return;
   }
   if (iStart >= iMax) {
-    $('mppt-status').textContent = 'Courant depart >= courant max!';
+    $('mppt-status').textContent = 'Start current >= max current!';
     $('mppt-status').style.color = 'var(--orange)';
-    termLog('MPPT: courant depart doit etre < courant max', 'err');
+    termLog('MPPT: start current >= max current', 'err');
     return;
   }
   if (iStep <= 0) {
-    $('mppt-status').textContent = 'Step doit etre > 0!';
+    $('mppt-status').textContent = 'Step must be > 0!';
     $('mppt-status').style.color = 'var(--orange)';
-    termLog('MPPT: step doit etre > 0', 'err');
+    termLog('MPPT: step must be > 0', 'err');
     return;
   }
 
@@ -2863,7 +2863,7 @@ async function mpptStart() {
   $('mppt-reset').style.display = 'none';
   $('mppt-result').style.display = 'none';
   $('mppt-graph-card').style.display = '';
-  $('mppt-status').textContent = 'Scan en cours...';
+  $('mppt-status').textContent = 'Scanning...';
   $('mppt-status').style.color = 'var(--orange)';
 
   // Activer pcSession et passer en CC
@@ -2879,11 +2879,11 @@ async function mpptStart() {
 
   const mode = document.querySelector('input[name="mppt-mode"]:checked').value;
   if (mode === 'dicho') {
-    $('mppt-status').textContent = 'Dichotomie en cours...';
-    termLog('MPPT: dichotomie demarree — I=' + iStart + ' -> ' + iMax + ' A, tolerance=' + iStep + ' A', 'info');
+    $('mppt-status').textContent = 'Dichotomy in progress...';
+    termLog('MPPT: dichotomy started — I=' + iStart + ' -> ' + iMax + ' A, tolerance=' + iStep + ' A', 'info');
     mpptDichoLoop(++mpptPollId);
   } else {
-    termLog('MPPT: scan demarre — I=' + iStart + ' -> ' + iMax + ' A, step=' + iStep + ' A', 'info');
+    termLog('MPPT: scan started — I=' + iStart + ' -> ' + iMax + ' A, step=' + iStep + ' A', 'info');
     mpptPollLoop(++mpptPollId);
   }
 }
@@ -2913,11 +2913,11 @@ async function mpptStop(sendOff) {
     $('mppt-res-p').textContent = mpptBest.p.toFixed(3);
     $('mppt-res-r').textContent = mpptBest.r.toFixed(3);
     $('mppt-result').style.display = '';
-    $('mppt-status').textContent = 'Scan termine — MPP trouve';
+    $('mppt-status').textContent = 'Scan complete — MPP found';
     $('mppt-status').style.color = 'var(--green)';
     termLog('MPPT: MPP trouve — I=' + mpptBest.i.toFixed(3) + ' A, V=' + mpptBest.v.toFixed(3) + ' V, P=' + mpptBest.p.toFixed(3) + ' W, R=' + mpptBest.r.toFixed(3) + ' Ohm', 'info');
   } else {
-    $('mppt-status').textContent = 'Scan arrete';
+    $('mppt-status').textContent = 'Scan stopped';
     $('mppt-status').style.color = 'var(--text2)';
   }
 }
@@ -2977,7 +2977,7 @@ async function mpptMeasureAt(current) {
   mpptDrawGraph();
 
   if (v < vMin) {
-    termLog('MPPT: arret — tension ' + v.toFixed(3) + ' V < Vmin ' + vMin + ' V', 'info');
+    termLog('MPPT: stop — voltage ' + v.toFixed(3) + ' V < Vmin ' + vMin + ' V', 'info');
     return { v: v, p: p, lowV: true };
   }
 
@@ -3034,7 +3034,7 @@ async function mpptPoll() {
 
   mpptCurrentI += iStep;
   if (mpptCurrentI > iMax) {
-    termLog('MPPT: arret — courant max ' + iMax + ' A atteint', 'info');
+    termLog('MPPT: stop — max current ' + iMax + ' A reached', 'info');
     return false;
   }
 
@@ -3187,7 +3187,7 @@ function mpptToggleTheme() {
 
 function mpptExportCSV() {
   if (mpptData.i.length === 0) return;
-  let csv = 'Courant(A);Tension(V);Puissance(W)\n';
+  let csv = 'Current(A);Voltage(V);Power(W)\n';
   for (let j = 0; j < mpptData.i.length; j++) {
     csv += mpptData.i[j].toFixed(3) + ';' + mpptData.v[j].toFixed(3) + ';' + mpptData.p[j].toFixed(3) + '\n';
   }
@@ -3257,7 +3257,7 @@ async function mpptConfigSave() {
     await writable.write(content);
     await writable.close();
   } catch (e) {
-    if (e.name !== 'AbortError') alert('Erreur sauvegarde: ' + e.message);
+    if (e.name !== 'AbortError') alert('Save error: ' + e.message);
   }
 }
 
@@ -3270,7 +3270,7 @@ async function mpptConfigLoad() {
     const file = await handle.getFile();
     text = await file.text();
   } catch (e) {
-    if (e.name !== 'AbortError') alert('Erreur chargement: ' + e.message);
+    if (e.name !== 'AbortError') alert('Load error: ' + e.message);
     return;
   }
   for (const line of text.split('\n')) {
@@ -3351,10 +3351,10 @@ function toggleAppTheme() {
   // Check Web Serial support
   const check = $('browser-check');
   if ('serial' in navigator) {
-    check.innerHTML = 'Web Serial API: SUPPORTE\nNavigateur compatible detecte.';
+    check.innerHTML = 'Web Serial API: SUPPORTED\nCompatible browser detected.';
     check.style.color = 'var(--green)';
   } else {
-    check.innerHTML = 'Web Serial API: NON SUPPORTE\nUtilisez Chrome 89+ ou Edge 89+.\nLa communication serie ne fonctionnera pas dans ce navigateur.';
+    check.innerHTML = 'Web Serial API: NOT SUPPORTED\nUse Chrome 89+ or Edge 89+.\nSerial communication will not work in this browser.';
     check.style.color = 'var(--red)';
   }
 
