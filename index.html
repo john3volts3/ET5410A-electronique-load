@@ -2140,6 +2140,7 @@ document.querySelectorAll('input[name="batt-cutoff-mode"]').forEach(r => {
       if (d < bestDist) { bestDist = d; bestIdx = j; }
     }
     const v = data.v[bestIdx], t = data.t[bestIdx];
+    const th = BATT_THEMES[battTheme];
     tooltip.innerHTML =
       '<span style="color:' + th.voltLine + ';">' + v.toFixed(3) + ' V</span><br>' +
       '<span style="color:#888;">' + fmtTimeSec(t) + '</span>';
