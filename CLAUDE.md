@@ -36,16 +36,17 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 - **Fichier unique** `index.html` — HTML + CSS + JS embarqués, zéro dépendance
 - **Web Serial API** (Chrome 89+ / Edge 89+) pour communication USB série
 - **Classe `ET5410`** : `connect()`, `disconnect()`, `send(cmd)`, `query(cmd)` avec terminaison `\n` (0x0A)
-- **10 onglets** : Contrôle, MPPT, Mesures, Dynamique, Batterie, Scan, List, Qualification, Système, Terminal
-- **Header** : titre, boutons Connecter/Déconnecter, radios PC/Auto, toggle thème ◐, status connexion
-- **Thème dark/light** : palette Slate neutre (accent bleu-gris), toggle persisté via localStorage
-- **Boutons ghost/outline** uniformes, cards avec h3 legend-style, police system-ui 18px
-- **needs-conn** : classe sur les boutons d'action SCPI, désactivés quand non connecté (tooltip explicatif)
-- **updateUIConnState(on)** : active/désactive tous les `.needs-conn` à la connexion/déconnexion
-- **Couleurs graphiques** : voltage en rouge (#e05050 dark / #c03030 light) dans tous les graphiques (BATT, MPPT, Mesures, Contrôle live) ; `--color-volt` (jaune) conservé pour les valeurs textuelles hors graphiques
-- **smartStep()** : incréments logarithmiques sur les spinners numériques
-- **Off Delay** : champs Heures/Minutes/Secondes avec décompte en temps réel
-- Ouvrir directement dans le navigateur via `file://` ou serveur local
+- **UI language** : English (all labels, messages, tooltips, PDF report)
+- **7 tabs** : Connection, Control, MPPT, Measurements, Qualification, System, Terminal (+ inline sub-sections: Dynamic/TRAN, Scan, List, Battery when corresponding mode is selected)
+- **Header** : title, Connect/Disconnect buttons, PC/Auto radios, theme toggle ◐, connection status
+- **Dark/light theme** : neutral Slate palette (blue-grey accent), toggle persisted via localStorage
+- **Ghost/outline buttons**, cards with h3 legend-style, system-ui 18px font
+- **needs-conn** : class on SCPI action buttons, disabled when not connected (explanatory tooltip)
+- **updateUIConnState(on)** : enables/disables all `.needs-conn` on connect/disconnect
+- **Graph colors** : voltage in red (#e05050 dark / #c03030 light) in all graphs (BATT, MPPT, Measurements, Control live); `--color-volt` (yellow) kept for text values outside graphs
+- **smartStep()** : logarithmic increments on numeric spinners
+- **Off Delay** : Hours/Minutes/Seconds fields with real-time countdown
+- Open directly in browser via `file://` or local server
 
 ## Language
 
