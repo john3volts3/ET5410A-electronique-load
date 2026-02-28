@@ -10,6 +10,13 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 
 - `datasheet/ET5410SCPI.pdf` — Documentation complète du protocole SCPI (45 pages), référence principale pour l'implémentation.
 
+## Documentation (bilingual EN/FR)
+
+- `README.md` (EN) / `README-fr.md` (FR) — Présentation du projet
+- `USER_MANUAL.md` (EN) / `USER_MANUAL-fr.md` (FR) — Manuel utilisateur
+- `DOCUMENTATION.md` (EN) / `DOCUMENTATION-fr.md` (FR) — Documentation technique
+- `datasheet/ET5410SCPI.txt` — Référence SCPI complète (corrigée et augmentée)
+
 ## Communication Protocol
 
 - **SCPI** (Standard Commands for Programmable Instruments) version 2017.7
