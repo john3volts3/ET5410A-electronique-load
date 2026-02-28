@@ -45,6 +45,8 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 - **updateUIConnState(on)** : enables/disables all `.needs-conn` on connect/disconnect
 - **Graph colors** : voltage in red (#e05050 dark / #c03030 light) in all graphs (BATT, MPPT, Measurements, Control live); `--color-volt` (yellow) kept for text values outside graphs
 - **smartStep()** : logarithmic increments on numeric spinners
+- **Comma decimal separator** : all number inputs accept comma (converted to period via `execCommand('insertText')`)
+- **Battery auto-stop** : `battPoll()` checks `CH:SW?` each cycle; if `OFF` → `battStop(false)` + green "COMPLETED" label
 - **Off Delay** : Hours/Minutes/Seconds fields with real-time countdown
 - Open directly in browser via `file://` or local server
 

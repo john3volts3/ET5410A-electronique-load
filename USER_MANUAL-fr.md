@@ -143,6 +143,8 @@ Le mode Battery permet de realiser un test complet de decharge de batterie avec 
 | **Stop** | Arrete definitivement le test, desactive la charge |
 | **Reset** | Efface toutes les donnees et le graphique |
 
+> **Arret automatique** : Quand l'appareil atteint une condition de coupure (tension, capacite, energie ou temps), la charge s'eteint automatiquement. L'application le detecte et arrete le test, affichant un label vert **COMPLETED**. Aucun Stop manuel n'est necessaire.
+
 ### Statistiques affichees
 
 Pendant le test, 6 indicateurs sont mis a jour en temps reel :
@@ -369,3 +371,4 @@ SYST:LOCA              Rendre le controle au panneau avant
 - **Stabilite USB** : si le port USB se bloque, debrancher et rebrancher le cable, puis reconnecter
 - **Plusieurs onglets** : les mesures live (Controle), le polling (Mesures) et le test batterie peuvent coexister simultanement
 - **Changement de mode** : changer de mode desactive automatiquement la charge — c'est un comportement de l'appareil, pas de l'application
+- **Separateur decimal** : vous pouvez taper un point (`.`) ou une virgule (`,`) comme separateur decimal dans tous les champs numeriques — les deux sont acceptes

@@ -14,7 +14,7 @@ Interface web de controle pour la charge electronique programmable DC **ET5410**
 **Fonctionnalites principales :**
 - 12 modes de charge (CC, CV, CP, CR, CC+CV, CR+CV, Tran, List, Scan, Short, Battery, LED)
 - Mesures temps reel avec graphique (V, A, W, R)
-- Test de decharge batterie avec graphique, statistiques et exports
+- Test de decharge batterie avec graphique, statistiques, arret automatique au cutoff et exports
 - Recherche MPPT (scan lineaire + dichotomie) avec graphique et exports
 - Sauvegarde/chargement de configurations (.ET5410)
 - Console SCPI directe (Terminal)
@@ -158,7 +158,7 @@ Trois systemes de polling independants coexistent :
 | Systeme | Variable de controle | Fonction boucle | Utilisation |
 |---|---|---|---|
 | Controle (live) | `ctrlLiveTimer` / `ctrlLivePollId` | `ctrlLivePollLoop()` | Mesures live quand charge ON |
-| Batterie | `battTimer` / `battPollId` | `battPollLoop()` | Test de decharge batterie |
+| Batterie | `battTimer` / `battPollId` | `battPollLoop()` | Test de decharge batterie (arret auto via `CH:SW?`) |
 | Mesures | `measTimer` | `setInterval(measPoll)` | Onglet Mesures independant |
 | MPPT | `mpptTimer` / `mpptPollId` | `mpptPollLoop()` / `mpptDichoLoop()` | Recherche point de puissance max |
 
@@ -188,6 +188,14 @@ if (!pcSession && !battTimer && !ctrlLiveTimer && !cmd.startsWith('SYST:LOCA')) 
 ```
 
 **Coordination** : chaque systeme de polling met `pcSession = true` au demarrage et ne le remet a `false` que si les deux autres sont inactifs.
+
+### Arret automatique batterie
+
+A la fin de chaque cycle `battPoll()`, l'application interroge `CH:SW?` pour verifier si l'appareil a automatiquement coupe la charge (cutoff atteint). Si la reponse est `OFF`, `battStop(false)` est appele (sans envoyer de commande OFF, puisque l'appareil l'a deja fait) et un label vert "COMPLETED" s'affiche.
+
+### Separateur decimal virgule
+
+Tous les champs `<input type="number">` acceptent le point et la virgule comme separateur decimal. Un listener `keydown` intercepte la touche virgule et insere un point a la position du curseur via `document.execCommand('insertText')`.
 
 ## MPPT (Maximum Power Point Tracking)
 

@@ -14,7 +14,7 @@ Web control interface for the **ET5410** programmable DC electronic load (Hangzh
 **Main features:**
 - 12 load modes (CC, CV, CP, CR, CC+CV, CR+CV, Tran, List, Scan, Short, Battery, LED)
 - Real-time measurements with graph (V, A, W, R)
-- Battery discharge test with graph, statistics and exports
+- Battery discharge test with graph, statistics, auto-stop on cutoff and exports
 - MPPT search (linear scan + dichotomy) with graph and exports
 - Configuration save/load (.ET5410)
 - Direct SCPI console (Terminal)
@@ -158,7 +158,7 @@ Three independent polling systems coexist:
 | System | Control Variable | Loop Function | Usage |
 |---|---|---|---|
 | Control (live) | `ctrlLiveTimer` / `ctrlLivePollId` | `ctrlLivePollLoop()` | Live measurements when load ON |
-| Battery | `battTimer` / `battPollId` | `battPollLoop()` | Battery discharge test |
+| Battery | `battTimer` / `battPollId` | `battPollLoop()` | Battery discharge test (auto-stop via `CH:SW?`) |
 | Measurements | `measTimer` | `setInterval(measPoll)` | Independent Measurements tab |
 | MPPT | `mpptTimer` / `mpptPollId` | `mpptPollLoop()` / `mpptDichoLoop()` | Maximum power point search |
 
@@ -188,6 +188,14 @@ if (!pcSession && !battTimer && !ctrlLiveTimer && !cmd.startsWith('SYST:LOCA')) 
 ```
 
 **Coordination**: each polling system sets `pcSession = true` at startup and only resets it to `false` when the other two are inactive.
+
+### Battery auto-stop
+
+At the end of each `battPoll()` cycle, the application queries `CH:SW?` to check whether the device has automatically turned off the load (cutoff reached). If the response is `OFF`, `battStop(false)` is called (without sending an OFF command, since the device already did it) and a green "COMPLETED" label is displayed.
+
+### Comma decimal separator
+
+All `<input type="number">` fields accept both period and comma as decimal separator. A `keydown` listener intercepts the comma key and inserts a period at the cursor position via `document.execCommand('insertText')`.
 
 ## MPPT (Maximum Power Point Tracking)
 

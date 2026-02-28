@@ -143,6 +143,8 @@ Battery mode allows running a complete battery discharge test with real-time mon
 | **Stop** | Permanently stops the test, disables the load |
 | **Reset** | Clears all data and the graph |
 
+> **Auto-stop**: When the device reaches a cutoff condition (voltage, capacity, energy or time), the load turns off automatically. The application detects this and stops the test, displaying a green **COMPLETED** label. No manual Stop is needed.
+
 ### Displayed statistics
 
 During the test, 6 indicators are updated in real time:
@@ -369,3 +371,4 @@ SYST:LOCA              Return control to the front panel
 - **USB stability**: if the USB port locks up, unplug and replug the cable, then reconnect
 - **Multiple tabs**: live measurements (Control), polling (Measurements) and battery test can coexist simultaneously
 - **Mode change**: changing mode automatically disables the load — this is a device behavior, not an application behavior
+- **Decimal separator**: you can type either a period (`.`) or a comma (`,`) as decimal separator in all number fields — both are accepted
