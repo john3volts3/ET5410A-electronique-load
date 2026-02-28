@@ -699,14 +699,11 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
         <button class="btn needs-conn" id="batt-stop" onclick="battStop()" disabled>Stop</button>
         <button class="btn needs-conn" id="batt-reset" onclick="battReset()" style="display:none;">Reset</button>
         <span id="batt-paused-label" style="display:none;color:var(--accent);font-weight:bold;font-size:1.1em;margin-left:8px;animation:blink 1s step-end infinite;">PAUSE</span>
-      </div>
-      <div class="row" style="margin-top:8px;">
-        <label>Discharged Capacity</label>
-        <span id="batt-capa" class="info-box" style="min-width:150px;">--</span>
-      </div>
-      <div class="row">
-        <label>Discharged Energy</label>
-        <span id="batt-ener" class="info-box" style="min-width:150px;">--</span>
+        <span id="batt-completed-label" style="display:none;color:#2ecc40;font-weight:bold;font-size:1.1em;margin-left:8px;">COMPLETED</span>
+        <label style="margin-left:auto;color:var(--green);">Discharged Capacity</label>
+        <span id="batt-capa" class="info-box" style="min-width:120px;">--</span>
+        <label style="margin-left:16px;color:var(--color-resi);">Discharged Energy</label>
+        <span id="batt-ener" class="info-box" style="min-width:120px;">--</span>
       </div>
     </div>
     <div class="card" id="batt-graph-card" style="display:none;">
@@ -2206,6 +2203,7 @@ async function battDoStart() {
   $('batt-stop').disabled = false;
   $('batt-reset').style.display = 'none';
   $('batt-paused-label').style.display = 'none';
+  $('batt-completed-label').style.display = 'none';
   updateLocalPCBar();
   // Init graphique
   battGraphData = { t: [], v: [], i: [] };
@@ -2273,6 +2271,7 @@ async function battStop(sendOff) {
   if ($('batt-pause')) { $('batt-pause').disabled = true; $('batt-pause').textContent = 'Pause'; $('batt-pause').style.background = ''; $('batt-pause').style.color = ''; }
   if ($('batt-stop')) $('batt-stop').disabled = true;
   $('batt-paused-label').style.display = 'none';
+  $('batt-completed-label').style.display = 'none';
   // Afficher Reset si des données existent
   if (battGraphData.t.length > 0) $('batt-reset').style.display = '';
   if (!measTimer && !ctrlLiveTimer && !mpptTimer) {
@@ -2289,6 +2288,7 @@ function battReset() {
   $('batt-reset').style.display = 'none';
   $('batt-capa').textContent = '--';
   $('batt-ener').textContent = '--';
+  $('batt-completed-label').style.display = 'none';
 }
 
 async function battPollLoop(myId) {
@@ -2336,6 +2336,12 @@ async function battPoll() {
     if (totalMin > battZoomMinutes) battGraphAutoZoom();
   }
   battDrawGraph();
+  // Auto-stop : détecter si le device a coupé la charge (cutoff atteint)
+  const swR = await dev.query('CH:SW?');
+  if (swR && swR.trim() === 'OFF') {
+    await battStop(false);
+    $('batt-completed-label').style.display = '';
+  }
 }
 
 function battDrawGraph() {
