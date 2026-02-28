@@ -1,369 +1,371 @@
-# ET5410 Web Controller — Manuel utilisateur
+[Version francaise](USER_MANUAL-fr.md)
 
-## Demarrage rapide
+# ET5410 Web Controller — User Manual
 
-1. **Ouvrir** `index.html` dans **Chrome** (89+) ou **Edge** (89+)
-2. **Connecter** la charge electronique ET5410 via cable USB
-3. Dans l'onglet **Connexion**, selectionner le baud rate (14400 par defaut) et cliquer **Connecter**
-4. Le navigateur affiche la liste des ports serie : choisir celui de l'ET5410
-5. L'identifiant de l'appareil s'affiche (ex: `East Tester, ET5410A+, ...`)
+## Quick Start
 
-> **Note** : Si le message "Web Serial API: NON SUPPORTE" apparait, utilisez Chrome ou Edge.
+1. **Open** `index.html` in **Chrome** (89+) or **Edge** (89+)
+2. **Connect** the ET5410 electronic load via USB cable
+3. In the **Connection** tab, select the baud rate (14400 by default) and click **Connect**
+4. The browser displays the list of serial ports: choose the ET5410 one
+5. The device identifier is displayed (e.g. `East Tester, ET5410A+, ...`)
+
+> **Note**: If the message "Web Serial API: NOT SUPPORTED" appears, use Chrome or Edge.
 
 ---
 
-## Onglet Connexion
+## Connection Tab
 
-Cet onglet gere la communication avec l'appareil.
+This tab manages communication with the device.
 
 | Element | Description |
 |---|---|
-| **Baud Rate** | Vitesse de communication (7200, 9600, 14400). Doit correspondre au reglage de l'appareil. |
-| **Connecter** | Ouvre la connexion serie et lit la configuration de l'appareil |
-| **Deconnecter** | Ferme la connexion et rend le controle au panneau avant (`SYST:LOCA`) |
-| **Identifiant** | Affiche le modele, numero de serie et firmware apres connexion |
+| **Baud Rate** | Communication speed (7200, 9600, 14400). Must match the device setting. |
+| **Connect** | Opens the serial connection and reads the device configuration |
+| **Disconnect** | Closes the connection and returns control to the front panel (`SYST:LOCA`) |
+| **Identifier** | Displays the model, serial number and firmware after connection |
 
 ---
 
-## Onglet Controle
+## Control Tab
 
-C'est l'onglet principal pour piloter la charge.
+This is the main tab for operating the load.
 
-### Selectionner un mode de charge
+### Select a load mode
 
-12 modes disponibles sous forme de boutons radio :
+12 modes available as radio buttons:
 
 | Mode | Description |
 |---|---|
-| **CC** | Courant constant — la charge maintient un courant fixe |
-| **CV** | Tension constante — la charge maintient une tension fixe |
-| **CP** | Puissance constante |
-| **CR** | Resistance constante |
-| **CC+CV** | Deux etapes : courant constant puis tension constante |
-| **CR+CV** | Deux etapes : resistance constante puis tension constante |
-| **Tran** | Test dynamique — alternance entre deux niveaux |
-| **List** | Profil multi-etapes (jusqu'a 50 etapes programmables) |
-| **Scan** | Balayage progressif en courant, tension ou puissance |
-| **Short** | Mode court-circuit |
-| **Battery** | Test de decharge batterie (voir section dediee) |
-| **LED** | Test de LED avec coefficient |
+| **CC** | Constant current — the load maintains a fixed current |
+| **CV** | Constant voltage — the load maintains a fixed voltage |
+| **CP** | Constant power |
+| **CR** | Constant resistance |
+| **CC+CV** | Two stages: constant current then constant voltage |
+| **CR+CV** | Two stages: constant resistance then constant voltage |
+| **Tran** | Dynamic test — alternating between two levels |
+| **List** | Multi-step profile (up to 50 programmable steps) |
+| **Scan** | Progressive sweep in current, voltage or power |
+| **Short** | Short-circuit mode |
+| **Battery** | Battery discharge test (see dedicated section) |
+| **LED** | LED test with coefficient |
 
-### Configurer les parametres
+### Configure parameters
 
-Selon le mode selectionne, les champs de parametres correspondants apparaissent :
+Depending on the selected mode, the corresponding parameter fields appear:
 
-- **CC** : valeur du courant (A)
-- **CV** : valeur de la tension (V)
-- **CP** : valeur de la puissance (W)
-- **CR** : valeur de la resistance (Ohm)
-- **CC+CV** : courant (A) + tension (V)
-- **CR+CV** : resistance (Ohm) + tension (V)
-- **LED** : courant (A), tension (V), coefficient
+- **CC**: current value (A)
+- **CV**: voltage value (V)
+- **CP**: power value (W)
+- **CR**: resistance value (Ohm)
+- **CC+CV**: current (A) + voltage (V)
+- **CR+CV**: resistance (Ohm) + voltage (V)
+- **LED**: current (A), voltage (V), coefficient
 
-Des limites de protection (Vmax, Imax, Pmax) et le delai d'extinction sont aussi configurables.
+Protection limits (Vmax, Imax, Pmax) and the off delay are also configurable.
 
-### Activer / Desactiver la charge
+### Enable / Disable the load
 
-- Cliquer **ON** pour activer la charge
-- Cliquer **OFF** pour la desactiver
+- Click **ON** to enable the load
+- Click **OFF** to disable it
 
-> **Important** : Changer de mode desactive automatiquement la charge.
+> **Important**: Changing mode automatically disables the load.
 
-### Mesures en direct
+### Live measurements
 
-Quand la charge est activee (ON), les mesures s'affichent en temps reel :
+When the load is enabled (ON), measurements are displayed in real time:
 
-- **TENSION** (jaune) — en Volts
-- **COURANT** (bleu) — en Amperes
-- **PUISSANCE** (orange) — en Watts
-- **RESISTANCE** (violet) — en Ohms (uniquement pour les modes CR, CR+CV, List, LED)
+- **VOLTAGE** (yellow) — in Volts
+- **CURRENT** (blue) — in Amps
+- **POWER** (orange) — in Watts
+- **RESISTANCE** (purple) — in Ohms (only for CR, CR+CV, List, LED modes)
 
-Un **graphique** se dessine en temps reel sous les valeurs. Vous pouvez :
+A **graph** is drawn in real time below the values. You can:
 
-- **Afficher** : choisir le canal a tracer (Tension, Courant, Puissance, Resistance)
-- **Intervalle** : ajuster la frequence de rafraichissement (100 a 10000 ms)
-- **Points max** : limiter le nombre de points affiches (50 a 2000)
-- **Effacer** : remettre le graphique a zero
-
----
-
-## Sauvegarder / Charger une configuration
-
-### Sauvegarder
-
-1. Configurer le mode et les parametres souhaites
-2. Cliquer **Sauver config** (en haut a droite de la carte "Mode de charge")
-3. L'explorateur de fichiers s'ouvre avec un nom propose : `-ET5410-2026-02-27-CC.ET5410`
-4. **Ajouter votre nom** devant le tiret (ex: `MonTest-ET5410-2026-02-27-CC.ET5410`)
-5. Choisir l'emplacement et cliquer Enregistrer
-
-Le fichier sauvegarde contient :
-- Le mode de charge selectionne
-- Les parametres systeme (limites, ranges, trigger)
-- Les parametres specifiques au mode
-
-### Charger
-
-1. Cliquer **Charger config**
-2. Selectionner un fichier `.ET5410`
-3. Le mode et tous les parametres sont restaures automatiquement
-
-> **Note** : Le fichier ne contient que les parametres du mode qui etait selectionne au moment de la sauvegarde.
+- **Display**: choose the channel to plot (Voltage, Current, Power, Resistance)
+- **Interval**: adjust the refresh rate (100 to 10000 ms)
+- **Max points**: limit the number of displayed points (50 to 2000)
+- **Clear**: reset the graph
 
 ---
 
-## Test Batterie
+## Save / Load a Configuration
 
-Le mode Battery permet de realiser un test complet de decharge de batterie avec suivi en temps reel.
+### Save
+
+1. Configure the desired mode and parameters
+2. Click **Save config** (top right of the "Load Mode" card)
+3. The file explorer opens with a suggested name: `-ET5410-2026-02-27-CC.ET5410`
+4. **Add your name** before the dash (e.g. `MyTest-ET5410-2026-02-27-CC.ET5410`)
+5. Choose the location and click Save
+
+The saved file contains:
+- The selected load mode
+- System parameters (limits, ranges, trigger)
+- Mode-specific parameters
+
+### Load
+
+1. Click **Load config**
+2. Select a `.ET5410` file
+3. The mode and all parameters are restored automatically
+
+> **Note**: The file only contains the parameters of the mode that was selected at the time of saving.
+
+---
+
+## Battery Test
+
+Battery mode allows running a complete battery discharge test with real-time monitoring.
 
 ### Configuration
 
-1. Selectionner le mode **Battery** dans l'onglet Controle
-2. Choisir le **mode de decharge** :
-   - **CC** (Courant constant) — decharge a courant fixe
-   - **CR** (Resistance constante) — decharge a resistance fixe
-3. Choisir le **type de coupure** :
-   - **Voltage** — arret quand la tension atteint le seuil
-   - **Capacite** — arret quand la capacite dechargee atteint le seuil (Ah)
-   - **Energie** — arret quand l'energie dechargee atteint le seuil (Wh)
-   - **Temps** — arret apres une duree definie (heures, minutes, secondes)
-4. Configurer les **valeurs** : tension de coupure, courant/resistance, seuils
+1. Select the **Battery** mode in the Control tab
+2. Choose the **discharge mode**:
+   - **CC** (Constant Current) — discharge at fixed current
+   - **CR** (Constant Resistance) — discharge at fixed resistance
+3. Choose the **cutoff type**:
+   - **Voltage** — stop when voltage reaches the threshold
+   - **Capacity** — stop when discharged capacity reaches the threshold (Ah)
+   - **Energy** — stop when discharged energy reaches the threshold (Wh)
+   - **Time** — stop after a defined duration (hours, minutes, seconds)
+4. Configure the **values**: cutoff voltage, current/resistance, thresholds
 
-> **Attention** : Le type de coupure (Voltage/Capacite/Energie/Temps) doit aussi etre selectionne sur le panneau avant de l'appareil via le bouton SET. L'application ne peut pas changer ce reglage par commande SCPI.
+> **Warning**: The cutoff type (Voltage/Capacity/Energy/Time) must also be selected on the device front panel via the SET button. The application cannot change this setting via SCPI command.
 
-### Deroulement du test
+### Test progress
 
-| Bouton | Action |
+| Button | Action |
 |---|---|
-| **Start** | Demarre le test, active la charge, lance le suivi |
-| **Pause** | Met le test en pause (charge OFF), conserve les donnees. Le label "PAUSE" clignote. |
-| **Reprendre** | Relance le test depuis ou il s'etait arrete |
-| **Stop** | Arrete definitivement le test, desactive la charge |
-| **Reset** | Efface toutes les donnees et le graphique |
+| **Start** | Starts the test, enables the load, begins monitoring |
+| **Pause** | Pauses the test (load OFF), preserves data. The "PAUSE" label blinks. |
+| **Resume** | Resumes the test from where it stopped |
+| **Stop** | Permanently stops the test, disables the load |
+| **Reset** | Clears all data and the graph |
 
-### Statistiques affichees
+### Displayed statistics
 
-Pendant le test, 6 indicateurs sont mis a jour en temps reel :
+During the test, 6 indicators are updated in real time:
 
-| Indicateur | Description |
+| Indicator | Description |
 |---|---|
-| **TENSION** | Tension instantanee de la batterie (V) |
-| **CONSIGNE** | Courant (A) ou resistance (Ohm) programme |
-| **PUISSANCE** | Puissance instantanee (W) |
-| **CAPACITE** | Capacite dechargee cumulee (Ah) |
-| **ENERGIE** | Energie dechargee cumulee (Wh) |
-| **DUREE** | Temps ecoule (HH:MM:SS) |
+| **VOLTAGE** | Instantaneous battery voltage (V) |
+| **SETPOINT** | Programmed current (A) or resistance (Ohm) |
+| **POWER** | Instantaneous power (W) |
+| **CAPACITY** | Cumulative discharged capacity (Ah) |
+| **ENERGY** | Cumulative discharged energy (Wh) |
+| **DURATION** | Elapsed time (HH:MM:SS) |
 
-### Graphique de decharge
+### Discharge graph
 
-Le graphique affiche la **courbe de tension** au fil du temps.
+The graph displays the **voltage curve** over time.
 
-**Navigation :**
-- **Zoom -** / **Zoom +** : changer l'echelle de temps (1 min a 480 min)
-- **Auto** : ajuste automatiquement le zoom
-- **Theme** : basculer entre fond sombre et fond clair
+**Navigation:**
+- **Zoom -** / **Zoom +**: change the time scale (1 min to 480 min)
+- **Auto**: automatically adjusts the zoom
+- **Theme**: toggle between dark and light background
 
-**Tooltip interactif** : survolez le graphique avec la souris pour voir les valeurs exactes (tension + temps) a la position du curseur.
+**Interactive tooltip**: hover over the graph with the mouse to see exact values (voltage + time) at the cursor position.
 
 ### Exports
 
-| Bouton | Format | Contenu |
+| Button | Format | Content |
 |---|---|---|
-| **TXT** | Texte tab-separe | Temps (s) et Tension (V) |
-| **Excel** | CSV point-virgule | Temps (s) et Tension (V) — s'ouvre dans Excel |
-| **SVG** | Image vectorielle | Graphique complet (grille, courbe, labels) |
-| **Image** | PNG | Statistiques + graphique |
-| **PDF** | Rapport imprimable | Parametres, resultats, statistiques min/max/moy, graphique en theme clair, tableau de donnees |
+| **TXT** | Tab-separated text | Time (s) and Voltage (V) |
+| **Excel** | Semicolon CSV | Time (s) and Voltage (V) — opens in Excel |
+| **SVG** | Vector image | Full graph (grid, curve, labels) |
+| **Image** | PNG | Statistics + graph |
+| **PDF** | Printable report | Parameters, results, min/max/avg statistics, graph in light theme, data table |
 
 ---
 
-## Onglet Mesures
+## Measurements Tab
 
-Cet onglet permet un suivi independant des mesures, sans lien avec le mode de charge.
+This tab provides independent measurement monitoring, unrelated to the load mode.
 
-### Utilisation
+### Usage
 
-1. Cliquer **Demarrer** pour lancer le polling
-2. Les 4 valeurs se mettent a jour en continu : Tension, Courant, Puissance, Resistance
-3. Ajuster l'**intervalle** (ms) pour la frequence de rafraichissement
-4. Cliquer **Arreter** pour stopper le polling
+1. Click **Start** to begin polling
+2. The 4 values update continuously: Voltage, Current, Power, Resistance
+3. Adjust the **interval** (ms) for the refresh rate
+4. Click **Stop** to stop polling
 
-### Graphique
+### Graph
 
-- **Afficher** : choisir le canal a tracer (Tension, Courant, Puissance, Resistance)
-- **Points max** : nombre maximum de points affiches
-- **Effacer** : remettre le graphique a zero
+- **Display**: choose the channel to plot (Voltage, Current, Power, Resistance)
+- **Max points**: maximum number of displayed points
+- **Clear**: reset the graph
 
-> **Note** : L'onglet Mesures peut fonctionner en meme temps que le test batterie ou les mesures live du Controle.
+> **Note**: The Measurements tab can run simultaneously with the battery test or the Control live measurements.
 
 ---
 
-## Onglet MPPT
+## MPPT Tab
 
-L'onglet MPPT permet de rechercher le **point de puissance maximale** (Maximum Power Point) d'une source DC (panneau solaire, generateur) en balayant le courant de charge.
+The MPPT tab allows finding the **Maximum Power Point** of a DC source (solar panel, generator) by sweeping the load current.
 
-### Choix du mode
+### Mode selection
 
-Deux modes de recherche sont disponibles via les boutons radio en haut de la configuration :
+Two search modes are available via radio buttons at the top of the configuration:
 
 | Mode | Description |
 |---|---|
-| **Scan lineaire** | Balayage du courant de depart au courant max par increments fixes (step). Trace les courbes tension et puissance. Exhaustif mais plus lent. |
-| **Dichotomie** | Recherche ternaire qui divise l'intervalle en 3, compare la puissance aux deux tiers, et elimine le tiers le moins performant. Converge en ~10-15 mesures. Affiche les points en nuage. |
+| **Linear scan** | Sweeps current from start to max by fixed increments (step). Plots voltage and power curves. Exhaustive but slower. |
+| **Dichotomy** | Ternary search that divides the interval into 3, compares power at the two thirds, and eliminates the least performing third. Converges in ~10-15 measurements. Displays points as scatter plot. |
 
 ### Configuration
 
-Les champs affiches dependent du mode selectionne :
+The displayed fields depend on the selected mode:
 
-**Mode Scan lineaire :**
+**Linear scan mode:**
 
-| Parametre | Description |
+| Parameter | Description |
 |---|---|
-| **Courant depart (A)** | Courant initial du balayage |
-| **Courant max (A)** | Courant de fin du balayage |
-| **Step (A)** | Increment entre chaque mesure |
-| **Tension min (V)** | Seuil d'arret si la tension tombe en dessous |
-| **Delai entre steps (ms)** | Temps d'attente entre chaque mesure |
+| **Start current (A)** | Initial sweep current |
+| **Max current (A)** | End sweep current |
+| **Step (A)** | Increment between each measurement |
+| **Min voltage (V)** | Stop threshold if voltage drops below |
+| **Delay between steps (ms)** | Wait time between each measurement |
 
-**Mode Dichotomie :**
+**Dichotomy mode:**
 
-| Parametre | Description |
+| Parameter | Description |
 |---|---|
-| **Courant depart (A)** | Borne inferieure de l'intervalle de recherche |
-| **Courant max (A)** | Borne superieure de l'intervalle de recherche |
-| **Delai (ms)** | Temps d'attente entre chaque mesure (500 ms recommande) |
+| **Start current (A)** | Lower bound of the search interval |
+| **Max current (A)** | Upper bound of the search interval |
+| **Delay (ms)** | Wait time between each measurement (500 ms recommended) |
 
-> **Note** : En mode dichotomie, le champ **Step** (masque) sert de tolerance de convergence. Le champ **Tension min** (masque) reste actif comme seuil de securite.
+> **Note**: In dichotomy mode, the **Step** field (hidden) serves as convergence tolerance. The **Min voltage** field (hidden) remains active as a safety threshold.
 
-### Deroulement
+### Progress
 
-| Bouton | Action |
+| Button | Action |
 |---|---|
-| **Start** | Lance la recherche : passe en mode CC, active la charge, commence les mesures |
-| **Stop** | Arrete la recherche en cours et desactive la charge |
-| **Reset** | Efface les donnees et le graphique |
+| **Start** | Launches the search: switches to CC mode, enables the load, begins measurements |
+| **Stop** | Stops the current search and disables the load |
+| **Reset** | Clears data and the graph |
 
-### Resultat MPP
+### MPP Result
 
-A la fin de la recherche, le point de puissance maximale est affiche :
+At the end of the search, the maximum power point is displayed:
 
-- **MPP Courant** (bleu) — courant optimal en Amperes
-- **MPP Tension** (jaune) — tension au point optimal en Volts
-- **MPP Puissance** (vert) — puissance maximale en Watts
-- **MPP Resistance** (violet) — resistance equivalente en Ohms
+- **MPP Current** (blue) — optimal current in Amps
+- **MPP Voltage** (yellow) — voltage at the optimal point in Volts
+- **MPP Power** (green) — maximum power in Watts
+- **MPP Resistance** (purple) — equivalent resistance in Ohms
 
-### Graphique
+### Graph
 
-Le graphique affiche les mesures en temps reel pendant la recherche :
+The graph displays measurements in real time during the search:
 
-- **Mode scan** : courbes continues (jaune = tension, orange = puissance)
-- **Mode dichotomie** : nuage de points (cercles jaunes = tension, cercles orange = puissance)
-- **Point MPP** : cercle vert avec label de puissance et ligne verticale pointillee
-- **Theme** : basculer entre fond sombre et fond clair
+- **Scan mode**: continuous curves (yellow = voltage, orange = power)
+- **Dichotomy mode**: scatter plot (yellow circles = voltage, orange circles = power)
+- **MPP point**: green circle with power label and dashed vertical line
+- **Theme**: toggle between dark and light background
 
 ### Exports
 
-| Bouton | Format | Contenu |
+| Button | Format | Content |
 |---|---|---|
-| **Export CSV** | CSV point-virgule | Courant (A), Tension (V), Puissance (W) |
-| **Export PNG** | Image PNG | Statistiques + graphique |
+| **Export CSV** | Semicolon CSV | Current (A), Voltage (V), Power (W) |
+| **Export PNG** | PNG image | Statistics + graph |
 
-### Sauvegarder / Charger la configuration MPPT
+### Save / Load MPPT configuration
 
-Les boutons **Sauver config** / **Charger config** en haut de la carte sauvegardent tous les parametres MPPT (mode, courants, delais) ainsi que les parametres systeme dans un fichier `.ET5410`.
+The **Save config** / **Load config** buttons at the top of the card save all MPPT parameters (mode, currents, delays) as well as system parameters in a `.ET5410` file.
 
-> **Conseil** : Pour un panneau solaire, commencer avec un delai de 500 ms. Des delais plus courts (100-200 ms) peuvent donner des mesures imprecises si la source a une capacite parasite.
+> **Tip**: For a solar panel, start with a 500 ms delay. Shorter delays (100-200 ms) may produce inaccurate measurements if the source has parasitic capacitance.
 
 ---
 
-## Onglet Qualification
+## Qualification Tab
 
-Permet de tester si les mesures sont dans les limites definies.
+Allows testing whether measurements fall within defined limits.
 
 ### Configuration
 
-1. Definir les **limites** pour chaque grandeur :
-   - Tension : V High / V Low
-   - Courant : I High / I Low
-   - Puissance : P High / P Low
-2. Selectionner les **ranges** de tension et de courant (HIGH ou LOW)
-3. Activer le test : **Test = ON**
-4. Cliquer **Lire** pour obtenir le resultat : **PASS** ou **FAIL**
+1. Define the **limits** for each quantity:
+   - Voltage: V High / V Low
+   - Current: I High / I Low
+   - Power: P High / P Low
+2. Select the voltage and current **ranges** (HIGH or LOW)
+3. Enable the test: **Test = ON**
+4. Click **Read** to get the result: **PASS** or **FAIL**
 
 ---
 
-## Onglet Systeme
+## System Tab
 
-Gestion des parametres systeme de l'appareil.
+Device system parameter management.
 
 ### Protections
 
-| Parametre | Description |
+| Parameter | Description |
 |---|---|
-| **Vmax** | Limite de surtension (V) |
-| **Imax** | Limite de surcourant (A) |
-| **Pmax** | Limite de surpuissance (W) |
-| **Von / Voff** | Seuils de tension d'activation/desactivation |
-| **Off Delay** | Delai avant extinction (s) |
+| **Vmax** | Overvoltage limit (V) |
+| **Imax** | Overcurrent limit (A) |
+| **Pmax** | Overpower limit (W) |
+| **Von / Voff** | Voltage enable/disable thresholds |
+| **Off Delay** | Delay before shutdown (s) |
 
-### Reglages
+### Settings
 
-| Parametre | Description |
+| Parameter | Description |
 |---|---|
-| **Mode demarrage** | Comportement au demarrage (ON/OFF) |
-| **Langue** | Langue de l'appareil |
-| **Baud Rate** | Vitesse de communication serie |
+| **Startup mode** | Startup behavior (ON/OFF) |
+| **Language** | Device language |
+| **Baud Rate** | Serial communication speed |
 
-### Gestion des fichiers appareil
+### Device file management
 
-L'appareil peut stocker des configurations en memoire interne :
+The device can store configurations in internal memory:
 
-| Bouton | Action |
+| Button | Action |
 |---|---|
-| **Stocker** | Sauvegarde la config dans un slot de l'appareil |
-| **Rappeler** | Charge une config depuis un slot |
-| **Supprimer** | Efface un slot |
-| **Verifier** | Verifie si un slot contient des donnees |
+| **Store** | Saves the config to a device slot |
+| **Recall** | Loads a config from a slot |
+| **Delete** | Erases a slot |
+| **Verify** | Checks if a slot contains data |
 
 ---
 
-## Onglet Terminal
+## Terminal Tab
 
-Console SCPI pour communication directe avec l'appareil.
+SCPI console for direct communication with the device.
 
-### Utilisation
+### Usage
 
-1. Taper une commande dans le champ de saisie (ex: `*IDN?`, `MEAS:ALL?`, `CH:MODE CC`)
-2. Appuyer sur **Entree** ou cliquer **Envoyer**
-3. La reponse s'affiche dans le journal en dessous
+1. Type a command in the input field (e.g. `*IDN?`, `MEAS:ALL?`, `CH:MODE CC`)
+2. Press **Enter** or click **Send**
+3. The response is displayed in the log below
 
-### Boutons rapides
+### Quick buttons
 
-- **MEAS:ALL?** — Lire toutes les mesures
-- **CH:MODE?** — Lire le mode actuel
-- **CRANge?** — Lire le range de courant
+- **MEAS:ALL?** — Read all measurements
+- **CH:MODE?** — Read the current mode
+- **CRANge?** — Read the current range
 
-### Exemples de commandes
+### Command examples
 
 ```
-*IDN?                  Identification de l'appareil
-CH:MODE?               Mode actuel (CC, CV, CR, etc.)
-CH:MODE CC             Passer en mode CC
-CH:SW ON               Activer la charge
-CH:SW OFF              Desactiver la charge
-MEAS:ALL?              Toutes les mesures (I V P R)
-CURR:CC 1.5            Regler le courant CC a 1.5A
-VOLT:CV 12.0           Regler la tension CV a 12V
-SYST:LOCA              Rendre le controle au panneau avant
+*IDN?                  Device identification
+CH:MODE?               Current mode (CC, CV, CR, etc.)
+CH:MODE CC             Switch to CC mode
+CH:SW ON               Enable the load
+CH:SW OFF              Disable the load
+MEAS:ALL?              All measurements (I V P R)
+CURR:CC 1.5            Set CC current to 1.5A
+VOLT:CV 12.0           Set CV voltage to 12V
+SYST:LOCA              Return control to the front panel
 ```
 
 ---
 
-## Astuces
+## Tips
 
-- **Ouverture rapide** : ouvrez `index.html` directement depuis l'explorateur de fichiers (double-clic) — pas besoin de serveur web
-- **Nom de config** : le nom propose commence par `-` pour vous permettre d'ecrire votre nom devant (ex: `BattLiPo4S-ET5410-2026-02-27-CC.ET5410`)
-- **Export Excel** : le format CSV utilise le point-virgule comme separateur — Excel l'ouvre correctement en Europe
-- **Stabilite USB** : si le port USB se bloque, debrancher et rebrancher le cable, puis reconnecter
-- **Plusieurs onglets** : les mesures live (Controle), le polling (Mesures) et le test batterie peuvent coexister simultanement
-- **Changement de mode** : changer de mode desactive automatiquement la charge — c'est un comportement de l'appareil, pas de l'application
+- **Quick open**: open `index.html` directly from the file explorer (double-click) — no web server needed
+- **Config name**: the suggested name starts with `-` so you can type your name before it (e.g. `BattLiPo4S-ET5410-2026-02-27-CC.ET5410`)
+- **Excel export**: the CSV format uses semicolons as separator — Excel opens it correctly in Europe
+- **USB stability**: if the USB port locks up, unplug and replug the cable, then reconnect
+- **Multiple tabs**: live measurements (Control), polling (Measurements) and battery test can coexist simultaneously
+- **Mode change**: changing mode automatically disables the load — this is a device behavior, not an application behavior

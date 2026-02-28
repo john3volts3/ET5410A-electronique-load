@@ -1,164 +1,168 @@
-# ET5410 Web Controller — Documentation technique
+[Version francaise](DOCUMENTATION-fr.md)
 
-## Presentation
+# ET5410 Web Controller — Technical Documentation
 
-Interface web de controle pour la charge electronique programmable DC **ET5410** (Hangzhou Zhongchuang Electronics). Application mono-fichier (`index.html`) communiquant via le protocole SCPI sur port serie USB.
+## Overview
 
-**Materiels supportes :**
+Web control interface for the **ET5410** programmable DC electronic load (Hangzhou Zhongchuang Electronics). Single-file application (`index.html`) communicating via the SCPI protocol over USB serial port.
+
+**Supported hardware:**
 - ET5410 (150V / 40A / 400W)
 - ET5411 (150V / 15A / 150W)
 - ET5420 (150V / 20A / 200W)
 
-**Fonctionnalites principales :**
-- 12 modes de charge (CC, CV, CP, CR, CC+CV, CR+CV, Tran, List, Scan, Short, Battery, LED)
-- Mesures temps reel avec graphique (V, A, W, R)
-- Test de decharge batterie avec graphique, statistiques et exports
-- Recherche MPPT (scan lineaire + dichotomie) avec graphique et exports
-- Sauvegarde/chargement de configurations (.ET5410)
-- Console SCPI directe (Terminal)
-- Qualification, protections, gestion fichiers appareil
+**Main features:**
+- 12 load modes (CC, CV, CP, CR, CC+CV, CR+CV, Tran, List, Scan, Short, Battery, LED)
+- Real-time measurements with graph (V, A, W, R)
+- Battery discharge test with graph, statistics and exports
+- MPPT search (linear scan + dichotomy) with graph and exports
+- Configuration save/load (.ET5410)
+- Direct SCPI console (Terminal)
+- Qualification, protections, device file management
 
 ## Architecture
 
 ```
-index.html          Fichier unique : HTML + CSS + JS embarques
-                    Zero dependance externe
-                    Ouvrir directement via file:// ou serveur local
+index.html          Single file: embedded HTML + CSS + JS
+                    Zero external dependencies
+                    Open directly via file:// or local server
 ```
 
-L'application repose sur la **Web Serial API** (Chrome 89+ / Edge 89+) pour communiquer avec l'appareil via un port serie USB virtuel.
+The application relies on the **Web Serial API** (Chrome 89+ / Edge 89+) to communicate with the device via a virtual USB serial port.
 
-### Principes de conception
+### Design principles
 
-- **Fichier unique** : tout le code est dans `index.html` (~2700 lignes)
-- **Theme sombre** : adapte aux instruments de mesure
-- **Polling sequentiel** : boucles `while` avec `await` (pas de `setInterval` pour eviter les chevauchements de commandes serie)
-- **Garde SYST:LOCA** : empeche l'envoi de la commande de retour au mode local pendant les tests actifs
+- **Single file**: all code is in `index.html` (~2700 lines)
+- **Dark theme**: suited for measurement instruments
+- **Sequential polling**: `while` loops with `await` (no `setInterval` to avoid serial command overlap)
+- **SYST:LOCA guard**: prevents sending the local return command during active tests
 
-## Prerequis
+## Prerequisites
 
-| Prerequis | Detail |
+| Prerequisite | Detail |
 |---|---|
-| Navigateur | Chrome 89+ ou Edge 89+ (Web Serial API) |
-| Cable | USB vers l'appareil ET5410 |
-| Driver | Driver USB serie (installe automatiquement sous Windows 10/11) |
+| Browser | Chrome 89+ or Edge 89+ (Web Serial API) |
+| Cable | USB to the ET5410 device |
+| Driver | USB serial driver (auto-installed on Windows 10/11) |
 
-## Structure des fichiers
+## File Structure
 
 ```
 ET5410A-electronique-load/
-  index.html                    Application web (fichier unique)
-  CLAUDE.md                     Instructions projet pour Claude Code
-  DOCUMENTATION.md              Ce fichier
-  USER_MANUAL.md                Manuel utilisateur
+  index.html                    Web application (single file)
+  CLAUDE.md                     Project instructions for Claude Code
+  DOCUMENTATION.md              This file (EN)
+  DOCUMENTATION-fr.md           Technical documentation (FR)
+  USER_MANUAL.md                User manual (EN)
+  USER_MANUAL-fr.md             User manual (FR)
   datasheet/
-    ET5410SCPI.pdf              Documentation SCPI constructeur (45 pages)
-    ET5410SCPI.txt              Reference SCPI corrigee et augmentee
+    ET5410SCPI.pdf              Manufacturer SCPI documentation (45 pages)
+    ET5410SCPI.txt              Corrected and augmented SCPI reference
   data/
-    *.ET5410                    Fichiers de configuration sauvegardes
-  scpi_scan.py                  Script de scan brute-force SCPI
-  scan_batt_curr.py             Script de recherche commandes batterie
-  scan_cutoff_mode.py           Script de recherche mode cutoff
-  scan_cutoff_type.py           Script de recherche type cutoff
+    *.ET5410                    Saved configuration files
+  scpi_scan.py                  SCPI brute-force scan script
+  scan_batt_curr.py             Battery command search script
+  scan_cutoff_mode.py           Cutoff mode search script
+  scan_cutoff_type.py           Cutoff type search script
 ```
 
-## Protocole SCPI
+## SCPI Protocol
 
-### Parametres serie
+### Serial parameters
 
-| Parametre | Valeur |
+| Parameter | Value |
 |---|---|
-| Interface | USB (port serie virtuel) |
-| Baud rates | 7200, 9600, 14400 (selon modele) |
+| Interface | USB (virtual serial port) |
+| Baud rates | 7200, 9600, 14400 (depending on model) |
 | Data bits | 8 |
 | Stop bits | 1 |
-| Parite | Aucune |
-| Terminaison | `0x0A` (LF) |
+| Parity | None |
+| Terminator | `0x0A` (LF) |
 
-### Format des reponses
+### Response format
 
-- **Valeurs numeriques** : prefixe `R` suivi de la valeur
-  - Exemples : `R0.60`, `R 2.307`, `R155.00`
-- **Valeurs texte/enum** : pas de prefixe
-  - Exemples : `CC`, `ON`, `HIGH`, `NONE`, `PASS`
-- **MEAS:ALL?** : `R <courant> <tension> <puissance> <resistance>` (separes par espaces)
-  - Exemple : `R 1.234 12.345 15.23 10.00`
-- **Erreurs** : `cmd err` ou `Rcmd err` (commande inconnue)
+- **Numeric values**: `R` prefix followed by the value
+  - Examples: `R0.60`, `R 2.307`, `R155.00`
+- **Text/enum values**: no prefix
+  - Examples: `CC`, `ON`, `HIGH`, `NONE`, `PASS`
+- **MEAS:ALL?**: `R <current> <voltage> <power> <resistance>` (space-separated)
+  - Example: `R 1.234 12.345 15.23 10.00`
+- **Errors**: `cmd err` or `Rcmd err` (unknown command)
 
-### Parsing dans le code
+### Code parsing
 
 ```javascript
-// Retrait prefixe R
+// Strip R prefix
 function stripPrefix(r) {
   const s = r.trim();
   if (/^R\s*[-.\d]/.test(s)) return s.substring(1).trim();
   return s;
 }
 
-// Parsing MEAS:ALL?
+// Parse MEAS:ALL?
 const cleaned = r.replace(/^[A-Za-z]\s+/, '');
 const parts = cleaned.trim().split(/\s+/).map(s => parseFloat(s));
-const [courant, tension, puissance, resistance] = parts;
+const [current, voltage, power, resistance] = parts;
 ```
 
-## Modes de charge
+## Load Modes
 
-| Mode | Valeur SCPI | Commande valeur | Description |
+| Mode | SCPI Value | Value Command | Description |
 |---|---|---|---|
-| CC | `CC` | `CURR:CC <n>` | Courant constant |
-| CV | `CV` | `VOLT:CV <n>` | Tension constante |
-| CP | `CP` | `POWE:CP <n>` | Puissance constante |
-| CR | `CR` | `RESI:CR <n>` | Resistance constante |
-| CC+CV | `CCCV` | `CURR:CCCV`, `VOLT:CCCV` | 2 etapes courant puis tension |
-| CR+CV | `CRCV` | `RESI:CRCV`, `VOLT:CRCV` | 2 etapes resistance puis tension |
-| Tran | `TRAN` | `TRAN:MODE`, `CURR:TA/TB`, etc. | Test dynamique/transitoire |
-| List | `LIST` | `LIST:MODE`, `LIST:NUM`, etc. | Profil multi-etapes (50 max) |
-| Scan | `SCAN` | `SCAN:TYPE`, `CURR:STARt/END`, etc. | Balayage courant/tension/puissance |
-| Short | `SHOR` | — | Court-circuit |
-| Battery | `BATT` | `BATT:MODE`, `VOLT:BCC1`, etc. | Test de decharge batterie |
-| LED | `LED` | `CURR:LED`, `VOLT:LED`, `LED:COEFf` | Test LED |
+| CC | `CC` | `CURR:CC <n>` | Constant current |
+| CV | `CV` | `VOLT:CV <n>` | Constant voltage |
+| CP | `CP` | `POWE:CP <n>` | Constant power |
+| CR | `CR` | `RESI:CR <n>` | Constant resistance |
+| CC+CV | `CCCV` | `CURR:CCCV`, `VOLT:CCCV` | 2-stage current then voltage |
+| CR+CV | `CRCV` | `RESI:CRCV`, `VOLT:CRCV` | 2-stage resistance then voltage |
+| Tran | `TRAN` | `TRAN:MODE`, `CURR:TA/TB`, etc. | Dynamic/transient test |
+| List | `LIST` | `LIST:MODE`, `LIST:NUM`, etc. | Multi-step profile (50 max) |
+| Scan | `SCAN` | `SCAN:TYPE`, `CURR:STARt/END`, etc. | Current/voltage/power sweep |
+| Short | `SHOR` | — | Short circuit |
+| Battery | `BATT` | `BATT:MODE`, `VOLT:BCC1`, etc. | Battery discharge test |
+| LED | `LED` | `CURR:LED`, `VOLT:LED`, `LED:COEFf` | LED test |
 
-## Commandes SCPI decouvertes (non documentees)
+## Discovered SCPI Commands (undocumented)
 
-Ces commandes ont ete trouvees par scan brute-force et ne figurent pas dans la documentation constructeur :
+These commands were found by brute-force scanning and are not in the manufacturer documentation:
 
-| Commande | Sous-systeme | Description | Exemple reponse |
+| Command | Subsystem | Description | Example Response |
 |---|---|---|---|
-| `BATT:BTC <n>` / `?` | BATT | Cutoff capacite (Ah) | `R10.000` |
-| `BATT:BTE <n>` / `?` | BATT | Cutoff energie (Wh) | `R50.000` |
-| `TIME:BTT <n>` / `?` | TIME | Cutoff temps (secondes) | `R600` |
-| `BATT:ENER?` | BATT | Energie dechargee (Wh, lecture seule) | `R136.032` |
-| `CURR:BCC <n>` / `?` | CURR | Courant CC pour cutoff non-voltage | `R1.000` |
+| `BATT:BTC <n>` / `?` | BATT | Capacity cutoff (Ah) | `R10.000` |
+| `BATT:BTE <n>` / `?` | BATT | Energy cutoff (Wh) | `R50.000` |
+| `TIME:BTT <n>` / `?` | TIME | Time cutoff (seconds) | `R600` |
+| `BATT:ENER?` | BATT | Discharged energy (Wh, read-only) | `R136.032` |
+| `CURR:BCC <n>` / `?` | CURR | CC current for non-voltage cutoff | `R1.000` |
 
-**Pattern de nommage** : `BT` = **B**attery **T**est + premiere lettre (**C**apacity, **E**nergy, **T**ime).
+**Naming pattern**: `BT` = **B**attery **T**est + first letter (**C**apacity, **E**nergy, **T**ime).
 
-**Limitation** : le selecteur de mode cutoff (Voltage/Capacite/Energie/Temps) n'a pas de commande SCPI correspondante. Il ne peut etre change que depuis le panneau avant de l'appareil.
+**Limitation**: the cutoff mode selector (Voltage/Capacity/Energy/Time) has no corresponding SCPI command. It can only be changed from the device front panel.
 
-## Architecture JavaScript
+## JavaScript Architecture
 
-### Classe ET5410
+### ET5410 Class
 
 ```
 class ET5410 {
-  connect(baudRate)     Ouvre le port serie via Web Serial API
-  disconnect()          Envoie SYST:LOCA puis ferme le port
-  send(cmd)             Envoie une commande sans attendre de reponse
-  query(cmd)            Envoie une commande et attend la reponse
+  connect(baudRate)     Opens the serial port via Web Serial API
+  disconnect()          Sends SYST:LOCA then closes the port
+  send(cmd)             Sends a command without waiting for a response
+  query(cmd)            Sends a command and waits for the response
 }
 ```
 
-### Systeme de polling
+### Polling system
 
-Trois systemes de polling independants coexistent :
+Three independent polling systems coexist:
 
-| Systeme | Variable de controle | Fonction boucle | Utilisation |
+| System | Control Variable | Loop Function | Usage |
 |---|---|---|---|
-| Controle (live) | `ctrlLiveTimer` / `ctrlLivePollId` | `ctrlLivePollLoop()` | Mesures live quand charge ON |
-| Batterie | `battTimer` / `battPollId` | `battPollLoop()` | Test de decharge batterie |
-| Mesures | `measTimer` | `setInterval(measPoll)` | Onglet Mesures independant |
-| MPPT | `mpptTimer` / `mpptPollId` | `mpptPollLoop()` / `mpptDichoLoop()` | Recherche point de puissance max |
+| Control (live) | `ctrlLiveTimer` / `ctrlLivePollId` | `ctrlLivePollLoop()` | Live measurements when load ON |
+| Battery | `battTimer` / `battPollId` | `battPollLoop()` | Battery discharge test |
+| Measurements | `measTimer` | `setInterval(measPoll)` | Independent Measurements tab |
+| MPPT | `mpptTimer` / `mpptPollId` | `mpptPollLoop()` / `mpptDichoLoop()` | Maximum power point search |
 
-**Pattern anti-doublon** (controle et batterie) :
+**Anti-duplicate pattern** (control and battery):
 ```javascript
 async function xxxPollLoop(myId) {
   while (xxxTimer && xxxPollId === myId) {
@@ -172,78 +176,78 @@ async function xxxPollLoop(myId) {
 }
 ```
 
-### Gestion pcSession
+### pcSession management
 
-`pcSession` empeche l'envoi de `SYST:LOCA` entre chaque commande (ce qui ferait clignoter l'ecran de l'appareil).
+`pcSession` prevents sending `SYST:LOCA` between each command (which would cause the device screen to flicker).
 
 ```javascript
-// Garde dans send() et query()
+// Guard in send() and query()
 if (!pcSession && !battTimer && !ctrlLiveTimer && !cmd.startsWith('SYST:LOCA')) {
   await sendLocalReturn();
 }
 ```
 
-**Coordination** : chaque systeme de polling met `pcSession = true` au demarrage et ne le remet a `false` que si les deux autres sont inactifs.
+**Coordination**: each polling system sets `pcSession = true` at startup and only resets it to `false` when the other two are inactive.
 
 ## MPPT (Maximum Power Point Tracking)
 
 ### Architecture
 
-Le systeme MPPT utilise un helper commun `mpptMeasureAt(current)` reutilise par les deux modes :
+The MPPT system uses a shared helper `mpptMeasureAt(current)` reused by both modes:
 
 ```javascript
 async function mpptMeasureAt(current) {
-  // 1. Envoie CURR:CC <current>
-  // 2. Attend le delai configure (mppt-delay ou mppt-dicho-delay)
-  // 3. Lit MEAS:ALL? → [ci, v, p, r]
-  // 4. Enregistre le point dans mpptData (avec ci mesure)
-  // 5. Met a jour mpptBest si p > meilleure puissance
-  // 6. Redessine le graphique
-  // 7. Retourne { v, p } ou { v, p, lowV: true } si v < Vmin, ou null si erreur
+  // 1. Sends CURR:CC <current>
+  // 2. Waits for the configured delay (mppt-delay or mppt-dicho-delay)
+  // 3. Reads MEAS:ALL? → [ci, v, p, r]
+  // 4. Records the point in mpptData (with measured ci)
+  // 5. Updates mpptBest if p > best power
+  // 6. Redraws the graph
+  // 7. Returns { v, p } or { v, p, lowV: true } if v < Vmin, or null on error
 }
 ```
 
-### Mode Scan lineaire
+### Linear scan mode
 
 `mpptPollLoop(myId)` → `mpptPoll()` → `mpptMeasureAt(mpptCurrentI)`
 
-Boucle simple : mesure au courant actuel, incremente `mpptCurrentI` de `iStep`, arret quand `mpptCurrentI > iMax` ou `v < vMin`.
+Simple loop: measures at current value, increments `mpptCurrentI` by `iStep`, stops when `mpptCurrentI > iMax` or `v < vMin`.
 
-### Mode Dichotomie (recherche ternaire)
+### Dichotomy mode (ternary search)
 
 `mpptDichoLoop(myId)` → `mpptMeasureAt(m1)`, `mpptMeasureAt(m2)`
 
 ```
-Algorithme :
+Algorithm:
   lo = iStart, hi = iMax
-  Tant que (hi - lo) > tolerance :
+  While (hi - lo) > tolerance:
     m1 = lo + (hi - lo) / 3
     m2 = hi - (hi - lo) / 3
-    Mesurer P a m1 et m2
-    Si V < Vmin a m1 → hi = m1 (courant trop eleve)
-    Si V < Vmin a m2 → hi = m2 (courant trop eleve)
-    Si P(m1) < P(m2) → lo = m1
-    Sinon → hi = m2
-  Mesure finale a (lo + hi) / 2
+    Measure P at m1 and m2
+    If V < Vmin at m1 → hi = m1 (current too high)
+    If V < Vmin at m2 → hi = m2 (current too high)
+    If P(m1) < P(m2) → lo = m1
+    Else → hi = m2
+  Final measurement at (lo + hi) / 2
 ```
 
-Convergence typique : ~10-15 mesures (au lieu de centaines pour le scan).
+Typical convergence: ~10-15 measurements (instead of hundreds for the scan).
 
-### Graphique
+### Graph
 
-- **Mode scan** : courbes lineaires reliant les points (tension jaune, puissance orange)
-- **Mode dichotomie** : nuage de points (cercles r=4), axe X fixe [iStart, iMax]
-- **Point MPP** : cercle vert (r=6) + label + ligne verticale pointillee (commun aux 2 modes)
+- **Scan mode**: linear curves connecting points (yellow voltage, orange power)
+- **Dichotomy mode**: scatter plot (circles r=4), fixed X axis [iStart, iMax]
+- **MPP point**: green circle (r=6) + label + dashed vertical line (common to both modes)
 
-### Gestion V < Vmin en dichotomie
+### V < Vmin handling in dichotomy
 
-Quand `mpptMeasureAt` detecte `v < vMin`, elle retourne `{ v, p, lowV: true }` au lieu de `null`. La boucle dichotomie reduit alors `hi` (borne superieure) au lieu de s'arreter, ce qui recentre la recherche vers les courants plus bas.
+When `mpptMeasureAt` detects `v < vMin`, it returns `{ v, p, lowV: true }` instead of `null`. The dichotomy loop then reduces `hi` (upper bound) instead of stopping, which refocuses the search toward lower currents.
 
-## Fichiers de configuration (.ET5410)
+## Configuration Files (.ET5410)
 
 ### Format
 
-Fichier texte avec paires `cle=valeur`, commentaires `#` :
+Text file with `key=value` pairs, `#` comments:
 
 ```
 # ET5410 Configuration
@@ -252,7 +256,7 @@ Fichier texte avec paires `cle=valeur`, commentaires `#` :
 
 ctrl-mode=CC
 
-# Systeme
+# System
 ctrl-vmax=60
 ctrl-imax=40
 ctrl-pmax=400
@@ -265,32 +269,32 @@ ctrl-trig=MAN
 ctrl-cc-val=1.500
 ```
 
-### Contenu sauvegarde
+### Saved content
 
-- **Toujours** : mode, parametres systeme (limites, ranges, trigger, off delay)
-- **Selon le mode** : uniquement les parametres specifiques au mode selectionne
-- **MPPT** : parametres MPPT + mode (scan/dicho) + parametres systeme
-- **Nom propose** : `-ET5410-AAAA-MM-JJ-MODE.ET5410` (le tiret initial permet a l'utilisateur de prefixer son nom)
+- **Always**: mode, system parameters (limits, ranges, trigger, off delay)
+- **Per mode**: only the parameters specific to the selected mode
+- **MPPT**: MPPT parameters + mode (scan/dicho) + system parameters
+- **Suggested name**: `-ET5410-YYYY-MM-DD-MODE.ET5410` (the leading dash lets the user prefix their name)
 
 ## Exports
 
-### Test batterie
+### Battery test
 
-| Format | Contenu | Extension |
+| Format | Content | Extension |
 |---|---|---|
-| TXT | Donnees tab-separees (temps, tension) | `.txt` |
-| CSV | Donnees point-virgule (convention europeenne) | `.csv` |
-| SVG | Graphique vectoriel (grille + courbe + labels) | `.svg` |
-| PNG | Image stats + graphique | `.png` |
-| PDF | Rapport complet (parametres, resultats, statistiques, graphique, tableau) | via impression |
+| TXT | Tab-separated data (time, voltage) | `.txt` |
+| CSV | Semicolon-separated data (European convention) | `.csv` |
+| SVG | Vector graph (grid + curve + labels) | `.svg` |
+| PNG | Stats + graph image | `.png` |
+| PDF | Full report (parameters, results, statistics, graph, table) | via print |
 
-### Theme du graphique
+### Graph theme
 
-Le graphique batterie supporte deux themes :
+The battery graph supports two themes:
 
-| Theme | Fond | Grille | Courbe tension | Curseur |
+| Theme | Background | Grid | Voltage curve | Cursor |
 |---|---|---|---|---|
 | Dark | `#000000` | `#333333` | `#ff5252` | `rgba(255,255,255,0.4)` |
 | Light | `#ffffff` | `#cccccc` | `#d32f2f` | `rgba(0,0,0,0.3)` |
 
-Le PDF est toujours genere en theme clair pour l'impression.
+The PDF is always generated in light theme for printing.

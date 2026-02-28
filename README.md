@@ -1,3 +1,5 @@
+[Version francaise](README-fr.md)
+
 # ET5410 Web Controller
 
 Web-based controller for the **ET5410 / ET5411 / ET5420** programmable DC electronic load (Hangzhou Zhongchuang Electronics / East Tester). Single HTML file, zero dependencies — just open in Chrome and connect via USB.
@@ -41,8 +43,8 @@ Web-based controller for the **ET5410 / ET5411 / ET5420** programmable DC electr
 
 ## Documentation
 
-- **[User Manual](USER_MANUAL.md)** — Step-by-step usage guide (French)
-- **[Technical Documentation](DOCUMENTATION.md)** — Architecture, SCPI protocol, JavaScript internals (French)
+- **[User Manual](USER_MANUAL.md)** / **[Manuel utilisateur](USER_MANUAL-fr.md)** — Step-by-step usage guide
+- **[Technical Documentation](DOCUMENTATION.md)** / **[Documentation technique](DOCUMENTATION-fr.md)** — Architecture, SCPI protocol, JavaScript internals
 - **[SCPI Reference](datasheet/ET5410SCPI.txt)** — Complete command reference (corrected and augmented)
 
 ## SCPI Protocol
@@ -71,8 +73,10 @@ Communication uses SCPI commands over a virtual USB serial port.
 
 ```
 index.html                  Single-file web application (HTML + CSS + JS)
-DOCUMENTATION.md            Technical documentation
-USER_MANUAL.md              User manual
+DOCUMENTATION.md            Technical documentation (EN)
+DOCUMENTATION-fr.md         Documentation technique (FR)
+USER_MANUAL.md              User manual (EN)
+USER_MANUAL-fr.md           Manuel utilisateur (FR)
 datasheet/
   ET5410SCPI.pdf            Manufacturer SCPI documentation (45 pages)
   ET5410SCPI.txt            Corrected and augmented SCPI reference
