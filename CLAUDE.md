@@ -12,7 +12,7 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 
 ## Documentation (bilingual EN/FR)
 
-- `README.md` (EN) / `README-fr.md` (FR) — Présentation du projet
+- `README.md` (EN + FR) — Présentation du projet (bilingue, ancre `#fr`)
 - `USER_MANUAL.md` (EN) / `USER_MANUAL-fr.md` (FR) — Manuel utilisateur
 - `DOCUMENTATION.md` (EN) / `DOCUMENTATION-fr.md` (FR) — Documentation technique
 - `datasheet/ET5410SCPI.txt` — Référence SCPI complète (corrigée et augmentée)
