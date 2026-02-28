@@ -77,6 +77,11 @@ nav {
   padding: 4px 10px;
   border-bottom: 1px solid var(--border);
 }
+#sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 nav button {
   background: transparent;
   color: var(--text2);
@@ -274,6 +279,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
 </head>
 <body>
 
+<div id="sticky-top">
 <header>
   <div style="display:flex;align-items:center;gap:12px;">
     <h1><span>ET5410</span> Controller</h1>
@@ -299,6 +305,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
   <button data-tab="tab-sys">System</button>
   <button data-tab="tab-term">Terminal</button>
 </nav>
+</div>
 
 <!-- ========== CONNEXION ========== -->
 <div id="tab-conn" class="tab active">
@@ -995,7 +1002,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       </div>
       <div class="row">
         <label>Baud rate</label>
-        <select id="sys-baud" data-cmd="COMM:BAUDrate">
+        <select id="sys-baud">
           <option value="1">7200</option>
           <option value="2">9600</option>
           <option value="3" selected>14400</option>
