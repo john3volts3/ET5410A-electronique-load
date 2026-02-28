@@ -1149,6 +1149,7 @@ class ET5410 {
     await this.port.open({ baudRate, dataBits: 8, stopBits: 1, parity: 'none' });
     this.writer = this.port.writable.getWriter();
     this.connected = true;
+    this.port.addEventListener('disconnect', () => onDeviceLost());
     this._startReader();
     updateConnStatus(true);
     termLog('Connected at ' + baudRate + ' bps', 'info');
@@ -1195,7 +1196,10 @@ class ET5410 {
         }
       }
     } catch (e) {
-      if (this._reading) termLog('Read error: ' + e.message, 'err');
+      if (this._reading) {
+        termLog('Read error: ' + e.message, 'err');
+        onDeviceLost();
+      }
     } finally {
       try { this.reader.releaseLock(); } catch(e) {}
       this.reader = null;
@@ -1255,6 +1259,8 @@ let battTimer = null;
 let battPollId = 0; // compteur anti-doublon de boucles poll
 let ctrlLiveTimer = null;
 let ctrlLivePollId = 0;
+let heartbeatTimer = null;
+let heartbeatFails = 0;
 const ctrlLiveHistory = [[], [], [], []]; // V, I, P, R
 const measHistory = [[], [], [], []]; // V, I, P, R
 let battGraphData = { t: [], v: [] };
@@ -1380,12 +1386,52 @@ function termLog(msg, cls = '') {
 }
 
 // ============================================================
+// Heartbeat / Device-lost
+// ============================================================
+function heartbeatStart() {
+  heartbeatStop();
+  heartbeatFails = 0;
+  heartbeatTimer = setInterval(heartbeatPoll, 30000);
+}
+
+function heartbeatStop() {
+  if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+  heartbeatFails = 0;
+}
+
+async function heartbeatPoll() {
+  // Si un poller est actif, le trafic suffit comme keepalive
+  if (battTimer || ctrlLiveTimer || measTimer || mpptTimer) { heartbeatFails = 0; return; }
+  if (!dev.connected) return;
+  const r = await dev.query('*IDN?', 3000);
+  if (r !== null) { heartbeatFails = 0; return; }
+  // Premier échec → réessai
+  heartbeatFails++;
+  if (heartbeatFails < 2) { termLog('Heartbeat: no response, retrying…', 'err'); return; }
+  // Deux échecs consécutifs → device perdu
+  termLog('Heartbeat: device not responding', 'err');
+  onDeviceLost();
+}
+
+async function onDeviceLost() {
+  termLog('Device lost — connection interrupted', 'err');
+  heartbeatStop();
+  ctrlLiveStop();
+  battStop(false);
+  measStop();
+  mpptStop(false);
+  await dev.disconnect();
+  $('device-detail').textContent = 'Connection lost — replug USB and click Connect';
+}
+
+// ============================================================
 // Connexion
 // ============================================================
 async function doConnect() {
   try {
     const baud = parseInt(g('baud-rate'));
     await dev.connect(baud);
+    heartbeatStart();
     await pcSessionRun(() => refreshAll());
   } catch (e) {
     termLog('Connection error: ' + e.message, 'err');
@@ -1433,6 +1479,7 @@ async function refreshAll() {
 }
 
 async function doDisconnect() {
+  heartbeatStop();
   ctrlLiveStop();
   battStop(false);
   measStop();
