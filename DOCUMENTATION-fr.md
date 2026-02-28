@@ -33,6 +33,7 @@ L'application repose sur la **Web Serial API** (Chrome 89+ / Edge 89+) pour comm
 ### Principes de conception
 
 - **Fichier unique** : tout le code est dans `index.html` (~2700 lignes)
+- **Header fixe** : le header et la barre d'onglets restent fixes en haut pendant le scroll
 - **Theme sombre** : adapte aux instruments de mesure
 - **Polling sequentiel** : boucles `while` avec `await` (pas de `setInterval` pour eviter les chevauchements de commandes serie)
 - **Garde SYST:LOCA** : empeche l'envoi de la commande de retour au mode local pendant les tests actifs

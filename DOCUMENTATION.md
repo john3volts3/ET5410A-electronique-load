@@ -33,6 +33,7 @@ The application relies on the **Web Serial API** (Chrome 89+ / Edge 89+) to comm
 ### Design principles
 
 - **Single file**: all code is in `index.html` (~2700 lines)
+- **Sticky header**: header and tab navigation stay fixed at the top while content scrolls
 - **Dark theme**: suited for measurement instruments
 - **Sequential polling**: `while` loops with `await` (no `setInterval` to avoid serial command overlap)
 - **SYST:LOCA guard**: prevents sending the local return command during active tests

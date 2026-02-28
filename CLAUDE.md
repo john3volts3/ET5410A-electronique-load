@@ -38,7 +38,7 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 - **Classe `ET5410`** : `connect()`, `disconnect()`, `send(cmd)`, `query(cmd)` avec terminaison `\n` (0x0A)
 - **UI language** : English (all labels, messages, tooltips, PDF report)
 - **7 tabs** : Connection, Control, MPPT, Measurements, Qualification, System, Terminal (+ inline sub-sections: Dynamic/TRAN, Scan, List, Battery when corresponding mode is selected)
-- **Header** : title, Connect/Disconnect buttons, PC/Auto radios, theme toggle ◐, connection status
+- **Header** : title, Connect/Disconnect buttons, PC/Auto radios, theme toggle ◐, connection status (sticky with tabs-nav via `#sticky-top`)
 - **Dark/light theme** : neutral Slate palette (blue-grey accent), toggle persisted via localStorage
 - **Ghost/outline buttons**, cards with h3 legend-style, system-ui 18px font
 - **needs-conn** : class on SCPI action buttons, disabled when not connected (explanatory tooltip)
