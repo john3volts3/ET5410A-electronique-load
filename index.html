@@ -3374,6 +3374,16 @@ function toggleAppTheme() {
     el.addEventListener('input', updateStep);
   });
 
+  // Allow comma as decimal separator in number inputs (converted to period)
+  document.querySelectorAll('input[type="number"]').forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key === ',') {
+        e.preventDefault();
+        document.execCommand('insertText', false, '.');
+      }
+    });
+  });
+
   // Auto-apply: inputs and selects with data-cmd send SCPI on change
   document.querySelectorAll('input[data-cmd]').forEach(el => {
     el.addEventListener('change', async () => { if (dev.connected) await dev.query(el.dataset.cmd + ' ' + el.value); });
