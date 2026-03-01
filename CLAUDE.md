@@ -47,6 +47,10 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 - **smartStep()** : logarithmic increments on numeric spinners
 - **Comma decimal separator** : all number inputs accept comma (converted to period via `execCommand('insertText')`)
 - **Battery auto-stop** : `battPoll()` checks `CH:SW?` each cycle; if `OFF` → `battStop(false)` + green "COMPLETED" label
+- **Battery measurement averaging** : `battPoll()` performs 3× `MEAS:ALL?` (50 ms apart) and averages V and P to reduce noise
+- **Battery graph smoothing** : adaptive moving average (`smoothW = ceil(nVis / w)`) + pixel downsampling at render time; raw data preserved
+- **Heartbeat keepalive** : `CH:SW?` every 30s when idle (skipped when a poller is active); 2 consecutive timeouts → `onDeviceLost()`
+- **Device-lost detection** : `onDeviceLost()` triggered by port `disconnect` event, read-loop error, or heartbeat timeout; stops all pollers, closes port, displays reconnection message
 - **Off Delay** : Hours/Minutes/Seconds fields with real-time countdown
 - Open directly in browser via `file://` or local server
 
