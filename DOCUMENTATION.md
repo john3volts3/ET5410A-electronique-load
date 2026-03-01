@@ -198,6 +198,42 @@ At the end of each `battPoll()` cycle, the application queries `CH:SW?` to check
 
 All `<input type="number">` fields accept both period and comma as decimal separator. A `keydown` listener intercepts the comma key and inserts a period at the cursor position via `document.execCommand('insertText')`.
 
+### Heartbeat keepalive
+
+A heartbeat system prevents USB idle disconnection (observed after ~30 min of inactivity on Chrome Web Serial).
+
+- `heartbeatStart()` launches a `setInterval` every **30 seconds**
+- `heartbeatPoll()` checks whether a polling system is already active (`battTimer || ctrlLiveTimer || measTimer || mpptTimer`); if so, their traffic serves as keepalive and no extra command is sent
+- Otherwise, sends `*IDN?` (lightweight query, no side-effect on the device)
+- After 2 consecutive timeouts, triggers `onDeviceLost()`
+
+**Device-lost detection** uses three sources:
+1. **Port `disconnect` event** — Chrome detects USB removal
+2. **Read-loop error** — `_startReader()` catch block when `_reading` is `true`
+3. **Heartbeat double timeout** — 2 failed `*IDN?` queries in a row
+
+`onDeviceLost()` stops all pollers and the heartbeat, closes the port, and displays `Connection lost — replug USB and click Connect`. No automatic reconnection is attempted because the COM port disappears from the OS and requires a physical USB replug.
+
+### Battery measurement averaging
+
+Each `battPoll()` cycle performs **3 consecutive `MEAS:ALL?` queries** (50 ms apart) and averages voltage (V) and power (P) before storing the data point. This reduces measurement noise at the source while adding only ~100 ms per cycle (well within the 1-second polling interval).
+
+### Battery graph smoothing
+
+When zooming out, more data points map to fewer pixels, which amplifies visual noise. The graph drawing applies an **adaptive moving average** at render time (raw data is preserved):
+
+```
+smoothW = ceil(visible_points / pixel_width)
+```
+
+| Zoom | Points | smoothW | Effect |
+|------|--------|---------|--------|
+| 10 min | ~600 | 1 | No smoothing (raw data) |
+| 2 h | ~7200 | ~10 | Moderate smoothing |
+| 8 h | ~28800 | ~41 | Strong smoothing |
+
+Combined with **pixel downsampling** (only one point drawn per pixel column), this eliminates the sub-pixel zigzag artifacts that made the curve appear increasingly noisy at wider zoom levels.
+
 ## MPPT (Maximum Power Point Tracking)
 
 ### Architecture

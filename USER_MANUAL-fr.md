@@ -25,6 +25,10 @@ Cet onglet gere la communication avec l'appareil.
 | **Deconnecter** | Ferme la connexion et rend le controle au panneau avant (`SYST:LOCA`) |
 | **Identifiant** | Affiche le modele, numero de serie et firmware apres connexion |
 
+**Keepalive automatique** : l'application envoie une commande legere (`*IDN?`) toutes les 30 secondes pour empecher la mise en veille USB. Quand un systeme de polling (batterie, mesures, MPPT ou controle live) est actif, son trafic sert de keepalive et aucune commande supplementaire n'est envoyee.
+
+**Perte de connexion** : si l'appareil devient injoignable (cable USB debranche, suspension USB), toutes les operations actives sont arretees et le statut affiche `Connection lost — replug USB and click Connect`. Rebranchez le cable USB et cliquez sur **Connecter** pour reprendre.
+
 ---
 
 ## Onglet Controle
@@ -160,12 +164,14 @@ Pendant le test, 6 indicateurs sont mis a jour en temps reel :
 
 ### Graphique de decharge
 
-Le graphique affiche la **courbe de tension** au fil du temps.
+Le graphique affiche la **courbe de tension** au fil du temps. Chaque point est la moyenne de 3 lectures consecutives (50 ms d'intervalle) pour reduire le bruit de mesure.
 
 **Navigation :**
-- **Zoom -** / **Zoom +** : changer l'echelle de temps (1 min a 480 min)
-- **Auto** : ajuste automatiquement le zoom
+- **Zoom +** / **Zoom -** : zoomer (moins de temps visible, plus de detail) ou dezoomer (plus de temps visible)
+- **Auto** : ajuste automatiquement le zoom pour afficher toutes les donnees
 - **Theme** : basculer entre fond sombre et fond clair
+
+Lors du dezoom, la courbe est automatiquement lissee par une moyenne glissante proportionnelle au niveau de zoom. Cela evite l'amplification visuelle du bruit quand de nombreux points sont compresses sur moins de pixels.
 
 **Tooltip interactif** : survolez le graphique avec la souris pour voir les valeurs exactes (tension + temps) a la position du curseur.
 

@@ -198,6 +198,42 @@ A la fin de chaque cycle `battPoll()`, l'application interroge `CH:SW?` pour ver
 
 Tous les champs `<input type="number">` acceptent le point et la virgule comme separateur decimal. Un listener `keydown` intercepte la touche virgule et insere un point a la position du curseur via `document.execCommand('insertText')`.
 
+### Heartbeat keepalive
+
+Un systeme de heartbeat empeche la deconnexion USB par inactivite (observee apres ~30 min sur Chrome Web Serial).
+
+- `heartbeatStart()` lance un `setInterval` toutes les **30 secondes**
+- `heartbeatPoll()` verifie si un systeme de polling est deja actif (`battTimer || ctrlLiveTimer || measTimer || mpptTimer`) ; si oui, leur trafic sert de keepalive et aucune commande supplementaire n'est envoyee
+- Sinon, envoie `*IDN?` (requete legere, sans effet sur l'appareil)
+- Apres 2 timeouts consecutifs, declenche `onDeviceLost()`
+
+**Detection de perte du device** via trois sources :
+1. **Evenement `disconnect` du port** — Chrome detecte le retrait USB
+2. **Erreur du read-loop** — bloc catch de `_startReader()` quand `_reading` est `true`
+3. **Double timeout heartbeat** — 2 requetes `*IDN?` echouees consecutivement
+
+`onDeviceLost()` arrete tous les pollers et le heartbeat, ferme le port et affiche `Connection lost — replug USB and click Connect`. Aucune reconnexion automatique n'est tentee car le port COM disparait de l'OS et necessite un rebranchement physique de l'USB.
+
+### Moyenne des mesures batterie
+
+Chaque cycle `battPoll()` effectue **3 requetes `MEAS:ALL?` consecutives** (50 ms d'intervalle) et calcule la moyenne de la tension (V) et de la puissance (P) avant de stocker le point. Cela reduit le bruit de mesure a la source tout en n'ajoutant que ~100 ms par cycle (largement dans l'intervalle de polling de 1 seconde).
+
+### Lissage du graphique batterie
+
+Lors du dezoom, davantage de points de donnees sont projetes sur moins de pixels, ce qui amplifie le bruit visuel. Le dessin du graphique applique une **moyenne glissante adaptative** au moment du rendu (les donnees brutes sont preservees) :
+
+```
+smoothW = ceil(points_visibles / largeur_pixels)
+```
+
+| Zoom | Points | smoothW | Effet |
+|------|--------|---------|-------|
+| 10 min | ~600 | 1 | Pas de lissage (donnees brutes) |
+| 2 h | ~7200 | ~10 | Lissage modere |
+| 8 h | ~28800 | ~41 | Lissage fort |
+
+Combine avec le **sous-echantillonnage par pixel** (un seul point trace par colonne de pixel), cela elimine les artefacts de zigzag sub-pixel qui rendaient la courbe de plus en plus bruitee aux niveaux de zoom larges.
+
 ## MPPT (Maximum Power Point Tracking)
 
 ### Architecture

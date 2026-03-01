@@ -2266,6 +2266,7 @@ async function battDoStart() {
   battZoomMinutes = 10;
   $('batt-zoom-label').textContent = '10 min';
   $('batt-graph-card').style.display = '';
+  $('batt-graph-card').scrollIntoView({ behavior: 'smooth', block: 'end' });
   $('batt-stat-v').textContent = '--.--- V';
   // Afficher la consigne (courant CC ou résistance CR)
   const dmode = getBattDMode();

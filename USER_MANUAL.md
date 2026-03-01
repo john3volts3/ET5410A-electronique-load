@@ -25,6 +25,10 @@ This tab manages communication with the device.
 | **Disconnect** | Closes the connection and returns control to the front panel (`SYST:LOCA`) |
 | **Identifier** | Displays the model, serial number and firmware after connection |
 
+**Automatic keepalive**: the application sends a lightweight command (`*IDN?`) every 30 seconds to prevent USB idle disconnection. When a polling system (battery, measurements, MPPT, or live control) is active, its traffic serves as keepalive and no extra command is sent.
+
+**Connection loss**: if the device becomes unreachable (USB cable unplugged, USB suspend), all active operations are stopped and the status shows `Connection lost — replug USB and click Connect`. Replug the USB cable and click **Connect** to resume.
+
 ---
 
 ## Control Tab
@@ -160,12 +164,14 @@ During the test, 6 indicators are updated in real time:
 
 ### Discharge graph
 
-The graph displays the **voltage curve** over time.
+The graph displays the **voltage curve** over time. Each data point is the average of 3 consecutive readings (50 ms apart) to reduce measurement noise.
 
 **Navigation:**
-- **Zoom -** / **Zoom +**: change the time scale (1 min to 480 min)
-- **Auto**: automatically adjusts the zoom
+- **Zoom +** / **Zoom -**: zoom in (less time visible, more detail) or zoom out (more time visible)
+- **Auto**: automatically adjusts the zoom to fit all data
 - **Theme**: toggle between dark and light background
+
+When zooming out, the curve is automatically smoothed using an adaptive moving average proportional to the zoom level. This prevents visual noise amplification when many data points are compressed into fewer pixels.
 
 **Interactive tooltip**: hover over the graph with the mouse to see exact values (voltage + time) at the cursor position.
 
