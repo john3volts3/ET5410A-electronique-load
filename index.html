@@ -745,9 +745,9 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
         <div id="batt-tooltip" style="display:none;position:absolute;pointer-events:none;background:rgba(30,30,30,0.85);color:#eee;padding:6px 10px;border-radius:6px;font:11px Consolas,monospace;white-space:nowrap;z-index:10;border:1px solid #555;"></div>
       </div>
       <div style="text-align:center;margin-top:4px;">
-        <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battGraphZoom(-1)">Zoom -</button>
+        <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battGraphZoom(-1)">Zoom +</button>
         <span id="batt-zoom-label" style="font-size:0.75em;color:var(--text2);margin:0 8px;">10 min</span>
-        <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battGraphZoom(1)">Zoom +</button>
+        <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battGraphZoom(1)">Zoom -</button>
         <button class="btn" style="padding:2px 8px;font-size:0.75em;margin-left:8px;" onclick="battGraphAutoZoom()">Auto</button>
         <span style="margin-left:16px;border-left:1px solid var(--border);padding-left:16px;">
           <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battToggleTheme()">Theme</button>
@@ -2355,26 +2355,32 @@ async function battPollLoop(myId) {
 }
 
 async function battPoll() {
-  // Lire mesures instantanées
-  const r = await dev.query('MEAS:ALL?');
-  if (r) {
-    const cleaned = r.replace(/^[A-Za-z]\s+/, '');
-    const parts = cleaned.trim().split(/\s+/).map(s => parseFloat(s));
-    if (parts.length >= 4) {
-      const [ci, v, p, res] = parts;
-      const elapsed = (Date.now() - battStartTime) / 1000;
-      battGraphData.t.push(elapsed);
-      battGraphData.v.push(v);
-      // Stats instantanées
-      $('batt-stat-v').textContent = v.toFixed(3) + ' V';
-      $('batt-stat-p').textContent = p.toFixed(2) + ' W';
-      // Durée
-      const hh = Math.floor(elapsed / 3600);
-      const mm = Math.floor((elapsed % 3600) / 60);
-      const ss = Math.floor(elapsed % 60);
-      $('batt-stat-time').textContent =
-        String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+  // Lire mesures instantanées (moyenne de 3 lectures pour lisser le bruit)
+  const samples = [];
+  for (let i = 0; i < 3; i++) {
+    const r = await dev.query('MEAS:ALL?');
+    if (r) {
+      const cleaned = r.replace(/^[A-Za-z]\s+/, '');
+      const parts = cleaned.trim().split(/\s+/).map(s => parseFloat(s));
+      if (parts.length >= 4) samples.push(parts);
     }
+    if (i < 2) await new Promise(r => setTimeout(r, 50));
+  }
+  if (samples.length > 0) {
+    const avg = (idx) => samples.reduce((s, p) => s + p[idx], 0) / samples.length;
+    const v = avg(1), p = avg(2);
+    const elapsed = (Date.now() - battStartTime) / 1000;
+    battGraphData.t.push(elapsed);
+    battGraphData.v.push(v);
+    // Stats instantanées
+    $('batt-stat-v').textContent = v.toFixed(3) + ' V';
+    $('batt-stat-p').textContent = p.toFixed(2) + ' W';
+    // Durée
+    const hh = Math.floor(elapsed / 3600);
+    const mm = Math.floor((elapsed % 3600) / 60);
+    const ss = Math.floor(elapsed % 60);
+    $('batt-stat-time').textContent =
+      String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
   }
   // Capacité et énergie
   await battReadCapa();
@@ -2452,14 +2458,31 @@ function battDrawGraph() {
     ctx.fillText(fmtTimeSec(t), x, padT + h + 14);
   }
 
-  // Courbe tension
+  // Courbe tension (lissage + sous-échantillonnage adapté au zoom)
   ctx.strokeStyle = th.voltLine;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  let first = true;
+  const nVis = data.t.length - startIdx;
+  const smoothW = Math.max(1, Math.ceil(nVis / w));
+  const half = Math.floor(smoothW / 2);
+  let first = true, lastPx = -1;
   for (let j = startIdx; j < data.t.length; j++) {
-    const x = padL + ((data.t[j] - tMin) / tMax) * w;
-    const y = padT + h - ((data.v[j] - vMin) / (vMax - vMin)) * h;
+    const px = Math.floor(((data.t[j] - tMin) / tMax) * w);
+    // Ne tracer qu'un point par colonne de pixel
+    if (px === lastPx && j < data.t.length - 1) continue;
+    lastPx = px;
+    const x = padL + px;
+    let vSmooth;
+    if (smoothW <= 1) {
+      vSmooth = data.v[j];
+    } else {
+      const lo = Math.max(startIdx, j - half);
+      const hi = Math.min(data.t.length - 1, j + half);
+      let sum = 0;
+      for (let k = lo; k <= hi; k++) sum += data.v[k];
+      vSmooth = sum / (hi - lo + 1);
+    }
+    const y = padT + h - ((vSmooth - vMin) / (vMax - vMin)) * h;
     if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
   }
   ctx.stroke();
