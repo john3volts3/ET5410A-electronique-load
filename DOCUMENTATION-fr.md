@@ -14,6 +14,7 @@ Interface web de controle pour la charge electronique programmable DC **ET5410**
 **Fonctionnalites principales :**
 - 12 modes de charge (CC, CV, CP, CR, CC+CV, CR+CV, Tran, List, Scan, Short, Battery, LED)
 - Mesures temps reel avec graphique (V, A, W, R)
+- Mesure de resistance interne batterie (DCR) — methode DC a deux courants
 - Test de decharge batterie avec graphique, statistiques, arret automatique au cutoff et exports
 - Recherche MPPT (scan lineaire + dichotomie) avec graphique et exports
 - Sauvegarde/chargement de configurations (.ET5410)
@@ -121,6 +122,7 @@ const [courant, tension, puissance, resistance] = parts;
 | Scan | `SCAN` | `SCAN:TYPE`, `CURR:STARt/END`, etc. | Balayage courant/tension/puissance |
 | Short | `SHOR` | — | Court-circuit |
 | Battery | `BATT` | `BATT:MODE`, `VOLT:BCC1`, etc. | Test de decharge batterie |
+| Int. R | `INTR` (UI seulement) | Mode CC + `CURR:CC` | Resistance interne DC (DCR) — methode a deux courants |
 | LED | `LED` | `CURR:LED`, `VOLT:LED`, `LED:COEFf` | Test LED |
 
 ## Commandes SCPI decouvertes (non documentees)

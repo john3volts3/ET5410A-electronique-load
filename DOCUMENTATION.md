@@ -14,6 +14,7 @@ Web control interface for the **ET5410** programmable DC electronic load (Hangzh
 **Main features:**
 - 12 load modes (CC, CV, CP, CR, CC+CV, CR+CV, Tran, List, Scan, Short, Battery, LED)
 - Real-time measurements with graph (V, A, W, R)
+- Battery internal resistance measurement (DCR) — DC two-current method
 - Battery discharge test with graph, statistics, auto-stop on cutoff and exports
 - MPPT search (linear scan + dichotomy) with graph and exports
 - Configuration save/load (.ET5410)
@@ -121,6 +122,7 @@ const [current, voltage, power, resistance] = parts;
 | Scan | `SCAN` | `SCAN:TYPE`, `CURR:STARt/END`, etc. | Current/voltage/power sweep |
 | Short | `SHOR` | — | Short circuit |
 | Battery | `BATT` | `BATT:MODE`, `VOLT:BCC1`, etc. | Battery discharge test |
+| Int. R | `INTR` (UI only) | CC mode + `CURR:CC` | DC internal resistance (DCR) — two-current method |
 | LED | `LED` | `CURR:LED`, `VOLT:LED`, `LED:COEFf` | LED test |
 
 ## Discovered SCPI Commands (undocumented)

@@ -52,6 +52,7 @@ This is the main tab for operating the load.
 | **Scan** | Progressive sweep in current, voltage or power |
 | **Short** | Short-circuit mode |
 | **Battery** | Battery discharge test (see dedicated section) |
+| **Int. R** | Battery internal resistance measurement — DC method (see dedicated section) |
 | **LED** | LED test with coefficient |
 
 ### Configure parameters
@@ -184,6 +185,49 @@ When zooming out, the curve is automatically smoothed using an adaptive moving a
 | **SVG** | Vector image | Full graph (grid, curve, labels) |
 | **Image** | PNG | Statistics + graph |
 | **PDF** | Printable report | Parameters, results, min/max/avg statistics, graph in light theme, data table |
+
+---
+
+## Internal Resistance (Int. R)
+
+The **Int. R** pseudo-mode measures battery DC internal resistance (DCR) using the **two-current method**. This is a one-shot measurement (not continuous polling).
+
+### Principle
+
+The load applies two different DC currents sequentially and measures the voltage under each. The internal resistance is calculated from the voltage drop:
+
+**Ri = (V1 - V2) / (I2 - I1)**
+
+This measures the **DC resistance (DCR)**, which includes ohmic resistance plus slow polarization effects. It is distinct from AC impedance (EIS) typically measured at 1 kHz.
+
+### Parameters
+
+| Parameter | Description | Default |
+|---|---|---|
+| **I start** | Initial current level (A) | 0.1 |
+| **T1 settle** | Stabilization time after turning on at I start (s) | 0.5 |
+| **I measure** | Second current level (A) | 0.5 |
+| **T2 settle** | Stabilization time after switching to I measure (s) | 0.5 |
+| **Samples** | Number of voltage readings averaged per measurement (1-10) | 3 |
+
+> **Note**: I measure can be higher or lower than I start — the calculation is valid in both directions. Only I measure = I start is rejected (division by zero).
+
+### Measurement sequence
+
+1. Set CC mode at I start, turn load ON
+2. Wait T1 for voltage stabilization
+3. Read V1 (average of N samples)
+4. Switch current to I measure
+5. Wait T2 for voltage stabilization
+6. Read V2 (average of N samples)
+7. Turn load OFF
+8. Calculate and display Ri
+
+### Results
+
+The results card displays: I start, V1, I measure, V2, plus calculated values: deltaV, deltaI, Ri in Ohms and milliOhms. All steps and results are also logged in the Terminal tab.
+
+> **Safety**: The load is always turned OFF at the end of the measurement, even if an error occurs.
 
 ---
 

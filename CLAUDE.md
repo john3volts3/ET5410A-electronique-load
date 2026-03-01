@@ -37,7 +37,7 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 - **Web Serial API** (Chrome 89+ / Edge 89+) pour communication USB série
 - **Classe `ET5410`** : `connect()`, `disconnect()`, `send(cmd)`, `query(cmd)` avec terminaison `\n` (0x0A)
 - **UI language** : English (all labels, messages, tooltips, PDF report)
-- **7 tabs** : Connection, Control, MPPT, Measurements, Qualification, System, Terminal (+ inline sub-sections: Dynamic/TRAN, Scan, List, Battery when corresponding mode is selected)
+- **7 tabs** : Connection, Control, MPPT, Measurements, Qualification, System, Terminal (+ inline sub-sections: Dynamic/TRAN, Scan, List, Battery, Int. R when corresponding mode is selected)
 - **Header** : title, Connect/Disconnect buttons, PC/Auto radios, theme toggle ◐, connection status (sticky with tabs-nav via `#sticky-top`)
 - **Dark/light theme** : neutral Slate palette (blue-grey accent), toggle persisted via localStorage
 - **Ghost/outline buttons**, cards with h3 legend-style, system-ui 18px font
@@ -52,6 +52,7 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 - **Heartbeat keepalive** : `CH:SW?` every 30s when idle (skipped when a poller is active); 2 consecutive timeouts → `onDeviceLost()`
 - **Device-lost detection** : `onDeviceLost()` triggered by port `disconnect` event, read-loop error, or heartbeat timeout; stops all pollers, closes port, displays reconnection message
 - **Off Delay** : Hours/Minutes/Seconds fields with real-time countdown
+- **Internal Resistance (Int. R)** : DC two-current method (DCR), pseudo-mode `INTR` in Control tab; `intrMeasure()` runs CC at I_start → T1 settle → read V1 → CC at I_measure → T2 settle → read V2 → Ri=(V1-V2)/(I2-I1); uses `send('CH:SW ON/OFF')` (not query — no response), `CH:SW?` verification, `pcSessionRun()`, load OFF in finally
 - Open directly in browser via `file://` or local server
 
 ## Language

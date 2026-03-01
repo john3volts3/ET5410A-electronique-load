@@ -360,6 +360,7 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <label class="radio-label"><input type="radio" name="ctrl-mode" value="SCAN"> Scan</label>
       <label class="radio-label"><input type="radio" name="ctrl-mode" value="SHOR"> Short</label>
       <label class="radio-label"><input type="radio" name="ctrl-mode" value="BATT"> Battery</label>
+      <label class="radio-label"><input type="radio" name="ctrl-mode" value="INTR"> Int. R</label>
       <label class="radio-label"><input type="radio" name="ctrl-mode" value="LED"> Led</label>
     </div>
   </div>
@@ -757,6 +758,53 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
           <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battExportPNG()">Image</button>
           <button class="btn" style="padding:2px 8px;font-size:0.75em;" onclick="battExportPDF()">PDF</button>
         </span>
+      </div>
+    </div>
+  </div>
+  <!-- Internal Resistance sub-section (visible only when mode=INTR) -->
+  <div id="ctrl-intr-section" class="hidden">
+    <div class="card">
+      <h3>Internal Resistance — Parameters</h3>
+      <div class="row">
+        <label>I start (A)</label>
+        <input type="number" id="intr-i-start" step="0.1" min="0" max="40" value="0.1">
+        <label style="margin-left:20px;">T1 settle (s)</label>
+        <input type="number" id="intr-t1" step="0.1" min="0" max="30" value="0.5">
+      </div>
+      <div class="row">
+        <label>I measure (A)</label>
+        <input type="number" id="intr-i-meas" step="0.1" min="0" max="40" value="0.5">
+        <label style="margin-left:20px;">T2 settle (s)</label>
+        <input type="number" id="intr-t2" step="0.1" min="0" max="30" value="0.5">
+      </div>
+      <div class="row">
+        <label>Samples</label>
+        <input type="number" id="intr-samples" step="1" min="1" max="10" value="3">
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn-accent needs-conn" id="intr-btn-measure" onclick="intrMeasure()">Measure</button>
+        <span id="intr-status" style="margin-left:12px;"></span>
+      </div>
+    </div>
+    <div class="card" id="intr-results-card" style="display:none;">
+      <h3>Internal Resistance — Results</h3>
+      <div class="row">
+        <label>I start</label>
+        <strong id="intr-r-i1">--</strong>
+        <label style="margin-left:20px;">V1</label>
+        <strong id="intr-v1">--</strong>
+      </div>
+      <div class="row">
+        <label>I measure</label>
+        <strong id="intr-r-i2">--</strong>
+        <label style="margin-left:20px;">V2</label>
+        <strong id="intr-v2">--</strong>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,auto);gap:8px 16px;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+        <div><small>&Delta;V</small><br><strong id="intr-dv">--</strong></div>
+        <div><small>&Delta;I</small><br><strong id="intr-di">--</strong></div>
+        <div><small>Ri (&Omega;)</small><br><strong id="intr-ri-ohm">--</strong></div>
+        <div><small>Ri (m&Omega;)</small><br><strong id="intr-ri-mohm">--</strong></div>
       </div>
     </div>
   </div>
@@ -1525,6 +1573,7 @@ const modeRows = {
   SCAN: ['ctrl-scan-section'],
   SHOR: [],
   BATT: ['ctrl-batt-section'],
+  INTR: ['ctrl-intr-section'],
   LED: ['ctrl-value-card', 'ctrl-led-row']
 };
 
@@ -1541,19 +1590,26 @@ function setCtrlMode(mode) {
 function updateCtrlModeRows() {
   Object.values(modeRows).flat().forEach(id => $(id).classList.add('hidden'));
   (modeRows[getCtrlMode()] || []).forEach(id => $(id).classList.remove('hidden'));
-  $('ctrl-onoff-card').classList.toggle('hidden', getCtrlMode() === 'BATT');
+  const m = getCtrlMode();
+  $('ctrl-onoff-card').classList.toggle('hidden', m === 'BATT' || m === 'INTR');
 }
 
 document.querySelectorAll('input[name="ctrl-mode"]').forEach(r => {
   r.addEventListener('change', () => {
-    updateCtrlModeRows(); ctrlSetMode();
-    // Le changement de mode force la charge en OFF côté appareil
-    ctrlLiveStop();
-    $('ctrl-sw-status').textContent = 'OFF';
+    updateCtrlModeRows();
+    if (getCtrlMode() !== 'INTR') {
+      ctrlSetMode();
+      // Le changement de mode force la charge en OFF côté appareil
+      ctrlLiveStop();
+      $('ctrl-sw-status').textContent = 'OFF';
+    }
   });
 });
 
-async function ctrlSetMode() { await dev.send('CH:MODE ' + getCtrlMode()); }
+async function ctrlSetMode() {
+  if (getCtrlMode() === 'INTR') return;
+  await dev.send('CH:MODE ' + getCtrlMode());
+}
 async function ctrlReadMode() {
   const r = await dev.query('CH:MODE?');
   if (r) {
@@ -2430,6 +2486,13 @@ function battDrawGraph() {
   const visV = data.v.slice(startIdx);
   let vMin = Math.floor(Math.min(...visV) * 10) / 10;
   let vMax = Math.ceil(Math.max(...visV) * 10) / 10;
+  // En mode cutoff Voltage, inclure la tension de cutoff comme limite basse
+  const cutMode = (document.querySelector('input[name="batt-cutoff-mode"]:checked') || {}).value;
+  if (cutMode === 'volt') {
+    const dmode = getBattDMode();
+    const cutV = parseFloat(dmode === 'CC' ? g('batt-bcc1-v') : g('batt-bcr-v')) || 0;
+    if (cutV > 0) vMin = Math.min(vMin, Math.floor(cutV * 10) / 10);
+  }
   if (vMax - vMin < 0.5) { vMin -= 0.25; vMax += 0.25; }
 
   ctx.font = '11px Consolas';
@@ -2787,6 +2850,114 @@ function battExportPDF() {
   w.document.write(html);
   w.document.close();
   w.onload = () => w.print();
+}
+
+// ============================================================
+// Internal Resistance (Int. R)
+// ============================================================
+async function intrReadAvgVoltage(n) {
+  let sum = 0, count = 0;
+  for (let i = 0; i < n; i++) {
+    const r = await dev.query('MEAS:ALL?');
+    if (r) {
+      const cleaned = r.replace(/^[A-Za-z]\s+/, '');
+      const parts = cleaned.trim().split(/\s+/).map(s => parseFloat(s));
+      if (parts.length >= 2 && !isNaN(parts[1])) { sum += parts[1]; count++; }
+    }
+    if (i < n - 1) await new Promise(r => setTimeout(r, 50));
+  }
+  return count > 0 ? sum / count : NaN;
+}
+
+async function intrMeasure() {
+  const iStart = parseFloat(g('intr-i-start'));
+  const iMeas = parseFloat(g('intr-i-meas'));
+  const t1 = parseFloat(g('intr-t1'));
+  const t2 = parseFloat(g('intr-t2'));
+  const samples = parseInt(g('intr-samples')) || 3;
+  const status = $('intr-status');
+
+  // Validation
+  if (isNaN(iStart) || iStart < 0) { status.textContent = 'Invalid I start'; return; }
+  if (isNaN(iMeas) || iMeas <= 0) { status.textContent = 'Invalid I measure'; return; }
+  if (iMeas === iStart) { status.textContent = 'I measure must be \u2260 I start'; return; }
+  if (isNaN(t1) || t1 < 0) { status.textContent = 'Invalid T1'; return; }
+  if (isNaN(t2) || t2 < 0) { status.textContent = 'Invalid T2'; return; }
+
+  $('intr-btn-measure').disabled = true;
+  $('intr-results-card').style.display = 'none';
+  status.textContent = 'Starting...';
+
+  await pcSessionRun(async () => {
+    try {
+      // 1. Set CC mode and I start
+      status.textContent = 'Setting CC mode, I=' + iStart.toFixed(2) + ' A...';
+      await dev.query('CH:MODE CC');
+      await new Promise(r => setTimeout(r, 100));
+      await dev.query('CURR:CC ' + iStart);
+      await new Promise(r => setTimeout(r, 100));
+      await dev.send('CH:SW ON');
+      await new Promise(r => setTimeout(r, 500));
+      const swR = await dev.query('CH:SW?');
+      if (!swR || stripPrefix(swR).toUpperCase() !== 'ON') {
+        status.textContent = 'Failed to turn ON load';
+        termLog('Int.R: CH:SW ON failed — got: ' + (swR || 'no response'));
+        return;
+      }
+      termLog('Int.R: ON, CC ' + iStart + ' A — waiting T1=' + t1 + 's');
+
+      // 2. Wait T1 settle time
+      status.textContent = 'Settling T1 (' + t1 + 's)...';
+      if (t1 > 0) await new Promise(r => setTimeout(r, t1 * 1000));
+
+      // 3. Read V1 (average of N samples)
+      status.textContent = 'Reading V1 (' + samples + ' samples)...';
+      const v1 = await intrReadAvgVoltage(samples);
+      if (isNaN(v1)) { status.textContent = 'Failed to read V1'; return; }
+      termLog('Int.R: V1 = ' + v1.toFixed(4) + ' V (avg ' + samples + ' samples)');
+
+      // 4. Change to I measure
+      status.textContent = 'Setting I=' + iMeas.toFixed(2) + ' A...';
+      await dev.query('CURR:CC ' + iMeas);
+      await new Promise(r => setTimeout(r, 300));
+      termLog('Int.R: CC ' + iMeas + ' A — waiting T2=' + t2 + 's');
+
+      // 5. Wait T2 settle time
+      status.textContent = 'Settling T2 (' + t2 + 's)...';
+      if (t2 > 0) await new Promise(r => setTimeout(r, t2 * 1000));
+
+      // 6. Read V2 (average of N samples)
+      status.textContent = 'Reading V2 (' + samples + ' samples)...';
+      const v2 = await intrReadAvgVoltage(samples);
+      if (isNaN(v2)) { status.textContent = 'Failed to read V2'; return; }
+      termLog('Int.R: V2 = ' + v2.toFixed(4) + ' V (avg ' + samples + ' samples)');
+
+      // 7. Calculate Ri
+      const dv = v1 - v2;
+      const di = iMeas - iStart;
+      const ri = dv / di;
+      const riMohm = ri * 1000;
+
+      // Display results
+      $('intr-r-i1').textContent = iStart.toFixed(2) + ' A';
+      $('intr-r-i2').textContent = iMeas.toFixed(2) + ' A';
+      $('intr-v1').textContent = v1.toFixed(4) + ' V';
+      $('intr-v2').textContent = v2.toFixed(4) + ' V';
+      $('intr-dv').textContent = dv.toFixed(4) + ' V';
+      $('intr-di').textContent = di.toFixed(2) + ' A';
+      $('intr-ri-ohm').textContent = ri.toFixed(4) + ' \u03A9';
+      $('intr-ri-mohm').textContent = riMohm.toFixed(1) + ' m\u03A9';
+      $('intr-results-card').style.display = '';
+      status.textContent = 'Done — Ri = ' + riMohm.toFixed(1) + ' m\u03A9';
+      termLog('Int.R: \u0394V=' + dv.toFixed(4) + ' V, \u0394I=' + di.toFixed(2) + ' A, Ri=' + ri.toFixed(4) + ' \u03A9 (' + riMohm.toFixed(1) + ' m\u03A9)');
+    } finally {
+      // Always turn off load
+      await dev.send('CH:SW OFF');
+      await new Promise(r => setTimeout(r, 300));
+      termLog('Int.R: OFF');
+      $('intr-btn-measure').disabled = false;
+    }
+  });
 }
 
 // ============================================================

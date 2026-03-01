@@ -8,6 +8,7 @@ Web-based controller for the **ET5410 / ET5411 / ET5420** programmable DC electr
 
 - **12 load modes** — CC, CV, CP, CR, CC+CV, CR+CV, Dynamic, List (50 steps), Scan, Short, Battery, LED
 - **Real-time measurements** — Voltage, Current, Power, Resistance with live graph
+- **Internal resistance (DCR)** — DC two-current method: measures voltage drop between two current levels to calculate battery internal resistance (Ri)
 - **Battery discharge test** — Full test with voltage curve, statistics (min/max/avg), pause/resume, auto-stop on device cutoff, and multiple export formats (TXT, CSV, SVG, PNG, PDF report)
 - **MPPT scanning** — Solar panel maximum power point tracking with two modes: linear scan (step-by-step) and dichotomy (ternary search, ~10-15 measurements). Real-time graph with MPP marker, CSV/PNG export.
 - **Save/Load configurations** — Export and import settings to `.ET5410` files
@@ -104,6 +105,7 @@ Interface web de controle pour la charge electronique programmable DC **ET5410 /
 
 - **12 modes de charge** — CC, CV, CP, CR, CC+CV, CR+CV, Dynamique, List (50 etapes), Scan, Short, Battery, LED
 - **Mesures temps reel** — Tension, Courant, Puissance, Resistance avec graphique en direct
+- **Resistance interne (DCR)** — Methode DC a deux courants : mesure la chute de tension entre deux niveaux de courant pour calculer la resistance interne batterie (Ri)
 - **Test de decharge batterie** — Test complet avec courbe de tension, statistiques (min/max/moy), pause/reprise, arret automatique au cutoff, et multiples formats d'export (TXT, CSV, SVG, PNG, rapport PDF)
 - **Scan MPPT** — Recherche du point de puissance maximale (panneau solaire) avec deux modes : scan lineaire (pas a pas) et dichotomie (recherche ternaire, ~10-15 mesures). Graphique temps reel avec marqueur MPP, export CSV/PNG.
 - **Sauvegarde/Chargement** — Export et import de configurations vers des fichiers `.ET5410`

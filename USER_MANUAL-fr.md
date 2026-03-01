@@ -52,6 +52,7 @@ C'est l'onglet principal pour piloter la charge.
 | **Scan** | Balayage progressif en courant, tension ou puissance |
 | **Short** | Mode court-circuit |
 | **Battery** | Test de decharge batterie (voir section dediee) |
+| **Int. R** | Mesure de resistance interne batterie — methode DC (voir section dediee) |
 | **LED** | Test de LED avec coefficient |
 
 ### Configurer les parametres
@@ -184,6 +185,49 @@ Lors du dezoom, la courbe est automatiquement lissee par une moyenne glissante p
 | **SVG** | Image vectorielle | Graphique complet (grille, courbe, labels) |
 | **Image** | PNG | Statistiques + graphique |
 | **PDF** | Rapport imprimable | Parametres, resultats, statistiques min/max/moy, graphique en theme clair, tableau de donnees |
+
+---
+
+## Resistance Interne (Int. R)
+
+Le pseudo-mode **Int. R** mesure la resistance interne DC (DCR) d'une batterie par la **methode des deux courants**. C'est une mesure ponctuelle (pas de polling continu).
+
+### Principe
+
+La charge applique deux courants DC differents successivement et mesure la tension sous chacun. La resistance interne est calculee a partir de la chute de tension :
+
+**Ri = (V1 - V2) / (I2 - I1)**
+
+Ceci mesure la **resistance DC (DCR)**, qui inclut la resistance ohmique pure plus les effets de polarisation lents. A ne pas confondre avec l'impedance AC (EIS) typiquement mesuree a 1 kHz.
+
+### Parametres
+
+| Parametre | Description | Defaut |
+|---|---|---|
+| **I start** | Niveau de courant initial (A) | 0.1 |
+| **T1 settle** | Temps de stabilisation apres mise en charge a I start (s) | 0.5 |
+| **I measure** | Second niveau de courant (A) | 0.5 |
+| **T2 settle** | Temps de stabilisation apres passage a I measure (s) | 0.5 |
+| **Samples** | Nombre de lectures de tension moyennees par mesure (1-10) | 3 |
+
+> **Note** : I measure peut etre superieur ou inferieur a I start — le calcul est valide dans les deux sens. Seul I measure = I start est rejete (division par zero).
+
+### Sequence de mesure
+
+1. Configurer le mode CC a I start, activer la charge
+2. Attendre T1 pour la stabilisation de la tension
+3. Lire V1 (moyenne de N echantillons)
+4. Changer le courant a I measure
+5. Attendre T2 pour la stabilisation de la tension
+6. Lire V2 (moyenne de N echantillons)
+7. Eteindre la charge
+8. Calculer et afficher Ri
+
+### Resultats
+
+La carte de resultats affiche : I start, V1, I measure, V2, plus les valeurs calculees : deltaV, deltaI, Ri en Ohms et milliOhms. Toutes les etapes et resultats sont aussi traces dans l'onglet Terminal.
+
+> **Securite** : La charge est toujours eteinte a la fin de la mesure, meme en cas d'erreur.
 
 ---
 
