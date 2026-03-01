@@ -204,13 +204,13 @@ A heartbeat system prevents USB idle disconnection (observed after ~30 min of in
 
 - `heartbeatStart()` launches a `setInterval` every **30 seconds**
 - `heartbeatPoll()` checks whether a polling system is already active (`battTimer || ctrlLiveTimer || measTimer || mpptTimer`); if so, their traffic serves as keepalive and no extra command is sent
-- Otherwise, sends `*IDN?` (lightweight query, no side-effect on the device)
+- Otherwise, sends `CH:SW?` (short response `ON`/`OFF`, minimal serial traffic)
 - After 2 consecutive timeouts, triggers `onDeviceLost()`
 
 **Device-lost detection** uses three sources:
 1. **Port `disconnect` event** — Chrome detects USB removal
 2. **Read-loop error** — `_startReader()` catch block when `_reading` is `true`
-3. **Heartbeat double timeout** — 2 failed `*IDN?` queries in a row
+3. **Heartbeat double timeout** — 2 failed `CH:SW?` queries in a row
 
 `onDeviceLost()` stops all pollers and the heartbeat, closes the port, and displays `Connection lost — replug USB and click Connect`. No automatic reconnection is attempted because the COM port disappears from the OS and requires a physical USB replug.
 

@@ -25,7 +25,7 @@ This tab manages communication with the device.
 | **Disconnect** | Closes the connection and returns control to the front panel (`SYST:LOCA`) |
 | **Identifier** | Displays the model, serial number and firmware after connection |
 
-**Automatic keepalive**: the application sends a lightweight command (`*IDN?`) every 30 seconds to prevent USB idle disconnection. When a polling system (battery, measurements, MPPT, or live control) is active, its traffic serves as keepalive and no extra command is sent.
+**Automatic keepalive**: the application sends a lightweight command (`CH:SW?`) every 30 seconds to prevent USB idle disconnection. When a polling system (battery, measurements, MPPT, or live control) is active, its traffic serves as keepalive and no extra command is sent.
 
 **Connection loss**: if the device becomes unreachable (USB cable unplugged, USB suspend), all active operations are stopped and the status shows `Connection lost — replug USB and click Connect`. Replug the USB cable and click **Connect** to resume.
 

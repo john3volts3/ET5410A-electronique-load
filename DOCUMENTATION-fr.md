@@ -204,13 +204,13 @@ Un systeme de heartbeat empeche la deconnexion USB par inactivite (observee apre
 
 - `heartbeatStart()` lance un `setInterval` toutes les **30 secondes**
 - `heartbeatPoll()` verifie si un systeme de polling est deja actif (`battTimer || ctrlLiveTimer || measTimer || mpptTimer`) ; si oui, leur trafic sert de keepalive et aucune commande supplementaire n'est envoyee
-- Sinon, envoie `*IDN?` (requete legere, sans effet sur l'appareil)
+- Sinon, envoie `CH:SW?` (reponse courte `ON`/`OFF`, trafic serie minimal)
 - Apres 2 timeouts consecutifs, declenche `onDeviceLost()`
 
 **Detection de perte du device** via trois sources :
 1. **Evenement `disconnect` du port** — Chrome detecte le retrait USB
 2. **Erreur du read-loop** — bloc catch de `_startReader()` quand `_reading` est `true`
-3. **Double timeout heartbeat** — 2 requetes `*IDN?` echouees consecutivement
+3. **Double timeout heartbeat** — 2 requetes `CH:SW?` echouees consecutivement
 
 `onDeviceLost()` arrete tous les pollers et le heartbeat, ferme le port et affiche `Connection lost — replug USB and click Connect`. Aucune reconnexion automatique n'est tentee car le port COM disparait de l'OS et necessite un rebranchement physique de l'USB.
 
