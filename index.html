@@ -1403,7 +1403,7 @@ async function heartbeatPoll() {
   // Si un poller est actif, le trafic suffit comme keepalive
   if (battTimer || ctrlLiveTimer || measTimer || mpptTimer) { heartbeatFails = 0; return; }
   if (!dev.connected) return;
-  const r = await dev.query('*IDN?', 3000);
+  const r = await dev.query('CH:SW?', 3000);
   if (r !== null) { heartbeatFails = 0; return; }
   // Premier échec → réessai
   heartbeatFails++;
