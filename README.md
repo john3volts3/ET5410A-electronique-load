@@ -18,6 +18,20 @@ Web-based controller for the **ET5410 / ET5411 / ET5420** programmable DC electr
 - **Decimal input** — Both period and comma accepted as decimal separator in all number fields
 - **Dark theme** — Designed for lab/bench use
 
+## Screenshots
+
+**Control tab — Battery mode settings**
+![Control tab — Battery mode](datasheet/screenshot-control-battery.png)
+
+**Battery discharge test — completed with voltage curve**
+![Battery test completed](datasheet/screenshot-battery-test.png)
+
+**Measurements tab — real-time monitoring with graph**
+![Measurements tab](datasheet/screenshot-measurements.png)
+
+**MPPT tab — solar panel maximum power point scan (dichotomy)**
+![MPPT scan](datasheet/Screenshot-MPPT.png)
+
 ## Supported Hardware
 
 | Model | Voltage | Current | Power |
@@ -114,6 +128,20 @@ Interface web de controle pour la charge electronique programmable DC **ET5410 /
 - **Gestion systeme** — Protections (OV/OC/OP), ranges, stockage fichiers appareil
 - **Saisie decimale** — Point et virgule acceptes comme separateur decimal dans tous les champs numeriques
 - **Theme sombre** — Concu pour une utilisation en laboratoire/atelier
+
+## Captures d'ecran
+
+**Onglet Control — parametres du mode Battery**
+![Onglet Control — mode Battery](datasheet/screenshot-control-battery.png)
+
+**Test de decharge batterie — termine avec courbe de tension**
+![Test batterie termine](datasheet/screenshot-battery-test.png)
+
+**Onglet Measurements — mesures temps reel avec graphique**
+![Onglet Measurements](datasheet/screenshot-measurements.png)
+
+**Onglet MPPT — scan du point de puissance maximale (dichotomie)**
+![Scan MPPT](datasheet/Screenshot-MPPT.png)
 
 ## Materiel supporte
 
