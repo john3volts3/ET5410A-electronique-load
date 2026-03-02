@@ -43,7 +43,8 @@ Projet de contrôle/interface pour la charge électronique programmable DC **ET5
 - **Ghost/outline buttons**, cards with h3 legend-style, system-ui 18px font
 - **needs-conn** : class on SCPI action buttons, disabled when not connected (explanatory tooltip)
 - **updateUIConnState(on)** : enables/disables all `.needs-conn` on connect/disconnect
-- **Graph colors** : voltage in red (#e05050 dark / #c03030 light) in all graphs (BATT, MPPT, Measurements, Control live); `--color-volt` (yellow) kept for text values outside graphs
+- **Graph colors** : voltage in red (#e05050 dark / #c03030 light) in all graphs and measurement value cards; `--color-volt` (yellow) kept for text values outside graphs
+- **Measurements graph** : multi-trace with checkboxes (V, A, W, Ohm); each active channel gets its own horizontal band with independent Y-axis (0-based, 115% initial headroom); graph card fills remaining viewport height via `calc(100vh - 310px)`
 - **smartStep()** : logarithmic increments on numeric spinners
 - **Comma decimal separator** : all number inputs accept comma (converted to period via `execCommand('insertText')`)
 - **Battery auto-stop** : `battPoll()` checks `CH:SW?` each cycle; if `OFF` → `battStop(false)` + green "COMPLETED" label

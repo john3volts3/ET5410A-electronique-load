@@ -244,7 +244,9 @@ Cet onglet permet un suivi independant des mesures, sans lien avec le mode de ch
 
 ### Graphique
 
-- **Afficher** : choisir le canal a tracer (Tension, Courant, Puissance, Resistance)
+- **Cases a cocher V / A / W / Ohm** : selectionner un ou plusieurs canaux a tracer simultanement (V et A coches par defaut)
+- Chaque canal actif est affiche dans sa propre **bande horizontale** avec une echelle Y independante (a partir de zero)
+- La zone du graphique occupe automatiquement la hauteur restante de l'ecran
 - **Points max** : nombre maximum de points affiches
 - **Effacer** : remettre le graphique a zero
 

@@ -244,7 +244,9 @@ This tab provides independent measurement monitoring, unrelated to the load mode
 
 ### Graph
 
-- **Display**: choose the channel to plot (Voltage, Current, Power, Resistance)
+- **Checkboxes V / A / W / Ohm**: select one or more channels to plot simultaneously (V and A checked by default)
+- Each active channel is displayed in its own **horizontal band** with independent Y-axis scaling (0-based)
+- The graph card fills the remaining screen height automatically
 - **Max points**: maximum number of displayed points
 - **Clear**: reset the graph
 

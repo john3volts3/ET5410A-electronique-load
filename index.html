@@ -257,19 +257,37 @@ table td input, table td select {
   padding: 3px 6px;
   font-size: 0.9em;
 }
-.meas-card {
-  text-align: center;
-  padding: 10px;
+.meas-row {
+  display: flex;
+  gap: 8px;
 }
-.meas-card .label { color: var(--text2); font-size: 1em; margin-bottom: 2px; }
-.meas-card .value { font-size: 2.2em; font-weight: bold; font-family: Consolas, monospace; }
-.meas-card .value.volt { color: var(--color-volt); }
-.meas-card .value.curr { color: var(--color-curr); }
-.meas-card .value.powe { color: var(--color-powe); }
-.meas-card .value.resi { color: var(--color-resi); }
+.meas-row .meas-card {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-family: Consolas, monospace;
+}
+.meas-unit { font-size: 1em; }
+.meas-val { font-size: 2em; font-weight: bold; }
+.meas-unit.volt, .meas-val.volt { color: #e05050; }
+body.light .meas-unit.volt, body.light .meas-val.volt { color: #c03030; }
+.meas-unit.curr, .meas-val.curr { color: var(--color-curr); }
+.meas-unit.powe, .meas-val.powe { color: var(--color-powe); }
+.meas-unit.resi, .meas-val.resi { color: var(--color-resi); }
 .graph-volt { color: #e05050; }
 body.light .graph-volt { color: #c03030; }
 canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border); }
+.meas-graph-card {
+  height: calc(100vh - 310px);
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+}
+.meas-graph-card .row { flex-shrink: 0; }
+.meas-graph-card canvas { flex: 1; min-height: 0; overflow: hidden; }
 @keyframes blink { 50% { opacity: 0; } }
 .status-none { color: var(--green); }
 .status-warn { color: var(--orange); }
@@ -881,43 +899,24 @@ canvas { background: var(--bg); border-radius: var(--radius); border: 1px solid 
       <span id="meas-abno" class="status-none">--</span>
     </div>
   </div>
-  <div class="grid4">
-    <div class="card meas-card">
-      <div class="label">VOLTAGE</div>
-      <div class="value volt" id="meas-v">--.---</div>
-      <div class="label">V</div>
-    </div>
-    <div class="card meas-card">
-      <div class="label">CURRENT</div>
-      <div class="value curr" id="meas-i">--.---</div>
-      <div class="label">A</div>
-    </div>
-    <div class="card meas-card">
-      <div class="label">POWER</div>
-      <div class="value powe" id="meas-p">--.---</div>
-      <div class="label">W</div>
-    </div>
-    <div class="card meas-card">
-      <div class="label">RESISTANCE</div>
-      <div class="value resi" id="meas-r">--.---</div>
-      <div class="label">Ohm</div>
-    </div>
+  <div class="meas-row">
+    <div class="card meas-card"><span class="meas-unit volt">V</span> <span class="meas-val volt" id="meas-v">--.---</span></div>
+    <div class="card meas-card"><span class="meas-unit curr">A</span> <span class="meas-val curr" id="meas-i">--.---</span></div>
+    <div class="card meas-card"><span class="meas-unit powe">W</span> <span class="meas-val powe" id="meas-p">--.---</span></div>
+    <div class="card meas-card"><span class="meas-unit resi">Ohm</span> <span class="meas-val resi" id="meas-r">--.---</span></div>
   </div>
-  <div class="card">
+  <div class="card meas-graph-card">
     <h3>Graph</h3>
     <div class="row">
-      <label>Display</label>
-      <select id="meas-graph-ch">
-        <option value="0">Voltage (V)</option>
-        <option value="1">Current (A)</option>
-        <option value="2">Power (W)</option>
-        <option value="3">Resistance (Ohm)</option>
-      </select>
+      <label><input type="checkbox" id="meas-ch-0" checked onchange="measDrawGraph()"> <span class="graph-volt">V</span></label>
+      <label><input type="checkbox" id="meas-ch-1" checked onchange="measDrawGraph()"> <span style="color:var(--color-curr)">A</span></label>
+      <label><input type="checkbox" id="meas-ch-2" onchange="measDrawGraph()"> <span style="color:var(--color-powe)">W</span></label>
+      <label><input type="checkbox" id="meas-ch-3" onchange="measDrawGraph()"> <span style="color:var(--color-resi)">Ohm</span></label>
       <label>Max points</label>
       <input type="number" id="meas-graph-pts" value="200" min="50" max="2000">
       <button class="btn" onclick="measClearGraph()">Clear</button>
     </div>
-    <canvas id="meas-canvas" width="1100" height="250" style="width:100%;margin-top:8px;"></canvas>
+    <canvas id="meas-canvas" style="width:100%;margin-top:8px;"></canvas>
   </div>
 </div>
 
@@ -2031,8 +2030,6 @@ async function measPoll() {
 function measDrawGraph() {
   const canvas = $('meas-canvas');
   const ctx = canvas.getContext('2d');
-  const ch = parseInt(g('meas-graph-ch'));
-  const data = measHistory[ch];
   const cs = getComputedStyle(document.documentElement);
   const isLight = document.body.classList.contains('light');
   const colors = [isLight ? '#c03030' : '#e05050', cs.getPropertyValue('--color-curr').trim(), cs.getPropertyValue('--color-powe').trim(), cs.getPropertyValue('--color-resi').trim()];
@@ -2041,38 +2038,88 @@ function measDrawGraph() {
   const textColor = isLight ? '#6c6c82' : '#8888a0';
   const bgColor = isLight ? '#f0f1f5' : '#1a1b2e';
 
+  // Déterminer les canaux cochés
+  const active = [];
+  for (let c = 0; c < 4; c++) { if ($('meas-ch-' + c).checked) active.push(c); }
+
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  if (data.length < 2) return;
 
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const pad = 40;
-  const w = canvas.width - pad * 2;
-  const h = canvas.height - pad * 2;
+  // Besoin d'au moins un canal avec >= 2 points
+  const maxLen = Math.max(...active.map(c => measHistory[c].length), 0);
+  if (active.length === 0 || maxLen < 2) return;
 
-  // Grid
-  ctx.strokeStyle = gridColor;
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad + (h / 4) * i;
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(pad + w, y); ctx.stroke();
-    ctx.fillStyle = textColor;
-    ctx.font = '11px Consolas';
-    ctx.fillText((max - (range / 4) * i).toFixed(2) + ' ' + labels[ch], 2, y + 4);
+  const dpr = 1;
+  canvas.width = canvas.clientWidth * dpr;
+  canvas.height = canvas.clientHeight * dpr;
+  const padL = 55, padR = 55, padT = 5, padB = 5;
+  const w = canvas.width - padL - padR;
+  const totalH = canvas.height - padT - padB;
+  const bandGap = active.length > 1 ? 6 : 0;
+  const bandH = (totalH - bandGap * (active.length - 1)) / active.length;
+
+  // Pré-calculer min/max par canal actif
+  const ranges = {};
+  for (const c of active) {
+    const data = measHistory[c];
+    if (data.length < 2) continue;
+    const mx = Math.max(...data);
+    const top = Math.max(mx, data[0] * 1.15) || 1;
+    ranges[c] = { min: 0, max: top, range: top };
   }
 
-  // Data
-  ctx.strokeStyle = colors[ch];
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (let i = 0; i < data.length; i++) {
-    const x = pad + (i / (data.length - 1)) * w;
-    const y = pad + h - ((data[i] - min) / range) * h;
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  ctx.font = '11px Consolas';
+
+  // Dessiner chaque bande
+  for (let ai = 0; ai < active.length; ai++) {
+    const c = active[ai];
+    const bandTop = padT + ai * (bandH + bandGap);
+
+    // Séparateur pointillé entre bandes
+    if (ai > 0) {
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(padL, bandTop - bandGap / 2);
+      ctx.lineTo(padL + w, bandTop - bandGap / 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Grille horizontale (2 lignes internes)
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 2; i++) {
+      const y = bandTop + (bandH / 3) * i;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + w, y); ctx.stroke();
+    }
+
+    if (!ranges[c]) continue;
+    const { min, max, range } = ranges[c];
+
+    // Labels Y — gauche : max, droite : label unité + valeur courante
+    ctx.fillStyle = colors[c];
+    ctx.textAlign = 'right';
+    ctx.fillText(max.toFixed(2) + ' ' + labels[c], padL - 4, bandTop + 10);
+    ctx.fillText(min.toFixed(2), padL - 4, bandTop + bandH - 2);
+    // Label unité à droite
+    ctx.textAlign = 'left';
+    const lastVal = measHistory[c][measHistory[c].length - 1];
+    ctx.fillText(lastVal.toFixed(2) + ' ' + labels[c], padL + w + 4, bandTop + bandH / 2 + 4);
+
+    // Tracer la courbe dans sa bande
+    const data = measHistory[c];
+    ctx.strokeStyle = colors[c];
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < data.length; i++) {
+      const x = padL + (i / (data.length - 1)) * w;
+      const y = bandTop + bandH - ((data[i] - min) / range) * bandH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
   }
-  ctx.stroke();
 }
 
 function measClearGraph() {
