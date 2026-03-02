@@ -2234,7 +2234,7 @@ document.querySelectorAll('input[name="batt-cutoff-mode"]').forEach(r => {
     // Trouver le point le plus proche
     const data = battGraphData;
     if (data.t.length < 2) { tooltip.style.display = 'none'; return; }
-    const padL = 55, padR = 55, padT = 15, padB = 30;
+    const padL = 55, padR = 15, padT = 15, padB = 30;
     const w = canvas.width - padL - padR;
     if (battCursorX < padL || battCursorX > padL + w) { tooltip.style.display = 'none'; return; }
     const tMax = battZoomMinutes * 60;
